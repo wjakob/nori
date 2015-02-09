@@ -1,0 +1,106 @@
+<div style="margin-top:-20px">
+
+<h3>Part 1: Normal Integrator <em>(30 points)</em></h3>
+<div class="text-justify">
+<p>
+	Follow the <a href=#prelim>preliminaries</a> step-by-step guide. Compule nori and create 
+	your first nori class (shading normal integrator). Once you are finished render the scene 
+	in <tt>scenes/pa1/ajax-normal.xml</tt> and show a side by side comparison against the reference 
+	<tt>scenes/pa1/ref/ajax-normal.exr</tt> in your report. A template for your report can be 
+	downloaded from <a href=https://graphics.ethz.ch/teaching/imsynth15/downloads/resources/report-template.zip> here </a>
+</p>
+
+<h3>Part 2: Average Visibility Integrator <em>(30 points)</em></h3>
+<div class="text-justify">
+<p>
+	In this exercise you will implement a new integrator named
+	<tt>AverageVisibility</tt> (bound to the name "<tt>av</tt>" in the XML
+	scene description language) which derives from <tt>Integrator</tt> to
+	visualize the average visibility of surface points seen by a
+	camera, while ignoring the actual material parameters (i.e. the surface's
+	<tt>BSDF</tt>). 
+</p>
+
+	<h4>Implement Average Visibility Integrator <em>(20 points)</em></h4>
+	<p>
+	Take a look at the <tt>Warp</tt> class in <tt>include/nori/warp.h</tt> and <tt>src/warp.cpp</tt>. 
+	Currently, it just implements a single function
+	</p>
+<pre class="prettyprint">
+Vector3f uniformSampleHemisphere(Sampler *sampler, const Normal3f &n);
+</pre>
+<p>
+	which takes a pointer to a <tt>Sampler</tt> and a normal direction and returns
+	a uniformly distributed random vector on the surface of a unit hemisphere (of
+	radius 1) oriented in the direction of the normal.
+</p>
+<p>
+	Please use this function to implement a new kind of integrator, which
+	computes the average visibility at every surface point visible to the
+	camera. This should be implemented as follows: First find the surface
+	intersected by the camera ray as was done in the previous example.
+	When there is no intersection, return <code>Color3f(1.0f)</code>. Otherwise,
+	you must now compute the average visibility. Using the intersection point
+	<code>its.p</code>, the world space shading normal <code>its.shFrame.n</code>,
+	and the provided sampler, generate a point on the hemisphere and trace a
+	ray into this direction. The ray should have a user-specifiable
+	length that can be passed via an XML declaration as follows:
+	<pre class="prettyprint">
+&lt;integrator type="av"&gt;
+	&lt;float name="length" value="... ray length ..."/&gt;
+&lt;/integrator&gt;</pre>
+	The integrator should return <code>Color3f(0.0f)</code> if the ray segment is
+	occluded and <code>Color3f(1.0f)</code> otherwise.
+</p>
+
+	<h4>Validation <em>(10 points)</em></h4>
+	<p>
+		The directory <tt>scenes/pa1</tt> contains several example scenes that you
+		can use to try your implementation. These scenes invoke your integrator many
+		times for each pixel, and the (random) binary visibility values are accumulated
+		to approximate the average visibility of surface points. Make sure that you can
+		reproduce the reference images in <tt>scenes/pa1/ref/ajax-av-1024spp.exr</tt> and 
+		<tt>scenes/pa1/ref/ajax-av-1024spp.exr</tt> by rendering:
+		<tt>scenes/pa1/ajax-av.xml</tt> and <tt>scenes/pa1/sponza-av.xml</tt>
+		In addition you should pass all the tests in <tt>scenes/pa1/test-av.xml</tt>. 
+		Finally provide a side by side comparison with the reference images in your report.
+	</p>
+
+<h3>Part 3: Direct Illumination Integrator <em>(40 points)</em></h3>
+
+	<h4>Point Lights <em>(15 points)</em></h4>
+	Before starting, read section 12.2 in the textbook about point lights.
+	Implement a <tt>PointLight</tt> class which derives from <tt>Emitter</tt>
+	and implements an infinitesimal light source which emits light uniformly in
+	all directions. Note that an empty <tt>Emitter</tt> interface already
+	exists in <tt>include/nori/emitter.h</tt>. Your task is to find a good
+	abstraction that can be used to store necessary information related to
+	light sources and query it at render-time from an <tt>Integrator</tt>
+	instance. You will also have to store constructed emitters in the
+	<tt>Scene</tt> (currently, an exception is being thrown when a light source
+	is added to the scene). Parametrize your point light with a
+	<tt>Color3f</tt> power (Watts) and the world space position
+	(<tt>Point3f</tt>) of the point light. See
+	<tt>scenes/pa1/sponza-direct.xml</tt> for how these parameters should be
+	used in your XML files. 
+
+	<h4>Direct Illumination integrator <em>(15 points)</em></h4>
+	<tt>Direct::Li</tt> will be called multiple times for each camera ray and will be 
+	internally averaged by Nori. Its expected to return a single estimate of the incident 
+	radiance along the camera ray which is given as a parameter. The equation which 
+	will be solved (15.1) is defined in the textbook in chapter 15 page 744. For the purposes 
+	of this exercise you can safely assume that there will be no emission at the first 
+	intersection. At the first camera ray intersection compute incident radiance from all your 
+	point lights in the scene, multiply that by the BSDF and the cosine term between the 
+	shading normal and the direction towards the light source. For this exercise you will only 
+	need to use the already implemented <tt>Diffuse</tt> BSDF
+
+	<h4>Validation <em>(10 points)</em></h4>
+	<p>
+		Make sure that you can reproduce the reference image in <tt>scenes/pa1/ref/sponza-direct-4spp.exr</tt> 
+		by rendering: <tt>scenes/pa1/sponza-direct.xml</tt>. Also you should pass all tests in 
+		<tt>scenes/pa1/test-direct.xml</tt>. Finally provide a side by side comparison with the 
+		reference image in your report.
+	</p>
+</div>
+</div>

@@ -1,0 +1,161 @@
+body {
+	background: #dcdfbc;
+	padding-top: 80px;
+	padding-bottom: 40px;
+}
+
+/* Navbar with gradient and shadow */
+.navbar-shadow {
+  background-color: #2c2c2c;
+  background-image: linear-gradient(top, #333333, #222222);
+  background-repeat: repeat-x;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.thumbnail {
+  border: 1px solid #868867;
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.panel {
+  border: 2px solid #868867;
+  background-color:transparent;
+  border-radius: 4px;
+}
+
+.panel-title {
+  font-size: 22px;
+}
+
+.panel-default > .panel-heading {
+  background-color: #c4ca9e;
+}
+
+.panel-collapse {
+  border-top: 2px solid #868867;
+}
+
+/* centered columns styles */
+.row-centered {
+    text-align:center;
+}
+
+.col-centered {
+    display:inline-block;
+    float:none;
+    /* reset the text-align */
+    text-align:left;
+    /* inline-block space fix */
+    margin-right:-4px;
+}
+
+h1 small,
+h2 small,
+h3 small,
+h4 small,
+h5 small,
+h6 small {
+  font-weight: normal;
+  color: #868867
+}
+
+span[rel~="tooltip"] {
+	border-bottom: 1px dashed #696;
+	color: #252;
+}
+
+.page-header {
+  border-bottom: 1px solid #868867
+}
+
+
+/* Syntax-highlighting related CSS directives.
+  'desert' scheme ported from vim to google prettify */
+pre.prettyprint { 
+  padding: 8px;
+  border: 1px solid #000;
+  background-color: #333; 
+  text-shadow: 0 1px 0 #000;
+}
+code.prettyprint { 
+	background: #686959;
+	padding: 2px;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+.nocode { background-color: none; color: #000; }
+.str { color: #ffa0a0 } /* string  - pink */
+.kwd { color: #f0e68c; font-weight: bold }
+.com { color: #87ceeb } /* comment - skyblue */
+.typ { color: #98fb98 } /* type    - lightgreen */
+.lit { color: #cd5c5c } /* literal - darkred */
+.pun { color: #fff }    /* punctuation */
+.pln { color: #fff }    /* plaintext */
+.tag { color: #f0e68c; font-weight: bold } /* html/xml tag    - lightyellow */
+.atn { color: #bdb76b; font-weight: bold } /* attribute name  - khaki */
+.atv { color: #ffa0a0 } /* attribute value - pink */
+.dec { color: #98fb98 } /* decimal         - lightgreen */
+
+ol.linenums {
+  margin: 0 0 0 33px;
+} 
+ol.linenums li {
+  color: #bbb;
+  line-height: 18px;
+  text-shadow: 0 1px 0 #000;
+  margin: 0 0 0 -33px;
+}
+
+.prettyprint.linenums {
+	box-shadow: inset 40px 0 0 #333, inset 41px 0 0 #777;
+}
+
+body {
+  margin: 0;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 13px;
+}
+
+h1 {
+	font-weight:bold;
+	font-size: 30px;
+}
+
+h2 {
+	font-weight:bold;
+	font-size: 24px;
+}
+
+h3 {
+	font-weight:bold;
+	font-size: 18px;
+}
+
+.alert-danger {
+  margin-top:10px;
+  background-color: #dba;
+  border-color: #ca9;
+  color: #333;
+  text-shadow:none;
+}
+
+.alert-info {
+  margin-top:10px;
+  border-color: #868867;
+  color: #333;
+  text-shadow:none;
+  background-color: #f4f5ea;
+}
+
+.table>thead>tr>th, 
+.table>tbody>tr>th, 
+.table>tfoot>tr>th, 
+.table>thead>tr>td, 
+.table>tbody>tr>td, 
+.table>tfoot>tr>td,
+.table>tbody,
+.table>thead,
+.table>tfoot{
+  border-color: #888 !important;
+}

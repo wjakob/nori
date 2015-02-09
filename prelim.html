@@ -1,0 +1,734 @@
+<div style="margin-top:-20px">
+<h3>Part 1: the <tt>git</tt> revision control system</h3>
+<div class="text-justify">
+<p>
+	The base code of Nori is provided as a <tt>git</tt> repository. <tt>git</tt>
+	is the most widespread distributed version control system in use today—it is a good
+	idea to familiarize yourself with this system if you've never used it before.
+</p>
+<p>
+	Traditionally, a <em>version control system</em> (VCS) allows a team of
+	people to collaboratively edit a repository of files. Multiple people might
+	happen to work on the same file, and the job of the VCS is to track the
+	(potentially conflicting) modifications and merge them into an unambiguous
+	repository state that is usable to the rest of the team. These systems
+	(e.g. CVS, SVN) store the authoritative repository state in a central
+	repository server. Any changes must be <em>committed</em> to this server so
+	that other team members can access them.
+</p>
+<p>
+	A <em>distributed version control system</em> (DVCS) is conceptually
+	similar: multiple people can collaborate, and there is usually a central
+	repository server. The main difference is that there is nothing special
+	about this server: anyone with sufficient permissions can copy the entire
+	repository state including history data using an operation referred to as
+	<em>cloning</em>. From that point on, the local copy acts as a full-fledged
+	repository server that works without a network connection to the central
+	server. Users can inspect the history of files and even commit new changes,
+	which are stored in the local copy. To allow another user to see these
+	changes, they can either be <em>pushed</em> to that user's DVCS server, or
+		they can be pushed to a central server and then <em>pulled</em> by the
+		recipient. There are many providers (such as <a
+	 href="http://www.github.com">github</a> or <a
+  href="https://bitbucket.org">Bitbucket</a>) which offer free repository
+  hosting for open source projects. Because there is nothing special about the
+  central server, it's easy to switch providers, and anyone can start their own
+  version of an existing repository (this is referred to as <em>forking</em>).
+</p>
+<p>
+<h4>Why <tt>git</tt>?</h4>
+You may wonder why we use <tt>git</tt> in this course given that students are
+expected to work on their own. There are multiple good reasons to use it even
+for a single-user workflow:
+</p>
+<ul>
+	<li>
+		The <tt>git diff</tt> feature lets you see what changes you made since the
+		last commit and commit messages provide additional context. This
+		information is extremely useful when debugging programs that don't work
+		as expected.
+		This assumes that you will commit every logical change as a commit with
+		a descriptive commit message (e.g. "Added a new light source type;
+		implementation of interface to come next").
+	</li>
+	<li>
+		The <tt>git branch</tt> feature makes it easy to try out some large
+		modifications to your code and switch back and forth. It's easy to undo
+		these changes and start from scratch if things don't work out. In
+		general, it's good practice to start a new <em>feature branch</em> for
+		every major feature (e.g. area light support or multiple importance
+		sampling). Once the feature is fully realized and bug-free, it can be
+		merged into the main branch. You'll have to implement multiple features
+		for the final project, and it's a good idea to temporarily separate
+		them from each other in this way.
+	</li>
+	<li>
+		You may stumble across a bug in your code and wonder when it was introduced.
+		The <tt>git bisect</tt> feature lets you quickly find the offending commit.
+	</li>
+	<li>
+        As the semester progresses, we will push out a number of additions to
+        the Nori framework. You can simply <tt>merge</tt> our new revisions
+        into your repository to benefit from these improvements.
+	</li>
+</ul>
+<p>
+Recommended learning resources for git are:
+<a href="https://try.github.io/levels/1/challenges/1">try git</a>,
+<a href="http://rogerdudler.github.io/git-guide/">git-the simple guide</a>,
+the <a href="http://gitimmersion.com/index.html">git immersion tutorial</a>, and
+the extensive free <a href="http://git-scm.com/book/en/v2">Pro Git</a> ebook.
+The remainder of this section describes the steps needed to clone and compile the Nori base code.
+</p>
+</div>
+<div class="col-md-6 text-justify">
+	<h3>Cloning using the command line</h3>
+	<p>
+		The source code of Nori is available on <a
+		href="https://github.com/wjakob/nori">github</a>.
+		To check out a copy of the source code, enter
+	</p>
+	<pre class="prettyprint lang-bash">
+$ git clone --recursive
+	https://github.com/wjakob/nori</pre>
+	<p>
+		on the terminal. The <tt>--recursive</tt> flags ensures
+		that all dependency libraries are cloned as well.
+		We'll likely publish extensions and bug-fixes to this
+		repository as the semester progresses. To get them, 
+		navigate into the <tt>nori</tt>directory and run the command
+<pre class="prettyprint lang-bash">
+$ git pull</pre>
+		If there were any concurrent modifications to the same file,
+		<tt>git</tt> may ask you to resolve merge conflicts. We refer you to
+		the learning resources for information about resolving conflicts in
+		general.
+	</p>
+</div>
+
+<div class="col-md-6 text-justify">
+	<div class="row">
+		<h3>Cloning using source tree</h3>
+		<div class="col-md-6">
+			On Windows and Mac OS X, <a href="http://www.sourcetreeapp.com/">Source Tree</a>
+			is a convenient visual front-end to Git. We particularly recommend this tool if you've
+			never used Git before. When cloning the project, make sure
+			that the setting for recursive cloning is active under <em>Advanced Options</em>.
+			We'll publish extensions and bug-fixes to this
+			repository as the semester progresses.
+			You can simply <em>pull</em>
+			the changes and merge them into your repository to benefit from the
+			improvements.
+		</div>
+		<div class="thumbnail col-md-5">
+			<a class="fancybox" href="images/sourcetree.png"><img src="images/sourcetree.png"/></a>
+			<div class="caption">
+				Source Tree user interface
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row col-md-12">
+    <div class="alert alert-danger" role="alert"><b>Note</b>: Since your
+        repository will contain homework solutions it is (obviously) not OK to
+        post it online (in particular, don't fork the <tt>nori</tt> project on
+        github or elsewhere). Private forks (i.e. without public access) are
+        allowed, however.
+	</div>
+</div>
+
+<div class="row col-md-12">
+<h3>Part 2: Setting up a C++ compiler and building the base code</h3>
+<div class="row">
+	<div class="col-md-6">
+		<h3>Linux / Mac OS X</h3>
+		<p>
+		Begin by installing the
+		<a href="http://www.cmake.org/download/">CMake</a> build system on your
+		system. On Mac OS X, you will also need to install a reasonably
+		up-to-date version of XCode along with the command line tools.
+		On Linux, any reasonably recent version of GCC or Clang will work.
+		Navigate to the Nori folder, create a build directory and start <tt>cmake-gui</tt>, like so:
+		</p>
+		<pre class="prettyprint lang-bash">
+$ cd path-to-nori
+$ mkdir build
+$ cd build
+$ cmake-gui ..</pre>
+		<div class="row-centered">
+			<div class="thumbnail col-md-7 col-centered">
+				<a class="fancybox" href="images/linux-cmake.png"><img src="images/linux-cmake.png"/></a>
+				<div class="caption">
+					Set the build type to "Unix Makefiles"
+					and then press the <em>Configure</em>
+					and <em>Generate</em> buttons.
+				</div>
+			</div>
+		</div>
+		After the Makefiles are generated, simply run
+		<tt>make</tt> to compile all dependencies and Nori itself.
+		<pre class="prettyprint lang-bash">
+$ make -j 4</pre>
+		This can take quite a while; the above command compiles with four
+		processors at the same time. Note that you will probably see many
+		warning messages while the dependencies are compiled—you can ignore
+		them.
+
+		<div class="row-centered">
+			<div class="thumbnail col-md-7 col-centered">
+				<a class="fancybox" href="images/build-type-linux.png"><img src="images/build-type-linux.png"/></a>
+				<div class="caption">
+					Tip: it's a good idea to set the build mode to <em>Release</em>
+					unless you are tracking down a particular bug. The debug
+					version runs <em>much slower</em> (by a factor of 50 or
+					more).
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-6">
+		<h3>Windows / Visual Studio 2013</h3>
+		<p>
+		Begin by installing Visual Studio 2013 (older versions won't do) and a
+		reasonably recent (≥ 3.x) version of <a href="http://www.cmake.org/download/">CMake</a>. Start CMake and navigate to the location where
+		you cloned the Nori repository.
+		</p>
+		<div class="row-centered">
+			<div class="thumbnail col-md-7 col-centered">
+				<a class="fancybox" href="images/cmake-windows.png"><img src="images/cmake-windows.png"/></a>
+				<div class="caption">
+					Be sure to select the Visual Studio 2013 <b>64</b> bit compiler.
+					It is also generally a good idea to choose a build directory
+					that is <em>different</em> from the source directory.
+				</div>
+			</div>
+		</div>
+		<p>
+		After setting up the project, click the <em>Configure</em> and
+		<em>Generate</em> button. This will create a file called
+		<tt>nori.sln</tt>—double-click it to open Visual Studio.
+		</p>
+
+		<div class="row-centered">
+			<div class="thumbnail col-md-7 col-centered">
+				<a class="fancybox" href="images/vs2013.png"><img src="images/vs2013.png"/></a>
+				<div class="caption">
+					The opened Visual Studio 2013 project. It's a good idea to
+					set the build mode to <em>Release</em> (see the red marker)
+					unless you are tracking down a particular bug. The debug
+					version runs <em>much slower</em> (by a factor of 50 or
+					more).
+				</div>
+			</div>
+		</div>
+		The <em>Build->Build Solution</em> menu item will automatically compile
+		all dependency libraries and Nori itself; the resulting executable is
+		written to the <tt>Release</tt> or <tt>Debug</tt> subfolder of your
+		chosen build directory. Note that you will probably see many warning
+		messages while the dependencies are compiled—you can ignore them.
+	</div>
+</div>
+
+</div>
+
+<div class="row col-md-12">
+<h3>Part 4: A high-level overview</h3>
+The Nori repository consists of the base code files (left table)
+and several dependency libraries (right table) that are briefly explained below.
+</div>
+<div class="row">
+	<div class="col-md-6">
+		<table class="table table-condensed">
+			<thead> <tr> <th>Directory</th> <th>Description</th> </tr> </thead>
+			<tbody>
+				<tr><td><tt>src</tt></td><td>A directory containing the main C++ source code</td></tr>
+				<tr><td><tt>include/nori</tt></td><td>A directory containing header files with declarations</td></tr>
+				<tr><td><tt>ext</tt></td><td>External dependency libraries (see the table right)</td></tr>
+				<tr><td><tt>scenes</tt></td><td>Example scenes and test datasets to validate your implementation</td></tr>
+				<tr><td><tt>CMakeLists.txt</tt></td><td>A CMake build file which specifies how to compile and link Nori</td></tr>
+				<tr><td><tt>CMakeConfig.txt</tt></td><td>A low-level CMake build file which specifies how to compile and link several dependency libraries upon which Nori depends. You probably won't have to change anything here.</td></tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="col-md-6">
+		<table class="table table-condensed">
+			<thead> <tr> <th>Directory</th> <th>Description</th> </tr> </thead>
+			<tbody>
+				<tr><td><tt>ext/openexr</tt></td><td>A high dynamic range image format library</td></tr>
+				<tr><td><tt>ext/pcg32</tt></td><td>A tiny self-contained pseudorandom number generator</td></tr>
+				<tr><td><tt>ext/filesystem</tt></td><td>A tiny self-contained library for manipulating paths on various platforms</td></tr>
+				<tr><td><tt>ext/pugixml</tt></td><td>A light-weight XML parsing library</td></tr>
+				<tr><td><tt>ext/tbb</tt></td><td>Intel's Boost Thread Building Blocks for multi-threading</td></tr>
+				<tr><td><tt>ext/tinyformat</tt></td><td>Type-safe C++11 version of <tt>printf</tt> and <tt>sprintf</tt></td></tr>
+				<tr><td><tt>ext/hypothesis</tt></td><td>Functions for statistical hypothesis tests</td></tr>
+				<tr><td><tt>ext/nanogui</tt></td><td>A minimalistic GUI library for OpenGL</td></tr>
+				<tr><td><tt>ext/nanogui/ext/eigen</tt></td><td>A linear algebra library used by <tt>nanogui</tt> and Nori.</td></tr>
+				<tr><td><tt>ext/zlib</tt></td><td>A compression library used by OpenEXR</td></tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+<div class="row col-md-12">
+	Let's begin with a brief overview of the most important dependencies:
+</div>
+<div class="row">
+	<div class="col-md-6 text-justify">
+		<h4>Eigen</h4>
+		<p>
+			When developing any kind of graphics-related software, it's
+			important to be familiar with the core mathematics support library
+			that is responsible for basic linear algebra types, such as vectors,
+			points, normals, and linear transformations. Nori uses
+			<a href="http://eigen.tuxfamily.org">Eigen 3</a> for this
+			purpose. We don't expect you to understand the inner workings of
+			this library but recommend that you at least take a look at the
+			helpful <a href="http://eigen.tuxfamily.org/dox">tutorial</a> 
+			provided on the Eigen web page.
+
+			<p>
+				Nori provides a set of linear algebra types that are
+				derived from Eigen's matrix/vector class (see e.g. the header file 
+				<tt>include/nori/vector.h</tt>). This is necessary
+				because we will be handling various quantities that
+				require different treatment when undergoing homogeneous
+				coordinate transformations, and in particular we must
+				distinguish between positions, vectors, and normals.
+
+				The main subset of types that you will most likely use are:
+				<ul>
+					<li><tt>Point2i</tt>,</li>
+					<li><tt>Point2f</tt>,</li>
+					<li><tt>Point3f</tt>,</li>
+					<li><tt>Vector2i</tt>,</li>
+					<li><tt>Vector2f</tt>,</li>
+					<li><tt>Vector3f</tt>, and</li>
+					<li><tt>Normal3f</tt>.</li>
+				</ul>
+				where the number indicates the dimension and the
+				subsequent character denotes the underlying scalar
+				type (i.e. integer or single precision floating point).
+			</p>
+		</p>
+		<h4>pugixml</h4>
+		<p>
+			The <a href="http://pugixml.org/">pugixml</a> library implements a tiny XML parser that we use to
+			load Nori scenes. The format of these scenes is described below.
+			The XML parser is fully implemented for your convenience, but
+			you may have to change it if you wish to extend the file format
+			for your final project.
+		</p>
+		<h4>pcg32</h4>
+		<p>
+			<a href="http://www.pcg-random.org">PCG</a> is a family of tiny
+			pseudorandom number generators with good performance that was
+			recently proposed by Melissa O'Neill. The full implementation of
+			<tt>pcg32</tt> (one member of this family) is provided in a single
+			header file in <tt>ext/pcg32/pcg32.h</tt>. You will be using this
+			class as a source of pseudo-randomness starting with the second
+			programming assignment on sample generation.
+		</p>
+	</div>
+	<div class="col-md-6 text-justify">
+		<h4>Hypothesis test support library</h4>
+		<p>
+			With each programming assignment, we will provide statistical
+			hypothesis tests that you can use to verify that your algorithms
+			are implemented correctly. You can think of them as unit tests with
+			a little extra twist: suppose that the correct result of a certain
+			computation in a is given by a constant \(c\). A normal unit test
+			would check that the actual computed \(c'\) satisfies
+			\(|c-c'|&lt;\varepsilon\) for some small constant \(\varepsilon\) to
+			allow for rounding errors etc. However, rendering algorithms usually employ
+			randomness (they are <em>Monte Carlo</em> algorithms), and in practice
+			the computed answer \(c'\) can be quite different from \(c\), which
+			makes it tricky to choose a suitable constant \(\varepsilon\).
+		</p>
+		<p>
+			A statistical hypothesis test, on the other hand, analyzes the
+			computed value and an estimate of its variance and tries to assess
+			how likely it is that the difference \(|c-c'|\) is due to random
+			noise or an actual implementation bug. When it is extremely unlikely
+			(usually \(p&lt;0.001\)) that the error could be attributed to noise, the test
+			reports a failure.
+		</p>
+		<h4>OpenEXR</h4>
+		<p>
+			<a href="http://www.openexr.com/">OpenEXR</a> is a standardized file format for storing high dynamic
+			range images. It was originally developed by Industrial Light and
+			Magic and is now widely used in the movie industry and for
+			rendering in general. The directory <tt>ext/openexr</tt> contains
+			the open source reference implementation of this standard. You will
+			probably not be using this library directly but through Nori's
+			<tt>Bitmap</tt> class implemented in <tt>src/bitmap.cpp</tt> and
+			<tt>include/nori/bitmap.h</tt> to load and write OpenEXR files.
+		</p>
+		<h4>NanoGUI</h4>
+		<p>
+			The <a href="https://github.com/wjakob/nanogui">NanoGUI</a> library
+			creates an OpenGL window and provides a small set of user interface
+			elements (buttons, sliders, etc.). We use it to show the preview of
+			the image being rendered. This library could be useful if your
+			final project involves some kind of user interaction.
+		</p>
+		<h4>Intel Thread Building Blocks</h4>
+		<p>
+			The <tt>tbb</tt> directory contains <a href="https://www.threadingbuildingblocks.org/">Intel's Thread
+				Building Blocks</a>. This is a library for parallelizing
+			various kinds of programs similar in spirit to OpenMP and Grand
+			Central Dispatch on Mac OS. You will see in the course that
+			renderings often require significant amounts of computation, but
+			this computation is easy to parallelize. We use TBB because it is
+			more portable and flexible than the aforementioned
+			platform-specific solutions. The basic rendering loop in Nori (in
+			<tt>src/main.cpp</tt>) is already parallelized, so you will
+			probably not have to read up on this library unless you plan to
+			parallelize a custom algorithm for your final project.
+		</p>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-12 text-justify">
+		<h3>Scene file format and parsing</h3>
+		<p>
+			Take a moment to browse through the header files in
+			<tt>include/nori</tt>. You will generally find all important
+			interfaces and their documentation in this place. Most headers
+			files also have a corresponding <tt>.cpp</tt> implementation file
+			in the <tt>src</tt> directory.
+
+			The most important class is called <tt>NoriObject</tt>—it is
+			the base class of everything that can be constructed using the XML
+			scene description language. Other interfaces (e.g. <tt>Camera</tt>)
+			derive from this class and expose additional more specific
+			functionality (e.g. to generate an outgoing ray from a camera).
+		</p>
+
+		<p>
+			Nori uses a very simple XML-based scene description language, which
+			can be interpreted as a kind of building plan: the parser creates
+			the scene step by step as it reads the scene file from top to
+			bottom. The XML tags in this document are interpreted as requests
+			to construct certain C++ objects including information on how to
+			put them together.
+		</p>
+		<p>
+			Each XML tag is either an <em>object</em> or a <em>property</em>. Objects
+			correspond to C++ instances that will be allocated on the heap. Properties are
+			small bits of information that are passed to an object at the time of its
+			instantiation.
+
+			For instance, the following snippet creates red diffuse BSDF:
+		</p>
+		<pre class="prettyprint linenums lang-xml">
+&lt;bsdf type="diffuse"&gt;
+    &lt;color name="albedo" value="0.5, 0, 0"/&gt;
+&lt;/bsdf&gt;</pre>
+		<p>
+			Here, the <tt>&lt;bsdf&gt;</tt> tag will cause the
+			creation of an object of type <tt>BSDF</tt>, and the
+			<tt>type</tt> attribute specifies what specific subclass
+			of <tt>BSDF</tt> should be used.
+			The <tt>&lt;color&gt;</tt> tag creates a property of name <tt>albedo</tt>
+			that will be passed to its constructor.
+			If you open up the C++ source file <tt>src/diffuse.cpp</tt>, you will see that 
+			there is a constructor, which looks for 
+			<span rel="tooltip" title="Or alternatively substitutes 50% grey when no value is provided.">this specific property</span>:
+		</p>
+		<pre class="prettyprint linenums">
+Diffuse(const PropertyList &amp;propList) {
+    m_albedo = propList.getColor("albedo", Color3f(0.5f));
+}</pre>
+		<p>
+			The piece of code that associates the
+			<tt>"diffuse"</tt> XML identifier with the <tt>Diffuse</tt>
+			class in the C++ code is a macro found at the bottom of the file:
+		</p>
+
+		<pre class="prettyprint linenums">
+NORI_REGISTER_CLASS(Diffuse, "diffuse");</pre>
+
+		<p>
+			Certain objects can be nested hierarchically. For
+			example, the following XML snippet creates a mesh that loads its
+			contents from an external OBJ file and assigns a red diffuse BRDF
+			to it.
+		</p>
+
+		<pre class="prettyprint linenums lang-xml">
+&lt;mesh type="obj"&gt;
+    &lt;string type="filename" value="bunny.obj"/&gt;
+
+    &lt;bsdf type="diffuse"&gt;
+        &lt;color name="albedo" value="0.5, 0, 0"/&gt;
+    &lt;/bsdf&gt;
+&lt;/mesh&gt;
+</pre>
+		<p>
+			Implementation-wise, this kind of nesting will cause a method named
+			<tt>addChild()</tt> to be invoked within the parent object. In this
+			specific example, this means that <tt>Mesh::addChild()</tt> is
+			called, which roughly looks as follows:
+<pre class="prettyprint linenums">
+void Mesh::addChild(NoriObject *obj) {
+    switch (obj->getClassType()) {
+        case EBSDF:
+            if (m_bsdf)
+                throw NoriException(
+                    "Mesh: multiple BSDFs are not allowed!");
+            /// Store pointer to BSDF in local instance
+            m_bsdf = static_cast&lt;BSDF *&gt;(obj);
+            break;
+    // ..(omitted)..
+}
+</pre>
+			This function verifies that the nested object is a BSDF, and that no BSDF was specified
+			before; otherwise, it throws an exception of type <tt>NoriException</tt>.
+		</p>
+		<p>
+			The following different types of properties can currently be passed to 
+			objects within the XML description language:
+		</p>
+		<div class="row">
+			<div class="col-md-6">
+				<pre class="prettyprint linenums">
+&lt;!-- Basic parameter types --&gt;
+&lt;string name="property name" value="arbitrary string"/&gt;
+&lt;boolean name="property name" value="true/false"/&gt;
+&lt;float name="property name" value="float value"/&gt;
+&lt;integer name="property name" value="integer value"/&gt;
+&lt;vector name="property name" value="x, y, z"/&gt;
+&lt;point name="property name" value="x, y, z"/&gt;
+&lt;color name="property name" value="r, g, b"/&gt;</pre>
+			</div>
+			<div class="col-md-6">
+				<pre class="prettyprint linenums">
+&lt;!-- Linear transformations use a different syntax --&gt;
+&lt;transform name="property name"&gt;
+    &lt;!-- Any sequence of the following operations: --&gt;
+    &lt;translate value="x, y, z"/&gt;
+    &lt;scale value="x, y, z"/&gt;
+    &lt;rotate axis="x, y, z" angle="deg."/&gt;
+    &lt;!-- Useful for cameras and spot lights: --&gt;
+    &lt;lookat origin="x,y,z" target="x,y,z" up="x,y,z"/&gt;
+&lt;/transform&gt;</pre>
+			</div>
+		</div>
+
+		<p>
+			The top-level element of any scene file is usually a
+			<tt>&lt;scene&gt;</tt> tag, but this is not always the
+			case.
+			For instance, some of the programming assignments will ask you to
+			run statistical tests on BRDF models or rendering algorithms, and
+			these tests are also specified using the XML scene description
+			language, like so:
+		</p>
+		<pre class="prettyprint linenums lang-xml">
+&lt;?xml version="1.0"?&gt;
+
+&lt;test type="chi2test"&gt;
+    &lt;!-- Run a χ<sup>2</sup> test on the microfacet BRDF model (@ 0.01 significance level) --&gt;
+    &lt;float name="significanceLevel" value="0.01"/&gt;
+
+    &lt;bsdf type="microfacet"&gt;
+        &lt;float name="alpha" value="0.1"/&gt;
+    &lt;/bsdf&gt;
+&lt;/test&gt;</pre>
+		
+		<h3>Creating your first Nori class</h3>
+		<p>
+			In Nori, rendering algorithms are referred to as <em>integrators</em>
+			because they generally solve a numerical integration problem. The remainder
+			of this section explains how to create your first (dummy) integrator which
+			visualizes the surface normals of objects.
+		</p>
+		<p>
+			We begin by creating a new Nori object subclass in <tt>src/normals.cpp</tt> with
+			the following content:
+		</p>
+		<pre class="prettyprint linenums lang-cpp">
+#include &lt;nori/integrator.h&gt;
+
+NORI_NAMESPACE_BEGIN
+
+class NormalIntegrator : public Integrator {
+public:
+    NormalIntegrator(const PropertyList &amp;props) {
+        m_myProperty = props.getString("myProperty");
+        std::cout &lt;&lt; "Parameter value was : " &lt;&lt; m_myProperty &lt;&lt; std::endl;
+    }
+
+    /// Compute the radiance value for a given ray. Just return green here
+    Color3f Li(const Scene *scene, Sampler *sampler, const Ray3f &amp;ray) const {
+        return Color3f(0, 1, 0);
+    }
+
+    /// Return a human-readable description for debugging purposes
+    std::string toString() const {
+        return tfm::format(
+            "NormalIntegrator[\n"
+            "  myProperty = \"%s\"\n"
+            "]",
+            m_myProperty
+        );
+    }
+protected:
+    std::string m_myProperty;
+};
+
+NORI_REGISTER_CLASS(NormalIntegrator, "normals");
+NORI_NAMESPACE_END</pre>
+		To try out this integrator, we first need to add it to the CMake build system:
+		for this, open <tt>CMakeLists.txt</tt> and look for the command
+		<pre class="prettyprint linenums lang-bash">add_executable(nori,
+  # Header files
+  include/nori/bbox.h
+  ...
+
+  # Source code files
+  src/bitmap.cpp
+  ...
+)</pre>
+		<p>
+		Add the line <tt>src/normals.cpp</tt> at the end of the source file
+		list and recompile. If everything goes well, CMake will create an
+		executable named <tt>nori</tt> (or <tt>nori.exe</tt> on Windows) which
+		you can call on the command line.
+		</p>
+		<p>
+		Finally, create a small test scene with the following content and save it as <tt>test.xml</tt>:
+		</p>
+		<pre class="prettyprint linenums lang-xml">
+&lt;?xml version="1.0"?&gt;
+
+&lt;scene&gt;
+    &lt;integrator type="normals"&gt;
+        &lt;string name="myProperty" value="Hello!"/&gt;
+    &lt;/integrator&gt;
+
+    &lt;camera type="perspective"/&gt;
+&lt;/scene&gt;
+</pre>
+<p>
+		This file instantiates our integrator and creates the default camera
+		setup. Running <tt>nori</tt> with this scene causes two things to
+		happen:
+		</p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-6">
+First, some text output should be visible on the console:
+<pre class="prettyprint lang-bash">
+$ ./nori test.xml
+
+Property value was : Hello!
+
+Configuration: Scene[
+  integrator = NormalIntegrator[
+    myProperty = "Hello!"
+  ],
+  sampler = Independent[sampleCount=1]
+  camera = PerspectiveCamera[
+    cameraToWorld = [1, 0, 0, 0;
+                     0, 1, 0, 0;
+                     0, 0, 1, 0;
+                     0, 0, 0, 1],
+    outputSize = [1280, 720],
+    fov = 30.000000,
+    clip = [0.000100, 10000.000000],
+    rfilter = GaussianFilter[radius=2.000000, stddev=0.500000]
+
+  ],
+  medium = null,
+  envEmitter = null,
+  meshes = {
+  }
+]
+
+Rendering .. done. (took 93.0ms)
+Writing a 1280x720 OpenEXR file to "test.exr"
+</pre>
+The Nori executable echoed the property value we provided, and 
+it printed a brief human-readable summary of the scene.
+The rendered scene is saved as an OpenEXR file named <tt>test.exr</tt>.
+</div>
+<div class="col-md-6">
+	<div class="thumbnail">
+		<a class="fancybox" href="images/green.png"><img src="images/green.png"/></a>
+		<div class="caption">
+			Secondly, a solid green window pops up. This is the image we just
+			rendered! The slider at the bottom can be used to change
+			the camera exposure value.
+		</div>
+	</div>
+</div>
+</div>
+<div class="row">
+	<div class="col-md-12">
+		<h4>Visualizing OpenEXR files</h4>
+		<p>
+		A word of caution: various tools for visualizing OpenEXR images exist,
+		but not all really do what one would expect. Adobe Photoshop and the <a
+	  href="https://bitbucket.org/edgarv/hdritools/downloads">HDRITools</a> by
+  Edgar Velázquez-Armendáriz work correctly, but <tt>Preview.app</tt> on Mac OS
+  for instance tonemaps these files in an awkward and unclear way.
+	  </p>
+
+	  <p>
+		If in doubt, you can also use Nori as an OpenEXR viewer: simply run it with an EXR file as parameter, like so:
+		</p>
+<pre class="prettyprint lang-bash">
+$ ./nori test.exr
+</pre>
+		<h4>Tracing rays</h4>
+		<p>
+		Let's now build a more interesting integrator which traces some rays against the scene geometry. Change the file <tt>normals.cpp</tt> as shown on the left side. Invoke <tt>nori</tt> on the file <tt>scenes/pa1/bunny.xml</tt>, and you should get the image on the right. Please submit the resulting EXR file with the first programming assignment solutions to receive credit for making it all the way through the tutorial.
+		</p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-6">
+<pre class="prettyprint lang-cpp">
+#include &lt;nori/integrator.h&gt;
+#include &lt;nori/scene.h&gt;
+
+NORI_NAMESPACE_BEGIN
+
+class NormalIntegrator : public Integrator {
+public:
+    NormalIntegrator(const PropertyList &amp;props) {
+        /* No parameters this time */
+    }
+
+    Color3f Li(const Scene *scene, Sampler *sampler, const Ray3f &amp;ray) const {
+        /* Find the surface that is visible in the requested direction */
+        Intersection its;
+        if (!scene-&gt;rayIntersect(ray, its))
+            return Color3f(0.0f);
+
+        /* Return the component-wise absolute
+           value of the shading normal as a color */
+        Normal3f n = its.shFrame.n.cwiseAbs();
+        return Color3f(n.x(), n.y(), n.z());
+    }
+
+    std::string toString() const {
+        return "NormalIntegrator[]";
+    }
+};
+
+NORI_REGISTER_CLASS(NormalIntegrator, "normals");
+NORI_NAMESPACE_END
+</pre>
+</div>
+<div class="col-md-6">
+	<div class="thumbnail">
+		<a class="fancybox" href="images/normals.png"><img src="images/normals.png"/></a>
+		<div class="caption">
+			A shading normal rendering of the Bunny scene
+		</div>
+	</div>
+</div>
+</div>
+</div>
