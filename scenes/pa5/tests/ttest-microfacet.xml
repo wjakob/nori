@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<test type="ttest">
+	<string name="angles"     value="       0,       45,       60,       80,       85"/>
+	<string name="references" value="0.207067, 0.215733, 0.247884, 0.430936, 0.519016"/>
+
+	<bsdf type="microfacet">
+		<float name="alpha" value="0.1"/>
+		<float name="intIOR" value="1.5"/>
+		<float name="extIOR" value="1.000277"/>
+		<color name="kd" value="0.1, 0.2, 0.15"/>
+	</bsdf>
+</test>
