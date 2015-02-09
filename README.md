@@ -6,4 +6,4 @@ assignments in the course Image Synthesis taught at ETH Zürich.
 
 ### Course information and framework documentation
 
-For access to course information including slides and reading material, visit the main [Image Synthesis website] (https://graphics.ethz.ch/teaching/imsynth14/home.php). The Nori 2 framework and coding assignments will be described on the [Nori website] (https://wjakob.github.io/nori2).
+For access to course information including slides and reading material, visit the main [Image Synthesis website] (https://graphics.ethz.ch/teaching/imsynth15/home.php). The Nori 2 framework and coding assignments will be described on the [Nori website] (https://wjakob.github.io/nori2).
