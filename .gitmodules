@@ -1,0 +1,54 @@
+[submodule "filesystem"]
+	path = filesystem
+	url = https://github.com/wjakob/filesystem
+[submodule "tbb"]
+	path = tbb
+	url = https://github.com/wjakob/tbb
+[submodule "pugixml"]
+	path = pugixml
+	url = http://github.com/zeux/pugixml
+[submodule "tinyformat"]
+	path = tinyformat
+	url = https://github.com/wjakob/tinyformat
+[submodule "zlib"]
+	path = zlib
+	url = https://github.com/madler/zlib
+[submodule "hypothesis"]
+	path = hypothesis
+	url = https://github.com/wjakob/hypothesis
+[submodule "nanogui"]
+	path = nanogui
+	url = https://github.com/wjakob/nanogui
+[submodule "openexr"]
+	path = openexr
+	url = https://github.com/wjakob/openexr
+[submodule "pcg32"]
+	path = pcg32
+	url = https://github.com/wjakob/pcg32
+[submodule "ext/filesystem"]
+	path = ext/filesystem
+	url = https://github.com/wjakob/filesystem
+[submodule "ext/tbb"]
+	path = ext/tbb
+	url = https://github.com/wjakob/tbb
+[submodule "ext/pugixml"]
+	path = ext/pugixml
+	url = http://github.com/zeux/pugixml
+[submodule "ext/tinyformat"]
+	path = ext/tinyformat
+	url = https://github.com/wjakob/tinyformat
+[submodule "ext/zlib"]
+	path = ext/zlib
+	url = https://github.com/madler/zlib
+[submodule "ext/hypothesis"]
+	path = ext/hypothesis
+	url = https://github.com/wjakob/hypothesis
+[submodule "ext/nanogui"]
+	path = ext/nanogui
+	url = https://github.com/wjakob/nanogui
+[submodule "ext/openexr"]
+	path = ext/openexr
+	url = https://github.com/wjakob/openexr
+[submodule "ext/pcg32"]
+	path = ext/pcg32
+	url = https://github.com/wjakob/pcg32

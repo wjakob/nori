@@ -1,0 +1,44 @@
+<scene>
+	<!-- Independent sample generator, user-selected samples per pixel -->
+	<sampler type="independent">
+		<integer name="sampleCount" value="512"/>
+	</sampler>
+
+	<!-- Use the average visibility integrator -->
+	<integrator type="av">
+		<float name="length" value="10"/>
+	</integrator>
+
+	<!-- Render the scene as viewed by a perspective camera -->
+	<camera type="perspective">
+		<transform name="toWorld">
+			<lookat target="-64.8161, 47.2211, 23.8576" origin="-65.6055, 47.5762, 24.3583" up="0.299858, 0.934836, -0.190177"/>
+		</transform>
+
+		<!-- Field of view: 30 degrees -->
+		<float name="fov" value="30"/>
+
+		<!-- 768 x 768 pixels -->
+		<integer name="width" value="768"/>
+		<integer name="height" value="768"/>
+	</camera>
+
+	<!-- Load the Ajax bust (a freely available scan from the Jotero forum) -->
+	<mesh type="obj">
+		<string name="filename" value="ajax.obj"/>
+
+		<bsdf type="diffuse"/>
+	</mesh>
+
+	<!-- Ground plane -->
+	<mesh type="obj">
+		<string name="filename" value="plane.obj"/>
+
+		<bsdf type="diffuse"/>
+
+		<transform name="toWorld">
+			<scale value="100,1,100"/>
+		</transform>
+
+	</mesh>
+</scene>

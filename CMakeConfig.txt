@@ -1,0 +1,164 @@
+# =======================================================================
+#   WARNING    WARNING    WARNING    WARNING    WARNING    WARNING
+# =======================================================================
+#   Remember to put on SAFETY GOGGLES before looking at this file. You
+#   are most certainly not expected to read or understand any of it.
+# =======================================================================
+#
+# This CMake file is responsible for compiling dependency libraries and
+# setting up suitable compiler flags for various platforms. You do not
+# need to read or change anything in this file; see CMakeLists.txt instead.
+
+include(CMakeParseArguments)
+
+# Set a default build configuration (Release)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting build type to 'Release' as none was specified.")
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
+    "MinSizeRel" "RelWithDebInfo")
+endif()
+
+# This build file 
+include(ExternalProject)
+set(CMAKE_EXTERNAL_ARGUMENTS -DCMAKE_BUILD_TYPE=Release
+  -DCMAKE_GENERATOR=${CMAKE_GENERATOR} -Wno-dev
+  -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/ext_build/dist)
+
+if (MSVC)
+  # Windows-specific build flags
+
+  # Don't advertise awkward and non-standard "secure" C++ functions
+  add_definitions (/D "_CRT_SECURE_NO_WARNINGS")
+
+  include_directories(ext/glew/include)
+  set(extra_libs opengl32 glew)
+
+  set(extra_libs ${extra_libs}
+    $<$<CONFIG:Debug>:zlibstaticd>
+    $<$<CONFIG:RelWithDebInfo>:zlibstatic>
+    $<$<CONFIG:Release>:zlibstatic> 
+    $<$<CONFIG:MinSizeRel>:zlibstatic>
+  )
+
+  # Statically link against the C++ runtime library, also apply these settings to nested projects
+  set(CompilerFlags
+        CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO
+        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+  foreach(CompilerFlag ${CompilerFlags})
+    string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+    string(REPLACE "/MDd" "/MTd" ${CompilerFlag} "${${CompilerFlag}}")
+    set(CMAKE_EXTERNAL_ARGUMENTS ${CMAKE_EXTERNAL_ARGUMENTS} -D${CompilerFlag}:INTERNAL=${${CompilerFlag}})
+  endforeach()
+elseif(APPLE)
+  # OSX-specific build flags
+
+  # Find standard libraries needed for OpenGL/GLFW
+  find_library(cocoa_library Cocoa)
+  find_library(opengl_library OpenGL)
+  find_library(corevideo_library CoreVideo)
+  find_library(iokit_library IOKit)
+  set(extra_libs ${cocoa_library} ${opengl_library} ${corevideo_library} ${iokit_library} z)
+
+  # Compile in C++11 mode
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+
+  # Try to auto-detect a suitable OSX SDK
+  execute_process(COMMAND bash -c "xcodebuild -version -sdk | grep MacOSX | grep Path | head -n 1 | cut -f 2 -d ' '" OUTPUT_VARIABLE CMAKE_OSX_SYSROOT)
+  string(REGEX REPLACE "(\r?\n)+$" "" CMAKE_OSX_SYSROOT "${CMAKE_OSX_SYSROOT}")
+  string(REGEX REPLACE "^.*X([0-9.]*).sdk$" "\\1" CMAKE_OSX_DEPLOYMENT_TARGET "${CMAKE_OSX_SYSROOT}")
+
+  # Also use the same SDK in nested projects
+  set(CMAKE_EXTERNAL_ARGUMENTS ${CMAKE_EXTERNAL_ARGUMENTS} -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET} -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT})
+elseif("${CMAKE_SYSTEM}" MATCHES "Linux")
+  # Linux-specific build flags
+  set(extra_libs GL Xxf86vm Xrandr Xinerama Xcursor Xi X11 pthread z dl)
+
+  # Compile in C++11 mode
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
+
+if(WIN32)
+  # Build zlib (only needed on Windows, Linux/OSX already have it)
+  ExternalProject_Add(zlib_p
+    URL             "${CMAKE_SOURCE_DIR}/ext/zlib"
+    PREFIX          "ext_build"
+    CMAKE_ARGS      ${CMAKE_EXTERNAL_ARGUMENTS}
+  )
+endif(WIN32)
+
+# Build Intel Thread Building Blocks
+ExternalProject_Add(tbb_p
+  URL             "${CMAKE_SOURCE_DIR}/ext/tbb"
+  PREFIX          "ext_build"
+  CMAKE_ARGS      ${CMAKE_EXTERNAL_ARGUMENTS}
+)
+
+# Build IlmBase, a support library needed by OpenEXR
+ExternalProject_Add(IlmBase_p
+  URL             "${CMAKE_SOURCE_DIR}/ext/openexr/IlmBase"
+  PREFIX          "ext_build"
+  CMAKE_ARGS      ${CMAKE_EXTERNAL_ARGUMENTS} -DBUILD_SHARED_LIBS=OFF -DNAMESPACE_VERSIONING=NO
+)
+
+# Build OpenEXR
+ExternalProject_Add(OpenEXR_p
+  URL             "${CMAKE_SOURCE_DIR}/ext/openexr/OpenEXR"
+  PREFIX          "ext_build"
+  CMAKE_ARGS      ${CMAKE_EXTERNAL_ARGUMENTS} -DILMBASE_PACKAGE_PREFIX=${CMAKE_BINARY_DIR}/ext_build/dist -DBUILD_SHARED_LIBS=OFF -DNAMESPACE_VERSIONING=NO
+)
+
+# Make sure everything is built in the right oder
+add_dependencies(OpenEXR_p IlmBase_p)
+if(WIN32)
+  add_dependencies(OpenEXR_p zlib_p)
+endif(WIN32)
+
+# Pass external arguments to nested build processes
+string(REGEX REPLACE ";" "$" CMAKE_EXTERNAL_ARGUMENTS_STR "${CMAKE_EXTERNAL_ARGUMENTS}")
+list(APPEND CMAKE_EXTERNAL_ARGUMENTS -D CMAKE_EXTERNAL_ARGUMENTS:STRING=${CMAKE_EXTERNAL_ARGUMENTS_STR})
+
+# Build nanogui
+ExternalProject_Add(nanogui_p
+  URL             "${CMAKE_SOURCE_DIR}/ext/nanogui"
+  PREFIX          "ext_build"
+  CMAKE_ARGS      ${CMAKE_EXTERNAL_ARGUMENTS}
+)
+
+# Compile Nori with compiler warnings turned on
+if(MSVC)
+  if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+    string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+  endif()
+else()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter")
+  if (APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-gnu-anonymous-struct -Wno-c99-extensions -Wno-nested-anon-types -Wno-deprecated-register -Wno-missing-braces")
+  endif()
+endif()
+
+# Compile against & link to previously compiled external projects
+link_directories(${CMAKE_BINARY_DIR}/ext_build/dist/lib)
+include_directories(
+  ${CMAKE_BINARY_DIR}/ext_build/dist/include
+  ${CMAKE_BINARY_DIR}/ext_build/dist/include/OpenEXR
+  ext/pcg32
+  ext/tinyformat
+  ext/pugixml/src
+  ext/hypothesis
+  ext/filesystem
+  include
+)
+
+add_library(pugixml STATIC ext/pugixml/src/pugixml.cpp)
+set_target_properties(pugixml PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/ext_build/dist/lib")
+
+# Link to several dependency libraries
+set(extra_libs nanogui glfw3 IlmImf IlmThread Iex IexMath Imath Half pugixml tbb ${extra_libs})
+
+# vim: set et ts=2 sw=2 ft=cmake nospell:

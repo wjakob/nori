@@ -1,0 +1,40 @@
+<scene>
+	<!-- Independent sample generator, user-selected samples per pixel -->
+	<sampler type="independent">
+		<integer name="sampleCount" value="4"/>
+	</sampler>
+
+	<!-- Use the direct illumination integrator -->
+	<integrator type="direct"/>
+
+	<!-- Render the scene as viewed by a perspective camera -->
+	<camera type="perspective">
+		<transform name="toWorld">
+			<lookat target="-11, 5, 0" 
+			        origin="15, 1, 0"
+			        up="0, 1, 0"/>
+		</transform>
+
+		<!-- Field of view: 40 degrees -->
+		<float name="fov" value="40"/>
+
+		<!-- 800x600 pixels -->
+		<integer name="width" value="800"/>
+		<integer name="height" value="600"/>
+	</camera>
+
+	<!-- Illuminate using a point light -->
+	<emitter type="point">
+		<point name="position" value = "-8,5,0"/>
+		<color name="power" value="500,250,250"/>
+	</emitter>
+
+	<mesh type="obj">
+		<string name="filename" value="sponza.obj"/>
+
+		<bsdf type="diffuse">
+			<color name="albedo" value=".8,.8,.8"/>
+		</bsdf>
+	</mesh>
+
+</scene>

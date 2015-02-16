@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+	Opposing disks with point lights and direct illumination
+
+	This test has the camera located at 0 looking down to the center of a disk with radius 1.
+	Above that disk (at distance 2 along y-axis) there is another disk with the same radius.
+	Point lights are instantiated at various positions for each test.
+	
+	The following tests evaluate the correctness of the direct illumination integrator when 
+	used in conjunction with one or more point lights.
+-->
+
+<test type="ttest">
+	<string name="references" value="1,0.063178,0,1.063178"/> 
+
+	<!-- Test 1: point light at [0 0 0] (visible) camera looking at [0,-1,0] -->
+	<scene>
+		<integrator type="direct"/>
+
+		<camera type="perspective">
+			<transform name="toWorld">
+				<lookat target="0, -1, 0"  origin="0, 0, 0" up="0, 0, 1"/>
+			</transform>
+
+			<float name="fov" value="1e-9"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<emitter type="point">
+			<point name="position" value="0,0,0"/>
+			<color name="power" value="78.956,78.956,78.956"/>
+		</emitter>
+
+		<mesh type="obj">
+			<string name="filename" value="disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,1,0"/>
+			</transform>
+		</mesh>
+
+		<mesh type="obj">
+			<string name="filename" value="disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,-1,0"/>
+			</transform>
+		</mesh>
+	</scene>
+
+
+	<!-- Test 2: point light at [0.5 0.1 0] (visible) camera looking at [0,-1,0] -->
+	<scene>
+		<integrator type="direct"/>
+
+		<camera type="perspective">
+			<transform name="toWorld">
+				<lookat target="0, -1, 0"  origin="0, 0, 0" up="0, 0, 1"/>
+			</transform>
+
+			<float name="fov" value="1e-9"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<emitter type="point">
+			<point name="position" value="0.5,0.1,0"/>
+			<color name="power" value="8,8,8"/>
+		</emitter>
+
+		<mesh type="obj">
+			<string name="filename" value="disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,1,0"/>
+			</transform>
+		</mesh>
+
+		<mesh type="obj">
+			<string name="filename" value="disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,-1,0"/>
+			</transform>
+		</mesh>
+	</scene>
+
+
+	<!-- Test 3: point light at [0.5 2 0] (hidden) camera looking at [0,-1,0] -->
+	<scene>
+		<integrator type="direct"/>
+
+		<camera type="perspective">
+			<transform name="toWorld">
+				<lookat target="0, -1, 0"  origin="0, 0, 0" up="0, 0, 1"/>
+			</transform>
+
+			<float name="fov" value="1e-9"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<emitter type="point">
+			<point name="position" value="0.5,2,0"/>
+			<color name="power" value="8,8,8"/>
+		</emitter>
+
+		<mesh type="obj">
+			<string name="filename" value="disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,1,0"/>
+			</transform>
+		</mesh>
+
+		<mesh type="obj">
+			<string name="filename" value="disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,-1,0"/>
+			</transform>
+		</mesh>
+	</scene>
+
+
+	<!-- All of the above (testing multiple point lights in the same scene) -->
+	<scene>
+		<integrator type="direct"/>
+
+		<camera type="perspective">
+			<transform name="toWorld">
+				<lookat target="0, -1, 0"  origin="0, 0, 0" up="0, 0, 1"/>
+			</transform>
+
+			<float name="fov" value="1e-9"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<emitter type="point">
+			<point name="position" value="0,0,0"/>
+			<color name="power" value="78.956,78.956,78.956"/>
+		</emitter>
+
+		<emitter type="point">
+			<point name="position" value="0.5,0.1,0"/>
+			<color name="power" value="8,8,8"/>
+		</emitter>
+
+		<emitter type="point">
+			<point name="position" value="0.5,2,0"/>
+			<color name="power" value="8,8,8"/>
+		</emitter>
+
+		<mesh type="obj">
+			<string name="filename" value="disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,1,0"/>
+			</transform>
+		</mesh>
+
+		<mesh type="obj">
+			<string name="filename" value="disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,-1,0"/>
+			</transform>
+		</mesh>
+	</scene>
+
+</test>
