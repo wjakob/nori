@@ -109,7 +109,6 @@ std::string Scene::toString() const {
         "  integrator = %s,\n"
         "  sampler = %s\n"
         "  camera = %s,\n"
-        "  medium = %s,\n"
         "  meshes = {\n"
         "  %s  }\n"
         "]",
