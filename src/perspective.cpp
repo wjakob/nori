@@ -88,20 +88,15 @@ public:
     Color3f sampleRay(Ray3f &ray,
             const Point2f &samplePosition,
             const Point2f &apertureSample) const {
-        
         /* Compute the corresponding position on the 
            near plane (in local camera space) */
         Point3f nearP = m_sampleToCamera * Point3f(
             samplePosition.x() * m_invOutputSize.x(),
             samplePosition.y() * m_invOutputSize.y(), 0.0f);
 
-        /* Sampled position on the focal plane */
-        Point3f focusP = nearP * (m_focusDistance / nearP.z());
-
-        /* Aperture position */
-        /* Turn these into a normalized ray direction, and
+        /* Turn into a normalized ray direction, and
            adjust the ray interval accordingly */
-        Vector3f d = focusP.normalized();
+        Vector3f d = nearP.normalized();
         float invZ = 1.0f / d.z();
 
         ray.o = m_cameraToWorld * Point3f(0, 0, 0);
@@ -134,14 +129,12 @@ public:
             "  cameraToWorld = %s,\n"
             "  outputSize = %s,\n"
             "  fov = %f,\n"
-            "  focusDistance = %f,\n"
             "  clip = [%f, %f],\n"
             "  rfilter = %s\n"
             "]",
             indent(m_cameraToWorld.toString(), 18),
             m_outputSize.toString(),
             m_fov,
-            m_focusDistance,
             m_nearClip,
             m_farClip,
             indent(m_rfilter->toString())
@@ -152,7 +145,6 @@ private:
     Transform m_sampleToCamera;
     Transform m_cameraToWorld;
     float m_fov;
-    float m_focusDistance;
     float m_nearClip;
     float m_farClip;
 };
