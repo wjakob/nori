@@ -14,7 +14,7 @@
 -->
 
 <test type="ttest">
-	<string name="references" value="0.894427191 0.70710678118 0.70710678118"/> 
+	<string name="references" value="0.894427191 0.70710678118 0.70710678118 1"/>
 
 	<!-- Test 1: d=2,r=1 => res=2/sqrt(2^2+1^2) -->
 	<scene>
@@ -83,6 +83,41 @@
 	<scene>
 		<integrator type="av">
 			<float name="length" value="1000"/>
+		</integrator>
+
+		<camera type="perspective">
+			<transform name="toWorld">
+				<lookat target="0, -1, 0"
+					origin="0, 0, 0"
+					up="0, 0, 1"/>
+			</transform>
+
+			<float name="fov" value="1"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="disk.obj"/>
+			<transform name="toWorld">
+				<scale value="2,2,2"/>
+				<translate value="0,1,0"/>
+			</transform>
+		</mesh>
+		<mesh type="obj">
+			<string name="filename" value="disk.obj"/>
+			<transform name="toWorld">
+				<scale value="2,2,2"/>
+				<translate value="0,-1,0"/>
+			</transform>
+		</mesh>
+	</scene>
+
+
+	<!-- Test 4: no occluder in range -->
+	<scene>
+		<integrator type="av">
+			<float name="length" value="1.99"/>
 		</integrator>
 
 		<camera type="perspective">
