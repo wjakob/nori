@@ -58,14 +58,23 @@ add_executable(nori
   src/warp.cpp
 )
 
+# The following lines build the warping test application
+add_executable(warptest
+  include/nori/warp.h
+  src/warp.cpp
+  src/warptest.cpp
+)
+
 # Nori depends on some libraries created in CMakeConfig.txt. The following two
 # lines ensure that Nori is built *after* those libraries have been created.
 add_dependencies(nori OpenEXR_p)
 add_dependencies(nori nanogui_p)
 add_dependencies(nori tbb_p)
 add_dependencies(nori pugixml)
+add_dependencies(warptest nori)
 
 # Link to dependency libraries
 target_link_libraries(nori ${extra_libs})
+target_link_libraries(warptest ${extra_libs})
 
 # vim: set et ts=2 sw=2 ft=cmake nospell:
