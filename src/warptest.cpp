@@ -318,7 +318,7 @@ public:
         glBindTexture(GL_TEXTURE_2D, tex);
         m_histogramShader->bind();
         m_histogramShader->setUniform("mvp", mvp);
-        m_histogramShader->setUniform("texture", 0);
+        m_histogramShader->setUniform("tex", 0);
         m_histogramShader->drawIndexed(GL_TRIANGLES, 0, 2);
     }
 
@@ -496,7 +496,7 @@ public:
 
         Button *testBtn = new Button(m_window, "Run", ENTYPO_ICON_CHECK);
         testBtn->setBackgroundColor(Color(0, 255, 0, 255));
-        testBtn->setCallback([&]{ 
+        testBtn->setCallback([&]{
             try {
                 runTest();
             } catch (const NoriException &e) {
@@ -567,10 +567,10 @@ public:
             /* Fragment shader */
             "#version 330\n"
             "out vec4 out_color;\n"
-            "uniform sampler2D texture;\n"
+            "uniform sampler2D tex;\n"
             "in vec2 uv;\n"
             "/* http://paulbourke.net/texture_colour/colourspace/ */\n"
-            "vec3 cmap(float v, float vmin, float vmax) {\n"
+            "vec3 colormap(float v, float vmin, float vmax) {\n"
             "    vec3 c = vec3(1.0);\n"
             "    if (v < vmin)\n"
             "        v = vmin;\n"
@@ -594,7 +594,8 @@ public:
             "    return c;\n"
             "}\n"
             "void main() {\n"
-            "    out_color = vec4(cmap(texture(texture, uv).r, 0.0, 1.0), 1.0);\n"
+            "    float value = texture(tex, uv).r;\n"
+            "    out_color = vec4(colormap(value, 0.0, 1.0), 1.0);\n"
             "}"
         );
 
