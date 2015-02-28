@@ -323,7 +323,7 @@ public:
     }
 
     void runTest() {
-        int xres = 50, yres = 50;
+        int xres = 51, yres = 51;
         WarpType warpType = (WarpType) m_warpTypeBox->selectedIndex();
         float parameterValue = mapParameter(warpType, m_parameterSlider->value());
 
