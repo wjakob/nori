@@ -412,6 +412,8 @@ public:
                 double xEnd   = (x+1) / (double) xres;
                 ptr[y * xres + x] = hypothesis::adaptiveSimpson2D(
                     integrand, yStart, xStart, yEnd, xEnd) * scale;
+                if (ptr[y * xres + x] < 0)
+                    throw NoriException("The Pdf() function returned negative values!");
             }
         }
 
