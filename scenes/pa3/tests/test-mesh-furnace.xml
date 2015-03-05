@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+	Furnace
+
+	This test has the camera located inside a diffuse box with emittance 1
+	and albedo "a". The amount of illumination received by the camera should
+	be be the same in all directions and equal to
+	
+	1 + a + a^2 + ... = 1 / (1-a)
+
+	The following tests this for both the direct_ems tracer and the MIS direct_ems
+	tracer, with two different values of "a".
+-->
+
+<test type="ttest">
+	<string name="references" value="1.5, 1.8 
+					 1.5, 1.8
+					 1.5, 1.8"/>
+
+	<scene>
+		<integrator type="direct_ems"/>
+
+		<camera type="perspective">
+			<float name="fov" value="10"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="furnace.obj"/>
+			<bsdf type="diffuse">
+				<color name="albedo" value="0.5, 0.5, 0.5"/>
+			</bsdf>
+			<emitter type="area">
+				<color name="radiance" value="1, 1, 1"/>
+			</emitter>
+		</mesh>
+	</scene>
+
+	<scene>
+		<integrator type="direct_ems"/>
+
+		<camera type="perspective">
+			<float name="fov" value="10"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="furnace.obj"/>
+			<bsdf type="diffuse">
+				<color name="albedo" value="0.8, 0.8, 0.8"/>
+			</bsdf>
+			<emitter type="area">
+				<color name="radiance" value="1, 1, 1"/>
+			</emitter>
+		</mesh>
+	</scene>
+
+
+	<scene>
+		<integrator type="direct_mats"/>
+
+		<camera type="perspective">
+			<float name="fov" value="10"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="furnace.obj"/>
+			<bsdf type="diffuse">
+				<color name="albedo" value="0.5, 0.5, 0.5"/>
+			</bsdf>
+			<emitter type="area">
+				<color name="radiance" value="1, 1, 1"/>
+			</emitter>
+		</mesh>
+	</scene>
+
+	<scene>
+		<integrator type="direct_mats"/>
+
+		<camera type="perspective">
+			<float name="fov" value="10"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="furnace.obj"/>
+			<bsdf type="diffuse">
+				<color name="albedo" value="0.8, 0.8, 0.8"/>
+			</bsdf>
+			<emitter type="area">
+				<color name="radiance" value="1, 1, 1"/>
+			</emitter>
+		</mesh>
+	</scene>
+
+	<scene>
+		<integrator type="direct_mis"/>
+
+		<camera type="perspective">
+			<float name="fov" value="10"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="furnace.obj"/>
+			<bsdf type="diffuse">
+				<color name="albedo" value="0.5, 0.5, 0.5"/>
+			</bsdf>
+			<emitter type="area">
+				<color name="radiance" value="1, 1, 1"/>
+			</emitter>
+		</mesh>
+	</scene>
+
+	<scene>
+		<integrator type="direct_mis"/>
+
+		<camera type="perspective">
+			<float name="fov" value="10"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="furnace.obj"/>
+			<bsdf type="diffuse">
+				<color name="albedo" value="0.8, 0.8, 0.8"/>
+			</bsdf>
+			<emitter type="area">
+				<color name="radiance" value="1, 1, 1"/>
+			</emitter>
+		</mesh>
+	</scene>
+</test>

@@ -1,0 +1,516 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+	Opposing disks
+
+	This test has the camera located at 0 looking down to the center of a disk with radius r.
+	Above that disk (at distance d along y-axis) there is another disk with the same radius.
+	The reflected radiance at the center of the bottom disk can be computed analytically with:
+	
+	L = d / (d*d+r*r)
+
+	The following tests evaluate the correctness of the average visibility integrator by 
+	changing d and r.
+-->
+
+<test type="ttest">
+	<string name="references" value="0.8 0.5 0.5 1
+					 0.8 0.5 0.5 1
+					 0.8 0.5 0.5 1"/>
+
+	<!-- Test 1: d=2,r=1 -->
+	<scene>
+		<integrator type="direct_ems">
+		</integrator>
+
+		<camera type="perspective">
+			<transform name="toWorld">
+				<lookat target="0, -1, 0"  origin="0, 0, 0" up="0, 0, 1"/>
+			</transform>
+
+			<float name="fov" value="1"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,1,0"/>
+			</transform>
+		</mesh>
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,-1,0"/>
+			</transform>
+			<bsdf type="diffuse">
+				<color name="albedo" value="1,1,1"/>
+			</bsdf>
+		</mesh>
+
+		<emitter type="distantdisk"> 
+			<color name="radiance" value="1,1,1"/>
+
+			<!-- accept everything (i.e. constant environment map)--> 
+			<float name="thetaA" value="180" />
+
+		</emitter>
+	</scene>
+
+
+	<!-- Test 2: d=1,r=1 -->
+	<scene>
+		<integrator type="direct_ems">
+		</integrator>
+
+		<camera type="perspective">
+			<transform name="toWorld">
+				<lookat target="0, -1, 0"
+					origin="0, 0, 0"
+					up="0, 0, 1"/>
+			</transform>
+
+			<float name="fov" value="1"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,0.5,0"/>
+			</transform>
+		</mesh>
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,-0.5,0"/>
+			</transform>
+			<bsdf type="diffuse">
+				<color name="albedo" value="1,1,1"/>
+			</bsdf>
+		</mesh>
+
+		<emitter type="distantdisk"> 
+			<color name="radiance" value="1,1,1"/>
+
+			<!-- accept everything (i.e. constant environment map)--> 
+			<float name="thetaA" value="180" />
+
+		</emitter>
+	</scene>
+
+	<!-- Test 3: d=2,r=2 -->
+	<scene>
+		<integrator type="direct_ems">
+		</integrator>
+
+		<camera type="perspective">
+			<transform name="toWorld">
+				<lookat target="0, -1, 0"
+					origin="0, 0, 0"
+					up="0, 0, 1"/>
+			</transform>
+
+			<float name="fov" value="1"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<scale value="2,2,2"/>
+				<translate value="0,1,0"/>
+			</transform>
+		</mesh>
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<scale value="2,2,2"/>
+				<translate value="0,-1,0"/>
+			</transform>
+			<bsdf type="diffuse">
+				<color name="albedo" value="1,1,1"/>
+			</bsdf>
+		</mesh>
+
+		<emitter type="distantdisk"> 
+			<color name="radiance" value="1,1,1"/>
+
+			<!-- accept everything (i.e. constant environment map)--> 
+			<float name="thetaA" value="180" />
+
+		</emitter>
+	</scene>
+
+
+	<!-- Test 4: no occluder -->
+	<scene>
+		<integrator type="direct_ems">
+		</integrator>
+
+		<camera type="perspective">
+			<transform name="toWorld">
+				<lookat target="0, -1, 0"
+					origin="0, 0, 0"
+					up="0, 0, 1"/>
+			</transform>
+
+			<float name="fov" value="1"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<scale value="2,2,2"/>
+				<translate value="0,-1,0"/>
+			</transform>
+			<bsdf type="diffuse">
+				<color name="albedo" value="1,1,1"/>
+			</bsdf>
+		</mesh>
+
+		<emitter type="distantdisk"> 
+			<color name="radiance" value="1,1,1"/>
+
+			<!-- accept everything (i.e. constant environment map)--> 
+			<float name="thetaA" value="180" />
+
+		</emitter>
+	</scene>
+
+
+	<!-- Test 1: d=2,r=1 -->
+	<scene>
+		<integrator type="direct_mats">
+		</integrator>
+
+		<camera type="perspective">
+			<transform name="toWorld">
+				<lookat target="0, -1, 0"  origin="0, 0, 0" up="0, 0, 1"/>
+			</transform>
+
+			<float name="fov" value="1"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,1,0"/>
+			</transform>
+		</mesh>
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,-1,0"/>
+			</transform>
+			<bsdf type="diffuse">
+				<color name="albedo" value="1,1,1"/>
+			</bsdf>
+		</mesh>
+
+		<emitter type="distantdisk"> 
+			<color name="radiance" value="1,1,1"/>
+
+			<!-- accept everything (i.e. constant environment map)--> 
+			<float name="thetaA" value="180" />
+
+		</emitter>
+	</scene>
+
+
+	<!-- Test 2: d=1,r=1 -->
+	<scene>
+		<integrator type="direct_mats">
+		</integrator>
+
+		<camera type="perspective">
+			<transform name="toWorld">
+				<lookat target="0, -1, 0"
+					origin="0, 0, 0"
+					up="0, 0, 1"/>
+			</transform>
+
+			<float name="fov" value="1"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,0.5,0"/>
+			</transform>
+		</mesh>
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,-0.5,0"/>
+			</transform>
+			<bsdf type="diffuse">
+				<color name="albedo" value="1,1,1"/>
+			</bsdf>
+		</mesh>
+
+		<emitter type="distantdisk"> 
+			<color name="radiance" value="1,1,1"/>
+
+			<!-- accept everything (i.e. constant environment map)--> 
+			<float name="thetaA" value="180" />
+
+		</emitter>
+	</scene>
+
+	<!-- Test 3: d=2,r=2 -->
+	<scene>
+		<integrator type="direct_mats">
+		</integrator>
+
+		<camera type="perspective">
+			<transform name="toWorld">
+				<lookat target="0, -1, 0"
+					origin="0, 0, 0"
+					up="0, 0, 1"/>
+			</transform>
+
+			<float name="fov" value="1"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<scale value="2,2,2"/>
+				<translate value="0,1,0"/>
+			</transform>
+		</mesh>
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<scale value="2,2,2"/>
+				<translate value="0,-1,0"/>
+			</transform>
+			<bsdf type="diffuse">
+				<color name="albedo" value="1,1,1"/>
+			</bsdf>
+		</mesh>
+
+		<emitter type="distantdisk"> 
+			<color name="radiance" value="1,1,1"/>
+
+			<!-- accept everything (i.e. constant environment map)--> 
+			<float name="thetaA" value="180" />
+
+		</emitter>
+	</scene>
+
+
+	<!-- Test 4: no occluder -->
+	<scene>
+		<integrator type="direct_mats">
+		</integrator>
+
+		<camera type="perspective">
+			<transform name="toWorld">
+				<lookat target="0, -1, 0"
+					origin="0, 0, 0"
+					up="0, 0, 1"/>
+			</transform>
+
+			<float name="fov" value="1"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<scale value="2,2,2"/>
+				<translate value="0,-1,0"/>
+			</transform>
+			<bsdf type="diffuse">
+				<color name="albedo" value="1,1,1"/>
+			</bsdf>
+		</mesh>
+
+		<emitter type="distantdisk"> 
+			<color name="radiance" value="1,1,1"/>
+
+			<!-- accept everything (i.e. constant environment map)--> 
+			<float name="thetaA" value="180" />
+
+		</emitter>
+	</scene>
+
+	<!-- Test 1: d=2,r=1 -->
+	<scene>
+		<integrator type="direct_mis">
+		</integrator>
+
+		<camera type="perspective">
+			<transform name="toWorld">
+				<lookat target="0, -1, 0"  origin="0, 0, 0" up="0, 0, 1"/>
+			</transform>
+
+			<float name="fov" value="1"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,1,0"/>
+			</transform>
+		</mesh>
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,-1,0"/>
+			</transform>
+			<bsdf type="diffuse">
+				<color name="albedo" value="1,1,1"/>
+			</bsdf>
+		</mesh>
+
+		<emitter type="distantdisk"> 
+			<color name="radiance" value="1,1,1"/>
+
+			<!-- accept everything (i.e. constant environment map)--> 
+			<float name="thetaA" value="180" />
+
+		</emitter>
+	</scene>
+
+
+	<!-- Test 2: d=1,r=1 -->
+	<scene>
+		<integrator type="direct_mis">
+		</integrator>
+
+		<camera type="perspective">
+			<transform name="toWorld">
+				<lookat target="0, -1, 0"
+					origin="0, 0, 0"
+					up="0, 0, 1"/>
+			</transform>
+
+			<float name="fov" value="1"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,0.5,0"/>
+			</transform>
+		</mesh>
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<translate value="0,-0.5,0"/>
+			</transform>
+			<bsdf type="diffuse">
+				<color name="albedo" value="1,1,1"/>
+			</bsdf>
+		</mesh>
+
+		<emitter type="distantdisk"> 
+			<color name="radiance" value="1,1,1"/>
+
+			<!-- accept everything (i.e. constant environment map)--> 
+			<float name="thetaA" value="180" />
+
+		</emitter>
+	</scene>
+
+	<!-- Test 3: d=2,r=2 -->
+	<scene>
+		<integrator type="direct_mis">
+		</integrator>
+
+		<camera type="perspective">
+			<transform name="toWorld">
+				<lookat target="0, -1, 0"
+					origin="0, 0, 0"
+					up="0, 0, 1"/>
+			</transform>
+
+			<float name="fov" value="1"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<scale value="2,2,2"/>
+				<translate value="0,1,0"/>
+			</transform>
+		</mesh>
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<scale value="2,2,2"/>
+				<translate value="0,-1,0"/>
+			</transform>
+			<bsdf type="diffuse">
+				<color name="albedo" value="1,1,1"/>
+			</bsdf>
+		</mesh>
+
+		<emitter type="distantdisk"> 
+			<color name="radiance" value="1,1,1"/>
+
+			<!-- accept everything (i.e. constant environment map)--> 
+			<float name="thetaA" value="180" />
+
+		</emitter>
+	</scene>
+
+
+	<!-- Test 4: no occluder -->
+	<scene>
+		<integrator type="direct_mis">
+		</integrator>
+
+		<camera type="perspective">
+			<transform name="toWorld">
+				<lookat target="0, -1, 0"
+					origin="0, 0, 0"
+					up="0, 0, 1"/>
+			</transform>
+
+			<float name="fov" value="1"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="../../pa1/disk.obj"/>
+			<transform name="toWorld">
+				<scale value="2,2,2"/>
+				<translate value="0,-1,0"/>
+			</transform>
+			<bsdf type="diffuse">
+				<color name="albedo" value="1,1,1"/>
+			</bsdf>
+		</mesh>
+
+		<emitter type="distantdisk"> 
+			<color name="radiance" value="1,1,1"/>
+
+			<!-- accept everything (i.e. constant environment map)--> 
+			<float name="thetaA" value="180" />
+
+		</emitter>
+	</scene>
+</test>

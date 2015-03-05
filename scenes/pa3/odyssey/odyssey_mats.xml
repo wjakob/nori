@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<scene>
+	<integrator type="direct_mats"/>
+	
+	<sampler type="independent">
+		<integer name="sampleCount" value="16"/>
+	</sampler>
+
+	<camera type="perspective">
+		<transform name="toWorld">
+			<lookat origin="20, 20, 50" 
+				target="0, 4, 0"
+				up="0, 1, 0"/>
+		</transform>
+		<float name="fov" value="39.3077"/>
+		<integer name="width" value="768"/>
+		<integer name="height" value="432"/>
+	</camera>
+
+	<!-- monolith -->
+	<mesh type="obj">
+		<transform name="toWorld">
+			<translate value="0, 0.5, 0"/>
+			<scale value="1, 9, 4"/>
+		</transform>
+		<string name="filename" value="cube.obj"/>
+		<bsdf type="diffuse">
+			<color name="albedo" value="0.2, 0.2, 0.2"/>
+		</bsdf>
+	</mesh>
+	
+	<!-- floor -->
+	<mesh type="obj">
+		<string name="filename" value="cube.obj"/>
+		<transform name="toWorld">
+			<translate value="0, -0.5, 0"/>
+			<scale value="25, 1, 18"/>
+		</transform>
+		<bsdf type="diffuse">
+			<color name="albedo" value="0.85, 0.85, 0.85"/>
+		</bsdf>
+	</mesh>
+
+	<!-- glowing wall -->
+	<mesh type="obj">
+		<string name="filename" value="cube.obj"/>
+		<transform name="toWorld">
+			<translate value="0, 0.5, 0"/>
+			<scale value="1, 10, 18"/>
+			<translate value="-12, 0, 0"/>
+		</transform>
+		<bsdf type="diffuse">
+			<color name="albedo" value="0.0, 0.0, 0.0"/>
+		</bsdf>
+		<emitter type="area">
+			<color name="radiance" value="1, 1, 1"/>
+		</emitter>
+	</mesh>
+</scene>
