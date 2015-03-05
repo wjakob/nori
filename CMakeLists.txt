@@ -56,6 +56,7 @@ add_executable(nori
   src/scene.cpp
   src/ttest.cpp
   src/warp.cpp
+  src/microfacet.cpp
 )
 
 # The following lines build the warping test application
@@ -63,6 +64,10 @@ add_executable(warptest
   include/nori/warp.h
   src/warp.cpp
   src/warptest.cpp
+  src/microfacet.cpp
+  src/object.cpp
+  src/proplist.cpp
+  src/common.cpp
 )
 
 # Nori depends on some libraries created in CMakeConfig.txt. The following two
