@@ -72,8 +72,7 @@ public:
         
         /* Warp a uniformly distributed sample on [0,1]^2
            to a direction on a cosine-weighted hemisphere */
-        // bRec.wo = Warp::squareToCosineHemisphere(sample);
-        throw NoriException("Diffuse::sample(): unimplemented!");
+        bRec.wo = Warp::squareToCosineHemisphere(sample);
 
         /* Relative index of refraction: no change */
         bRec.eta = 1.0f;

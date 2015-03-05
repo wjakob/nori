@@ -17,6 +17,7 @@
 */
 
 #include <nori/warp.h>
+#include <nori/bsdf.h>
 #include <nanogui/screen.h>
 #include <nanogui/glutil.h>
 #include <nanogui/label.h>
@@ -42,10 +43,15 @@ using namespace nanogui;
 using namespace std;
 
 using nori::NoriException;
+using nori::NoriObjectFactory;
 using nori::Point2f;
 using nori::Point2i;
 using nori::Point3f;
 using nori::Warp;
+using nori::PropertyList;
+using nori::BSDF;
+using nori::BSDFQueryRecord;
+using nori::Color3f;
 
 class WarpTest : public Screen {
 public:
@@ -62,22 +68,23 @@ public:
         UniformSphereCap,
         UniformHemisphere,
         CosineHemisphere,
-        Beckmann
+        Beckmann,
+        MicrofacetBRDF
     };
 
-    WarpTest(): Screen(Vector2i(800, 600), "Assignment 2: Sampling and Warping") {
+    WarpTest(): Screen(Vector2i(800, 600), "Assignment 2: Sampling and Warping"), m_bRec(Vector3f()) {
         initializeGUI();
         m_drawHistogram = false;
     }
 
     static float mapParameter(WarpType warpType, float parameterValue) {
-        if (warpType == Beckmann)
+        if (warpType == Beckmann || warpType == MicrofacetBRDF)
             parameterValue = std::exp(std::log(0.05f) * (1 - parameterValue) +
                                       std::log(1.f)   *  parameterValue);
         return parameterValue;
     }
 
-    static Point3f warpPoint(WarpType warpType, const Point2f &sample, float parameterValue) {
+    std::pair<Point3f, float> warpPoint(WarpType warpType, const Point2f &sample, float parameterValue) {
         Point3f result;
 
         switch (warpType) {
@@ -88,12 +95,19 @@ public:
             case UniformHemisphere: result << Warp::squareToUniformHemisphere(sample); break;
             case CosineHemisphere: result << Warp::squareToCosineHemisphere(sample); break;
             case Beckmann: result << Warp::squareToBeckmann(sample, parameterValue); break;
+            case MicrofacetBRDF: {
+                BSDFQueryRecord bRec(m_bRec);
+                float value = m_brdf->sample(bRec, sample).getLuminance();
+                return std::make_pair(bRec.wo, value == 0 ? 0.f : m_brdf->eval(bRec)[0]);
+             }
         }
 
-        return result;
+        return std::make_pair(result, 1.f);
     }
 
-    static void generatePoints(int &pointCount, PointType pointType, WarpType warpType, float parameterValue, MatrixXf &positions) {
+    void generatePoints(int &pointCount, PointType pointType, WarpType warpType,
+                        float parameterValue, MatrixXf &positions,
+                        MatrixXf &weights) {
         /* Determine the number of points that should be sampled */
         int sqrtVal = (int) (std::sqrt((float) pointCount) + 0.5f);
         float invSqrtVal = 1.f / sqrtVal;
@@ -102,6 +116,7 @@ public:
 
         pcg32 rng;
         positions.resize(3, pointCount);
+        weights.resize(1, pointCount);
 
         for (int i=0; i<pointCount; ++i) {
             int y = i / sqrtVal, x = i % sqrtVal;
@@ -122,7 +137,9 @@ public:
                     break;
             }
 
-            positions.col(i) = warpPoint(warpType, sample, parameterValue);
+            auto result = warpPoint(warpType, sample, parameterValue);
+            positions.col(i) = result.first;
+            weights(0, i) = result.second;
         }
     }
 
@@ -132,10 +149,22 @@ public:
         float parameterValue = mapParameter(warpType, m_parameterSlider->value());
         m_pointCount = (int) std::pow(2.f, 15 * m_pointCountSlider->value() + 5);
 
+        if (warpType == MicrofacetBRDF) {
+            PropertyList list;
+            list.setFloat("alpha", parameterValue);
+            list.setColor("kd", Color3f(0.f));
+            m_brdf = std::unique_ptr<BSDF>((BSDF *) NoriObjectFactory::createInstance("microfacet", list));
+
+            float bsdfAngle = M_PI * (m_angleSlider->value() - 0.5f);
+            m_bRec.wi =
+                Vector3f(std::sin(bsdfAngle), 0,
+                         std::max(std::cos(bsdfAngle), 1e-4f)).normalized();
+        }
+
         /* Generate the point positions */
-        MatrixXf positions;
+        MatrixXf positions, values;
         try {
-            generatePoints(m_pointCount, pointType, warpType, parameterValue, positions);
+            generatePoints(m_pointCount, pointType, warpType, parameterValue, positions, values);
         } catch (const NoriException &e) {
             m_warpTypeBox->setSelectedIndex(0);
             refresh();
@@ -143,9 +172,24 @@ public:
             return;
         }
 
+        float value_scale = 0.f;
+        for (int i=0; i<m_pointCount; ++i)
+            value_scale = std::max(value_scale, values(0, i));
+        value_scale = 1.f/value_scale;
+
+        if (!m_brdfValueCheckBox->checked() || warpType != MicrofacetBRDF)
+            value_scale = 0.f;
+
         if (warpType != None) {
-            for (int i=0; i<m_pointCount; ++i)
-                positions.col(i) = positions.col(i) * 0.5f + Vector3f(0.5f, 0.5f, 0.0f);
+            for (int i=0; i<m_pointCount; ++i) {
+                if (values(0, i) == 0.0f) {
+                    positions.col(i) = Vector3f::Constant(std::numeric_limits<float>::quiet_NaN());
+                    continue;
+                }
+                positions.col(i) =
+                    ((value_scale == 0 ? 1.0f : (value_scale * values(0, i))) *
+                     positions.col(i)) * 0.5f + Vector3f(0.5f, 0.5f, 0.0f);
+            }
         }
 
         /* Generate a color gradient */
@@ -168,10 +212,14 @@ public:
             float coarseScale = 1.f / gridRes, fineScale = 1.f / fineGridRes;
             for (int i=0; i<=gridRes; ++i) {
                 for (int j=0; j<=fineGridRes; ++j) {
-                    positions.col(idx++) = warpPoint(warpType, Point2f(j     * fineScale, i * coarseScale), parameterValue);
-                    positions.col(idx++) = warpPoint(warpType, Point2f((j+1) * fineScale, i * coarseScale), parameterValue);
-                    positions.col(idx++) = warpPoint(warpType, Point2f(i*coarseScale, j     * fineScale), parameterValue);
-                    positions.col(idx++) = warpPoint(warpType, Point2f(i*coarseScale, (j+1) * fineScale), parameterValue);
+                    auto pt = warpPoint(warpType, Point2f(j     * fineScale, i * coarseScale), parameterValue);
+                    positions.col(idx++) = value_scale == 0.f ? pt.first : (pt.first * pt.second * value_scale);
+                    pt = warpPoint(warpType, Point2f((j+1) * fineScale, i * coarseScale), parameterValue);
+                    positions.col(idx++) = value_scale == 0.f ? pt.first : (pt.first * pt.second * value_scale);
+                    pt = warpPoint(warpType, Point2f(i*coarseScale, j     * fineScale), parameterValue);
+                    positions.col(idx++) = value_scale == 0.f ? pt.first : (pt.first * pt.second * value_scale);
+                    pt = warpPoint(warpType, Point2f(i*coarseScale, (j+1) * fineScale), parameterValue);
+                    positions.col(idx++) = value_scale == 0.f ? pt.first : (pt.first * pt.second * value_scale);
                 }
             }
             if (warpType != None) {
@@ -181,6 +229,21 @@ public:
             m_gridShader->bind();
             m_gridShader->uploadAttrib("position", positions);
         }
+
+        int ctr = 0;
+        positions.resize(3, 106);
+        for (int i=0; i<=50; ++i) {
+            float angle1 = i * 2 * M_PI / 50;
+            float angle2 = (i+1) * 2 * M_PI / 50;
+            positions.col(ctr++) << std::cos(angle1)*.5f + 0.5f, std::sin(angle1)*.5f + 0.5f, 0.f;
+            positions.col(ctr++) << std::cos(angle2)*.5f + 0.5f, std::sin(angle2)*.5f + 0.5f, 0.f;
+        }
+        positions.col(ctr++) << 0.5f, 0.5f, 0.f;
+        positions.col(ctr++) << -m_bRec.wi.x() * 0.5f + 0.5f, -m_bRec.wi.y() * 0.5f + 0.5f, m_bRec.wi.z() * 0.5f;
+        positions.col(ctr++) << 0.5f, 0.5f, 0.f;
+        positions.col(ctr++) << m_bRec.wi.x() * 0.5f + 0.5f, m_bRec.wi.y() * 0.5f + 0.5f, m_bRec.wi.z() * 0.5f;
+        m_arrowShader->bind();
+        m_arrowShader->uploadAttrib("position", positions);
 
         /* Update user interface */
         std::string str;
@@ -196,8 +259,13 @@ public:
         }
         m_pointCountBox->setValue(str);
         m_parameterBox->setValue(tfm::format("%.1g", parameterValue));
-        m_parameterSlider->setEnabled(warpType == Beckmann || warpType == UniformSphereCap);
-        m_parameterBox->setEnabled(warpType == Beckmann || warpType == UniformSphereCap);
+        m_angleBox->setValue(tfm::format("%.1f", m_angleSlider->value() * 180-90));
+        m_parameterSlider->setEnabled(warpType == Beckmann || warpType == MicrofacetBRDF || warpType == UniformSphereCap);
+        m_parameterBox->setEnabled(warpType == Beckmann || warpType == MicrofacetBRDF || warpType == UniformSphereCap);
+        m_angleBox->setEnabled(warpType == MicrofacetBRDF);
+        m_angleSlider->setEnabled(warpType == MicrofacetBRDF);
+        m_parameterBox->setEnabled(warpType == MicrofacetBRDF);
+        m_brdfValueCheckBox->setEnabled(warpType == MicrofacetBRDF);
         m_pointCountSlider->setValue((std::log((float) m_pointCount) / std::log(2.f) - 5) / 15);
     }
 
@@ -205,6 +273,7 @@ public:
         glDeleteTextures(2, &m_textures[0]);
         delete m_pointShader;
         delete m_gridShader;
+        delete m_arrowShader;
         delete m_histogramShader;
     }
 
@@ -305,6 +374,11 @@ public:
                 m_gridShader->drawArray(GL_LINES, 0, m_lineCount);
                 glDisable(GL_BLEND);
             }
+            if (m_warpTypeBox->selectedIndex() == MicrofacetBRDF) {
+                m_arrowShader->bind();
+                m_arrowShader->setUniform("mvp", mvp);
+                m_arrowShader->drawArray(GL_LINES, 0, 106);
+            }
         }
     }
 
@@ -336,11 +410,13 @@ public:
         memset(obsFrequencies.get(), 0, res*sizeof(double));
         memset(expFrequencies.get(), 0, res*sizeof(double));
 
-        MatrixXf points;
+        MatrixXf points, values;
         generatePoints(sampleCount, Independent, warpType,
-                       parameterValue, points);
+                       parameterValue, points, values);
 
         for (int i=0; i<sampleCount; ++i) {
+            if (values(0, i) == 0)
+                continue;
             Vector3f sample = points.col(i);
             float x, y;
 
@@ -390,8 +466,14 @@ public:
                     return Warp::squareToCosineHemispherePdf(v);
                 else if (warpType == Beckmann)
                     return Warp::squareToBeckmannPdf(v, parameterValue);
-                else
+                else if (warpType == MicrofacetBRDF) {
+                    BSDFQueryRecord bRec(m_bRec);
+                    bRec.wo = v;
+                    bRec.measure = nori::ESolidAngle;
+                    return m_brdf->pdf(bRec);
+                } else {
                     throw NoriException("Invalid warp type");
+                }
             }
         };
 
@@ -478,7 +560,7 @@ public:
 
         new Label(m_window, "Warping method", "sans-bold");
         m_warpTypeBox = new ComboBox(m_window, { "None", "Disk", "Sphere", "Spherical cap", "Hemisphere (unif.)",
-                "Hemisphere (cos)", "Beckmann distr." });
+                "Hemisphere (cos)", "Beckmann distr.", "Microfacet BRDF" });
         m_warpTypeBox->setCallback([&](int) { refresh(); });
 
         panel = new Widget(m_window);
@@ -490,6 +572,21 @@ public:
         m_parameterBox->setFixedSize(Vector2i(80, 25));
         m_gridCheckBox = new CheckBox(m_window, "Visualize warped grid");
         m_gridCheckBox->setCallback([&](bool) { refresh(); });
+
+        new Label(m_window, "BSDF parameters", "sans-bold");
+
+        panel = new Widget(m_window);
+        panel->setLayout(new BoxLayout(BoxLayout::Horizontal, BoxLayout::Middle, 0, 20));
+
+        m_angleSlider = new Slider(panel);
+        m_angleSlider->setFixedWidth(55);
+        m_angleSlider->setCallback([&](float) { refresh(); });
+        m_angleBox = new TextBox(panel);
+        m_angleBox->setFixedSize(Vector2i(80, 25));
+        m_angleBox->setUnits(utf8(0x00B0).data());
+
+        m_brdfValueCheckBox = new CheckBox(m_window, "Visualize BRDF values");
+        m_brdfValueCheckBox->setCallback([&](bool) { refresh(); });
 
         new Label(m_window,
             std::string(utf8(0x03C7).data()) +
@@ -520,7 +617,10 @@ public:
             "out vec3 frag_color;\n"
             "void main() {\n"
             "    gl_Position = mvp * vec4(position, 1.0);\n"
-            "    frag_color = color;\n"
+            "    if (isnan(position.r)) /* nan (missing value) */\n"
+            "        frag_color = vec3(0.0);\n"
+            "    else\n"
+            "        frag_color = color;\n"
             "}",
 
             /* Fragment shader */
@@ -528,13 +628,35 @@ public:
             "in vec3 frag_color;\n"
             "out vec4 out_color;\n"
             "void main() {\n"
+            "    if (frag_color == vec3(0.0))\n"
+            "        discard;\n"
             "    out_color = vec4(frag_color, 1.0);\n"
             "}"
         );
 
         m_gridShader = new GLShader();
         m_gridShader->init(
-            "Line shader",
+            "Grid shader",
+
+            /* Vertex shader */
+            "#version 330\n"
+            "uniform mat4 mvp;\n"
+            "in vec3 position;\n"
+            "void main() {\n"
+            "    gl_Position = mvp * vec4(position, 1.0);\n"
+            "}",
+
+            /* Fragment shader */
+            "#version 330\n"
+            "out vec4 out_color;\n"
+            "void main() {\n"
+            "    out_color = vec4(vec3(1.0), 0.4);\n"
+            "}"
+        );
+
+        m_arrowShader = new GLShader();
+        m_arrowShader->init(
+            "Arrow shader",
 
             /* Vertex shader */
             "#version 330\n"
@@ -624,6 +746,7 @@ public:
         /* Set default and register slider callback */
         m_pointCountSlider->setValue(7.f/15.f);
         m_parameterSlider->setValue(.5f);
+        m_angleSlider->setValue(.5f);
 
         refresh();
         setVisible(true);
@@ -633,16 +756,20 @@ private:
     GLShader *m_pointShader = nullptr;
     GLShader *m_gridShader = nullptr;
     GLShader *m_histogramShader = nullptr;
+    GLShader *m_arrowShader = nullptr;
     Window *m_window;
-    Slider *m_pointCountSlider, *m_parameterSlider;
-    TextBox *m_pointCountBox, *m_parameterBox;
+    Slider *m_pointCountSlider, *m_parameterSlider, *m_angleSlider;
+    TextBox *m_pointCountBox, *m_parameterBox, *m_angleBox;
     GLuint m_textures[2];
     ComboBox *m_pointTypeBox;
     ComboBox *m_warpTypeBox;
     CheckBox *m_gridCheckBox;
+    CheckBox *m_brdfValueCheckBox;
     Arcball m_arcball;
     int m_pointCount, m_lineCount;
     bool m_drawHistogram;
+    std::unique_ptr<BSDF> m_brdf;
+    BSDFQueryRecord m_bRec;
     std::pair<bool, std::string> m_testResult;
 };
 
