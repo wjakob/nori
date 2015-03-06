@@ -6,7 +6,7 @@
 	<integrator type="direct_mats"/>
 
 	<sampler type="independent">
-		<integer name="sampleCount" value="128"/>
+		<integer name="sampleCount" value="256"/>
 	</sampler>
 
 	<camera type="perspective">
@@ -20,19 +20,12 @@
 	</camera>
 
 	<!-- distant light to provide overall illumination -->
-	<mesh type="obj">
-		<string name="filename" value="sphere.obj"/>
-		<transform name="toWorld">
-			<scale value="0.5, 0.5, 0.5"/>
-			<translate value="10, 10, 4"/>
-		</transform>
-		<emitter type="area">
-			<color name="radiance" value="800, 800, 800"/>
-		</emitter>
-		<bsdf type="diffuse">
-			<color name="reflectance" value="0,0,0"/>
-		</bsdf>
-	</mesh>
+	<emitter type="distantdisk">
+		<color name="radiance" value="5,5,5"/>
+	 
+		<float name="thetaA" value="180"/>
+	 	 
+	</emitter>
 
 	<mesh type="obj">
 		<string name="filename" value="sphere.obj"/>
@@ -41,10 +34,10 @@
 			<translate value="-1.25, 0, 0"/>
 		</transform>
 		<emitter type="area">
-			<color name="radiance" value="100, 100, 100"/>
+                       <color name="radiance" value="100, 100, 100"/>
 		</emitter>
 		<bsdf type="diffuse">
-			<color name="reflectance" value="0,0,0"/>
+			<color name="albedo" value="0,0,0"/>
 		</bsdf>
 	</mesh>
 
@@ -58,7 +51,7 @@
 			<color name="radiance" value="901.803, 901.803, 901.803"/>
 		</emitter>
 		<bsdf type="diffuse">
-			<color name="reflectance" value="0,0,0"/>
+			<color name="albedo" value="0,0,0"/>
 		</bsdf>
 	</mesh>
 
@@ -69,10 +62,10 @@
 			<translate value="1.25, 0, 0"/>
 		</transform>
 		<emitter type="area">
-			<color name="radiance" value="11.1111, 11.1111, 11.1111"/>
+                       <color name="radiance" value="11.1111, 11.1111, 11.1111"/>
 		</emitter>
 		<bsdf type="diffuse">
-			<color name="reflectance" value="0,0,0"/>
+			<color name="albedo" value="0,0,0"/>
 		</bsdf>
 	</mesh>
 
@@ -83,17 +76,17 @@
 			<translate value="3.75, 0, 0"/>
 		</transform>
 		<emitter type="area">
-			<color name="radiance" value="1.23457, 1.23457, 1.23457"/>
+                       <color name="radiance" value="1.23457, 1.23457, 1.23457"/>
 		</emitter>
 		<bsdf type="diffuse">
-			<color name="reflectance" value="0,0,0"/>
+			<color name="albedo" value="0,0,0"/>
 		</bsdf>
 	</mesh>
 
 	<mesh type="obj">
 		<string name="filename" value="plate1.obj"/>
 		<bsdf type="microfacet">
-			<color name="kd" value="0.07 0.09 0.13"/>
+			<color name="kd" value="0.0175, 0.0225, 0.0325"/>
 			<float name="alpha" value="0.005"/>
 		</bsdf>
 	</mesh>
@@ -101,7 +94,7 @@
 	<mesh type="obj">
 		<string name="filename" value="plate2.obj"/>
 		<bsdf type="microfacet">
-			<color name="kd" value="0.07 0.09 0.13"/>
+			<color name="kd" value="0.0175, 0.0225, 0.0325"/>
 			<float name="alpha" value="0.02"/>
 		</bsdf>
 	</mesh>
@@ -109,7 +102,7 @@
 	<mesh type="obj">
 		<string name="filename" value="plate3.obj"/>
 		<bsdf type="microfacet">
-			<color name="kd" value="0.07 0.09 0.13"/>
+			<color name="kd" value="0.0175, 0.0225, 0.0325"/>
 			<float name="alpha" value="0.05"/>
 		</bsdf>
 	</mesh>
@@ -117,7 +110,7 @@
 	<mesh type="obj">
 		<string name="filename" value="plate4.obj"/>
 		<bsdf type="microfacet">
-			<color name="kd" value="0.07 0.09 0.13"/>
+			<color name="kd" value="0.0175, 0.0225, 0.0325"/>
 			<float name="alpha" value="0.1"/>
 		</bsdf>
 	</mesh>
@@ -125,7 +118,7 @@
 	<mesh type="obj">
 		<string name="filename" value="floor.obj"/>
 		<bsdf type="diffuse">
-			<color name="albedo" value="0.4 0.4 0.4"/>
+			<color name="albedo" value="0.1 0.1 0.1"/>
 		</bsdf>
 	</mesh>
 </scene>

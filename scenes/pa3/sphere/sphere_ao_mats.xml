@@ -1,0 +1,64 @@
+<scene>
+	<!-- Independent sample generator, user-selected samples per pixel -->
+	<sampler type="independent">
+		<integer name="sampleCount" value="256"/>
+	</sampler>
+
+	<!-- Use a direct illumination integrator -->
+	<integrator type="direct_mats">
+	</integrator>
+
+	<!-- Setup a distant disk emitter -->
+	<emitter type="distantdisk"> 
+		<color name="radiance" value="0.6,0.6,0.6"/>
+
+		<!-- accept everything (i.e. constant environment map)--> 
+		<float name="thetaA" value="180" />
+
+		<!-- only rotation is meaningful for this emitter -->
+		<transform name="toWorld">
+			<rotate axis="1,0,0" angle="0"/>
+		</transform>
+
+	</emitter>
+
+	<!-- Render the scene as viewed by a perspective camera -->
+	<camera type="perspective">
+		<transform name="toWorld">
+			<lookat target="0,0,0" origin="5,5,1" up="0,0,1"/>
+		</transform>
+
+		<!-- Field of view: 40 degrees -->
+		<float name="fov" value="40"/>
+
+		<!-- 512 x 512 pixels -->
+		<integer name="width" value="512"/>
+		<integer name="height" value="512"/>
+	</camera>
+
+	<!-- Load a triangulated sphere -->
+	<mesh type="obj">
+		<string name="filename" value="sphere.obj"/>
+		<bsdf type="diffuse">
+			<color name="albedo" value="1,1,1"/>
+		</bsdf>
+	</mesh>
+
+	<!-- Ground plane -->
+	<mesh type="obj">
+		<string name="filename" value="../../pa1/plane.obj"/>
+
+		<bsdf type="diffuse">
+			<color name="albedo" value="1,1,1"/>
+		</bsdf>
+
+		<transform name="toWorld">
+			<scale value="10,1,10"/>
+			<rotate axis="1,0,0" angle="90"/>
+			<translate value="0,0,-1"/>
+		</transform>
+
+	</mesh>
+
+
+</scene>

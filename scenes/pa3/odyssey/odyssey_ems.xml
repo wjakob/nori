@@ -3,7 +3,7 @@
 	<integrator type="direct_ems"/>
 	
 	<sampler type="independent">
-		<integer name="sampleCount" value="16"/>
+		<integer name="sampleCount" value="64"/>
 	</sampler>
 
 	<camera type="perspective">

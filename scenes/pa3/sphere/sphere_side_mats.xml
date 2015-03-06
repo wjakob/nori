@@ -1,11 +1,11 @@
 <scene>
 	<!-- Independent sample generator, user-selected samples per pixel -->
 	<sampler type="independent">
-		<integer name="sampleCount" value="16"/>
+		<integer name="sampleCount" value="256"/>
 	</sampler>
 
 	<!-- Usea a direct illumination integrator -->
-	<integrator type="direct_ems">
+	<integrator type="direct_mats">
 	</integrator>
 
 	<!-- Setup a distant disk emitter -->
