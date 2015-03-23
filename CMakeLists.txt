@@ -58,6 +58,7 @@ add_executable(nori
   src/warp.cpp
   src/microfacet.cpp
   src/mirror.cpp
+  src/dielectric.cpp
 )
 
 # The following lines build the warping test application
