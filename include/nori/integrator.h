@@ -37,6 +37,9 @@ public:
     /// Release all memory
     virtual ~Integrator() { }
 
+    /// Perform an (optional) preprocess step
+    virtual void preprocess(const Scene *scene) { }
+
     /**
      * \brief Sample the incident radiance along a ray
      *

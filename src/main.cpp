@@ -63,9 +63,10 @@ static void renderBlock(const Scene *scene, Sampler *sampler, ImageBlock &block)
     }
 }
 
-static void render(const Scene *scene, const std::string &filename) {
+static void render(Scene *scene, const std::string &filename) {
     const Camera *camera = scene->getCamera();
     Vector2i outputSize = camera->getOutputSize();
+    scene->getIntegrator()->preprocess(scene);
 
     /* Create a block generator (i.e. a work scheduler) */
     BlockGenerator blockGenerator(outputSize, NORI_BLOCK_SIZE);
@@ -84,33 +85,38 @@ static void render(const Scene *scene, const std::string &filename) {
         cout.flush();
         Timer timer;
 
-        tbb::parallel_for(
-            tbb::blocked_range<int>(0, blockGenerator.getBlockCount()),
-            [&](const tbb::blocked_range<int> &range) {
-                /* Allocate memory for a small image block to be rendered
-                   by the current thread */
-                ImageBlock block(Vector2i(NORI_BLOCK_SIZE),
-                    camera->getReconstructionFilter());
+        tbb::blocked_range<int> range(0, blockGenerator.getBlockCount());
 
-                /* Create a clone of the sampler for the current thread */
-                std::unique_ptr<Sampler> sampler(scene->getSampler()->clone());
+        auto map = [&](const tbb::blocked_range<int> &range) {
+            /* Allocate memory for a small image block to be rendered
+               by the current thread */
+            ImageBlock block(Vector2i(NORI_BLOCK_SIZE),
+                camera->getReconstructionFilter());
 
-                for (int i=range.begin(); i<range.end(); ++i) {
-                    /* Request an image block from the block generator */
-                    blockGenerator.next(block);
+            /* Create a clone of the sampler for the current thread */
+            std::unique_ptr<Sampler> sampler(scene->getSampler()->clone());
 
-                    /* Inform the sampler about the block to be rendered */
-                    sampler->prepare(block);
+            for (int i=range.begin(); i<range.end(); ++i) {
+                /* Request an image block from the block generator */
+                blockGenerator.next(block);
 
-                    /* Render all contained pixels */
-                    renderBlock(scene, sampler.get(), block);
+                /* Inform the sampler about the block to be rendered */
+                sampler->prepare(block);
 
-                    /* The image block has been processed. Now add it to
-                       the "big" block that represents the entire image */
-                    result.put(block);
-                }
+                /* Render all contained pixels */
+                renderBlock(scene, sampler.get(), block);
+
+                /* The image block has been processed. Now add it to
+                   the "big" block that represents the entire image */
+                result.put(block);
             }
-        );
+        };
+
+        /// Uncomment the following line for single threaded rendering
+        // map(range);
+
+        /// Default: parallel rendering
+        tbb::parallel_for(range, map);
 
         cout << "done. (took " << timer.elapsedString() << ")" << endl;
     });
