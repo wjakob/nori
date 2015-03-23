@@ -36,7 +36,7 @@ public:
         /* This is a smooth BRDF -- return zero if the measure
            is wrong, or when queried for illumination on the backside */
         if (bRec.measure != ESolidAngle
-            || Frame::cosTheta(bRec.wi) <= 0 
+            || Frame::cosTheta(bRec.wi) <= 0
             || Frame::cosTheta(bRec.wo) <= 0)
             return Color3f(0.0f);
 
@@ -49,7 +49,7 @@ public:
         /* This is a smooth BRDF -- return zero if the measure
            is wrong, or when queried for illumination on the backside */
         if (bRec.measure != ESolidAngle
-            || Frame::cosTheta(bRec.wi) <= 0 
+            || Frame::cosTheta(bRec.wi) <= 0
             || Frame::cosTheta(bRec.wo) <= 0)
             return 0.0f;
 
@@ -65,11 +65,11 @@ public:
 
     /// Draw a a sample from the BRDF model
     Color3f sample(BSDFQueryRecord &bRec, const Point2f &sample) const {
-        if (Frame::cosTheta(bRec.wi) <= 0) 
+        if (Frame::cosTheta(bRec.wi) <= 0)
             return Color3f(0.0f);
 
         bRec.measure = ESolidAngle;
-        
+
         /* Warp a uniformly distributed sample on [0,1]^2
            to a direction on a cosine-weighted hemisphere */
         bRec.wo = Warp::squareToCosineHemisphere(sample);
@@ -80,6 +80,10 @@ public:
         /* eval() / pdf() * cos(theta) = albedo. There
            is no need to call these functions. */
         return m_albedo;
+    }
+
+    bool isDiffuse() const {
+        return true;
     }
 
     /// Return a human-readable summary

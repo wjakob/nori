@@ -46,7 +46,7 @@ struct BSDFQueryRecord {
 
     /// Create a new record for querying the BSDF
     BSDFQueryRecord(const Vector3f &wi,
-            const Vector3f &wo, EMeasure measure) 
+            const Vector3f &wo, EMeasure measure)
         : wi(wi), wo(wo), measure(measure) { }
 };
 
@@ -57,8 +57,8 @@ class BSDF : public NoriObject {
 public:
     /**
      * \brief Sample the BSDF and return the importance weight (i.e. the
-     * value of the BSDF * cos(theta_o) divided by the probability density 
-     * of the sample with respect to solid angles). 
+     * value of the BSDF * cos(theta_o) divided by the probability density
+     * of the sample with respect to solid angles).
      *
      * \param bRec    A BSDF query record
      * \param sample  A uniformly distributed sample on \f$[0,1]^2\f$
@@ -74,7 +74,7 @@ public:
     /**
      * \brief Evaluate the BSDF for a pair of directions and measure
      * specified in \code bRec
-     * 
+     *
      * \param bRec
      *     A record with detailed information on the BSDF query
      * \return
@@ -98,12 +98,19 @@ public:
      */
 
     virtual float pdf(const BSDFQueryRecord &bRec) const = 0;
-    
+
     /**
-     * \brief Return the type of object (i.e. Mesh/BSDF/etc.) 
+     * \brief Return the type of object (i.e. Mesh/BSDF/etc.)
      * provided by this instance
      * */
     EClassType getClassType() const { return EBSDF; }
+
+    /**
+     * \brief Return whether or not this BRDF is diffuse. This
+     * is primarily used by photon mapping to decide whether
+     * or not to store photons on a surface
+     */
+    virtual bool isDiffuse() const { return false; }
 };
 
 NORI_NAMESPACE_END
