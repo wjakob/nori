@@ -27,7 +27,7 @@ NORI_NAMESPACE_BEGIN
  * \brief Main scene data structure
  *
  * This class holds information on scene objects and is responsible for
- * coordinating rendering jobs. It also provides useful query routines that 
+ * coordinating rendering jobs. It also provides useful query routines that
  * are mostly used by the \ref Integrator implementations.
  */
 class Scene : public NoriObject {
@@ -43,6 +43,9 @@ public:
 
     /// Return a pointer to the scene's integrator
     const Integrator *getIntegrator() const { return m_integrator; }
+
+    /// Return a pointer to the scene's integrator
+    Integrator *getIntegrator() { return m_integrator; }
 
     /// Return a pointer to the scene's camera
     const Camera *getCamera() const { return m_camera; }
@@ -77,10 +80,10 @@ public:
     /**
      * \brief Intersect a ray against all triangles stored in the scene
      * and \a only determine whether or not there is an intersection.
-     * 
+     *
      * This method much faster than the other ray tracing function,
      * but the performance comes at the cost of not providing any
-     * additional information about the detected intersection 
+     * additional information about the detected intersection
      * (not even its position).
      *
      * \param ray
@@ -93,7 +96,7 @@ public:
         Intersection its; /* Unused */
         return m_bvh->rayIntersect(ray, its, true);
     }
-    
+
     /**
      * \brief Return an axis-aligned box that bounds the scene
      */
