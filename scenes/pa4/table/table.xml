@@ -1,0 +1,113 @@
+<!-- Table scene, Copyright (c) 2012 by Olesya Jakob -->
+
+<scene>
+	<!-- Independent sample generator, 128 samples per pixel -->
+	<sampler type="independent">
+		<integer name="sampleCount" value="128"/>
+	</sampler>
+
+	<!-- Use the path tracer with multiple importance sampling -->
+	<integrator type="mipath"/>
+
+	<!-- Render the scene as viewed by a perspective camera -->
+	<camera type="perspective">
+		<transform name="toWorld">
+			<lookat target="28.4168, -50.3226, 28.0493" 
+			        origin="28.873, -51.1128, 28.4585"
+			        up="-0.204606, 0.3544, 0.912435"/>
+		</transform>
+
+		<!-- Field of view: 35 degrees -->
+		<float name="fov" value="35"/>
+
+		<!-- 1024x768 pixels -->
+		<integer name="width" value="1024"/>
+		<integer name="height" value="768"/>
+	</camera>
+
+	<!-- Two light sources -->
+	<mesh type="obj">
+		<string name="filename" value="mesh_1.obj"/>
+
+		<emitter type="area">
+			<color name="radiance" value="1.5,1.5,1.35"/>
+		</emitter>
+
+		<transform name="toWorld">
+			<scale value="0.1,0.1,-1"/>
+			<translate value="10,0,25"/>
+		</transform>
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="mesh_1.obj"/>
+
+		<emitter type="area">
+			<color name="radiance" value=".5,.5,.8"/>
+		</emitter>
+
+		<transform name="toWorld">
+			<scale value="0.5,0.5,-1"/>
+			<translate value="0,0,30"/>
+		</transform>
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="mesh_0.obj"/>
+
+		<bsdf type="microfacet">
+			<color name="kd" value="0, 0, 0"/>
+		</bsdf>
+		<transform name="toWorld">
+			<translate value="3,0,0"/>
+		</transform>
+	</mesh>
+
+	<!-- Diffuse floor -->
+	<mesh type="obj">
+		<string name="filename" value="mesh_1.obj"/>
+
+		<bsdf type="diffuse">
+			<color name="albedo" value=".5,.5,.5"/>
+		</bsdf>
+	</mesh>
+
+	<!-- Water<->Air interface -->
+	<mesh type="obj">
+		<string name="filename" value="mesh_2.obj"/>
+		<transform name="toWorld">
+			<translate value="-1,0,0"/>
+		</transform>
+
+		<bsdf type="dielectric">
+			<float name="extIOR" value="1"/>
+			<float name="intIOR" value="1.33"/>
+		</bsdf>
+	</mesh>
+
+	<!-- Glass<->Air interface -->
+	<mesh type="obj">
+		<string name="filename" value="mesh_3.obj"/>
+		<transform name="toWorld">
+			<translate value="-1,0,0"/>
+		</transform>
+
+		<bsdf type="dielectric">
+			<float name="extIOR" value="1"/>
+			<float name="intIOR" value="1.5"/>
+		</bsdf>
+	</mesh>
+
+	<!-- Glass<->Water interface -->
+	<mesh type="obj">
+		<string name="filename" value="mesh_4.obj"/>
+		<transform name="toWorld">
+			<translate value="-1,0,0"/>
+		</transform>
+
+		<bsdf type="dielectric">
+			<float name="extIOR" value="1.5"/>
+			<float name="intIOR" value="1.33"/>
+		</bsdf>
+	</mesh>
+</scene>
