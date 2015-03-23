@@ -57,6 +57,7 @@ add_executable(nori
   src/ttest.cpp
   src/warp.cpp
   src/microfacet.cpp
+  src/photon.cpp
   src/mirror.cpp
   src/dielectric.cpp
 )
