@@ -60,6 +60,7 @@ add_executable(nori
   src/photon.cpp
   src/mirror.cpp
   src/dielectric.cpp
+  src/photonmapper.cpp
 )
 
 # The following lines build the warping test application
