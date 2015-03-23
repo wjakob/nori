@@ -1,8 +1,8 @@
-build
+/build
 .DS_Store
-nori
-warptest
-ext_build
+/nori
+/warptest
+/ext_build
 CMakeCache.txt
 CMakeFiles
 Makefile
