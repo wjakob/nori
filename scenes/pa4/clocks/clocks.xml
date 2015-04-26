@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<scene>
+
+	<integrator type="photonmapper">
+		<integer name="photonCount" value="10000000"/>
+		<float name="photonRadius" value="0"/>
+	</integrator>
+	
+	<sampler type="independent">
+		<integer name="sampleCount" value="64"/>
+	</sampler>
+
+	<camera type="perspective">
+		<transform name="toWorld">
+			<lookat target="489.857, -114.686, 503.183" origin="490.447, -114.755, 503.987" up="0.0407857, 0.99762, 0.0555876"/>
+		</transform>
+		<float name="fov" value="39.3077"/>
+		<integer name="width" value="800"/>
+		<integer name="height" value="600"/>
+	</camera>
+
+	<mesh type="obj">
+		<string name="filename" value="meshes/light.obj"/>
+		<bsdf type="diffuse">
+			<color name="albedo" value="0,0,0"/>
+		</bsdf>
+		<emitter type="area">
+			<color name="radiance" value="34000, 24000, 8000"/>
+		</emitter>
+
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="meshes/backplates.obj"/>
+		<bsdf type="diffuse">
+			<color name="albedo" value="0.75, 0.75, 0.75"/>
+		</bsdf>
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="meshes/black.obj"/>
+		<bsdf type="diffuse">
+			<color name="albedo" value="0.01, 0.01, 0.01"/>
+		</bsdf>
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="meshes/blue.obj"/>
+		<bsdf type="diffuse">
+			<color name="albedo" value="0.5, 0.5, 0.9"/>
+		</bsdf>
+	</mesh>
+
+
+	<mesh type="obj">
+		<string name="filename" value="meshes/copper.obj"/>
+		<bsdf type="mirror">
+		</bsdf>
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="meshes/dark-red.obj"/>
+		<bsdf type="diffuse">
+			<color name="albedo" value="0.3, 0.1, 0.1"/>
+		</bsdf>
+	</mesh>
+
+
+	<mesh type="obj">
+		<string name="filename" value="meshes/floor.obj"/>
+		<bsdf type="diffuse">
+			<color name="albedo" value="0.75, 0.75, 0.75"/>
+		</bsdf>
+	</mesh>
+
+
+	<mesh type="obj">
+		<string name="filename" value="meshes/glass.obj"/>
+		<bsdf type="dielectric">
+		    <!-- Interior index of refraction -->
+		    <float name="intIOR" value="1.5"/>
+		    <!-- Exterior index of refraction -->
+		    <float name="extIOR" value="1"/>
+		</bsdf>
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="meshes/green.obj"/>
+		<bsdf type="diffuse">
+			<color name="albedo" value="0.5, 0.9, 0.5"/>
+		</bsdf>
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="meshes/handles.obj"/>
+		<bsdf type="microfacet">
+			<float name="alpha" value="0.01"/>
+			<color name="kd" value="0.9, 0.9, 0.9"/>
+		</bsdf>
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="meshes/metals.obj"/>
+		<bsdf type="mirror"/>
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="meshes/red.obj"/>
+		<bsdf type="diffuse">
+			<color name="albedo" value="0.9, 0.5, 0.5"/>
+		</bsdf>
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="meshes/white-plastic.obj"/>
+		<bsdf type="diffuse">
+			<color name="albedo" value="0.5, 0.5, 0.5"/>
+		</bsdf>
+	</mesh>
+
+
+	
+</scene>
