@@ -78,6 +78,7 @@ NoriObject *loadFromXML(const std::string &filename) {
         EColor,
         ETransform,
         ETranslate,
+        EMatrix,
         ERotate,
         EScale,
         ELookAt,
@@ -107,6 +108,7 @@ NoriObject *loadFromXML(const std::string &filename) {
     tags["color"]      = EColor;
     tags["transform"]  = ETransform;
     tags["translate"]  = ETranslate;
+    tags["matrix"]     = EMatrix;
     tags["rotate"]     = ERotate;
     tags["scale"]      = EScale;
     tags["lookat"]     = ELookAt;
@@ -125,7 +127,7 @@ NoriObject *loadFromXML(const std::string &filename) {
                                 filename, *attrs.begin(), node.name(), offset(node.offset_debug()));
     };
 
-        Eigen::Affine3f transform;
+    Eigen::Affine3f transform;
 
     /* Helper function to parse a Nori XML node (recursive) */
     std::function<NoriObject *(pugi::xml_node &, PropertyList &, int)> parseTag = [&](
@@ -151,7 +153,7 @@ NoriObject *loadFromXML(const std::string &filename) {
         bool parentIsObject       = hasParent && parentTag < NoriObject::EClassTypeCount;
         bool currentIsObject      = tag < NoriObject::EClassTypeCount;
         bool parentIsTransform    = parentTag == ETransform;
-        bool currentIsTransformOp = tag == ETranslate || tag == ERotate || tag == EScale || tag == ELookAt;
+        bool currentIsTransformOp = tag == ETranslate || tag == ERotate || tag == EScale || tag == ELookAt || tag == EMatrix;
 
         if (!hasParent && !currentIsObject)
             throw NoriException("Error while parsing \"%s\": root element \"%s\" must be a Nori object (at %s)",
@@ -181,7 +183,7 @@ NoriObject *loadFromXML(const std::string &filename) {
 
         NoriObject *result = nullptr;
         try {
-                        if (currentIsObject) {
+            if (currentIsObject) {
                 check_attributes(node, { "type" });
 
                 /* This is an object, first instantiate it */
@@ -254,6 +256,18 @@ NoriObject *loadFromXML(const std::string &filename) {
                             check_attributes(node, { "value" });
                             Eigen::Vector3f v = toVector3f(node.attribute("value").value());
                             transform = Eigen::Translation<float, 3>(v.x(), v.y(), v.z()) * transform;
+                        }
+                        break;
+                    case EMatrix: {
+                            check_attributes(node, { "value" });
+                            std::vector<std::string> tokens = tokenize(node.attribute("value").value());
+                            if (tokens.size() != 16)
+                                throw NoriException("Expected 16 values");
+                            Eigen::Matrix4f matrix;
+                            for (int i=0; i<4; ++i)
+                                for (int j=0; j<4; ++j)
+                                    matrix(i, j) = toFloat(tokens[i*4+j]);
+                            transform = Eigen::Affine3f(matrix) * transform;
                         }
                         break;
                     case EScale: {
