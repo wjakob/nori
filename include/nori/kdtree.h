@@ -378,7 +378,7 @@ public:
             }
 
             /* Check if the current point is within the query's search radius */
-            const float pointDistSquared = (node.getPosition() - p).lengthSquared();
+            const float pointDistSquared = (node.getPosition() - p).squaredNorm();
 
             if (pointDistSquared < sqrSearchRadius) {
                 /* Switch to a max-heap when the available search
