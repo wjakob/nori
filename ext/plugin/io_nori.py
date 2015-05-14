@@ -14,7 +14,7 @@ bl_info = {
 import bpy, os, math, shutil
 from xml.dom.minidom import Document
 
-# Ecriture de l'exporter
+# Main class exporter
 class NoriWritter:
     def verbose(self,text):
         print(text)
@@ -24,6 +24,10 @@ class NoriWritter:
         self.filepath = filepath
         self.workingDir = os.path.dirname(self.filepath)
 
+    ######################
+    # tools private methods
+    # (xml format)
+    ######################
     def __createElement(self, name, attr):
         el = self.doc.createElement(name)
         for k,v in attr.items():
@@ -48,27 +52,51 @@ class NoriWritter:
         return transform
 
     def write(self, exportLight, nbSamples):
+        """Main method to write the blender scene into Nori format
+        It will export as follows:
+         1) write integrator configuration
+         2) write samples information (number, distribution)
+         3) export one camera
+         4) export all light sources
+         5) export all meshes"""
+        
+        # create xml document
         self.doc = Document()
         self.scene = self.doc.createElement("scene")
         self.doc.appendChild(self.scene)
         
-        # On met l'integrateur AO par default
+        ######################
+        # 1) write integrator configuration
+        ######################
         if(not exportLight):
-            self.scene.appendChild(self.__createElement("integrator", {"type" : "ao" }))
+            self.scene.appendChild(self.__createElement("integrator", {"type" : "av" }))
         else:
             self.scene.appendChild(self.__createElement("integrator", {"type" : "path_mis" }))
 
-        # On met le sampler independant 32 par default
+        ######################
+        # 2) write the number of samples
+        # and which distribution we will use
+        ######################
         sampler = self.__createElement("sampler", {"type" : "independent" })
         sampler.appendChild(self.__createElement("integer", {"name":"sampleCount", "value":str(nbSamples)}))
         self.scene.appendChild(sampler)
 
-        # On recupere une des camera
+        ######################
+        # 3) export one camera
+        ######################
+        # note that we only support one camera
         cameras = [cam for cam in self.context.scene.objects
                        if cam.type in {'CAMERA'}]
-        self.scene.appendChild(self.write_camera(cameras[0])) # On exporte qu'une camera
+        if(len(cameras) == 0):
+            self.verbose("WARN: No camera to export")
+        else:
+            if(len(cameras) > 1):
+                self.verbose("WARN: Does not handle multiple camera, only export the first one")
+            self.scene.appendChild(self.write_camera(cameras[0])) # export the first one
 
-        # On recuperer les sources
+        ######################
+        # 4) export all light sources
+        ######################
         if(exportLight):
             sources = [obj for obj in self.context.scene.objects
                           if obj.type in {'LAMP'}]
@@ -79,21 +107,29 @@ class NoriWritter:
                     pointLight.appendChild(self.__createEntry("point", "position", "%f,%f,%f"%(pos.x,pos.y,pos.z)))
                     self.scene.appendChild(pointLight)
                 else:
-                    print("WARN: Not supported")
+                    self.verbose("WARN: Light source type (%s) is not supported" % source.data.type)
         
-        # On recupere toutes les mesh
+        ######################
+        # 5) export all meshes
+        ######################
+        # create the directory for store the meshes
         if not os.path.exists(self.workingDir+"/meshes"):
                 os.makedirs(self.workingDir+"/meshes")
+        
+        # export all of them
         meshes = [obj for obj in self.context.scene.objects
                       if obj.type in {'MESH', 'EMPTY'}
                       and obj.parent is None]
         for mesh in meshes:
             self.write_mesh(mesh)
         
-        # write xml
+        ######################
+        # 6) write the xml file
+        ######################
         self.doc.writexml(open(self.filepath, "w"), "", "\t","\n")
 
     def write_camera(self, cam):
+        """convert the selected camera (cam) into xml format"""
         camera = self.__createElement("camera",{"type":"perspective"})
         camera.appendChild(self.__createEntry("float","fov",str(cam.data.angle*180/math.pi)))
         camera.appendChild(self.__createEntry("float","nearClip",str(cam.data.clip_start)))
@@ -105,6 +141,9 @@ class NoriWritter:
         camera.appendChild(trans)
         return camera
 
+    ######################
+    # meshes related methods
+    ######################
     def __createMeshEntry(self, filename, matrix):
         meshElement = self.__createElement("mesh", {"type" : "obj"})
         meshElement.appendChild(self.__createElement("string", {"name":"filename","value":"meshes/"+filename}))
@@ -112,6 +151,12 @@ class NoriWritter:
         return meshElement
 
     def __createBSDFEntry(self, slot):
+        """method responsible to the auto-conversion
+        between Blender internal BSDF (not Cycles!) and Nori BSDF
+        
+        For more advanced implementation: 
+        http://tinyurl.com/nnhxwuh
+        """
         if slot.material.raytrace_mirror.use:
             return self.__createElement("bsdf", {"type":"mirror"})
         else:
@@ -125,7 +170,6 @@ class NoriWritter:
                       if obj.type in {'MESH', 'EMPTY'}]
 
         for child in children_mesh:
-            #print("Enqueue %s" % child.name)
             self.write_mesh(child)
         
         if mesh.type == 'MESH':
@@ -134,7 +178,6 @@ class NoriWritter:
     
     def write_face(self, prevMesh, fileObj, exportUV, exportNormal, idMat = -1):
         for poly in prevMesh.polygons:
-            
             
             if((idMat != -1) and (poly.material_index == idMat)):
                 
@@ -185,12 +228,13 @@ class NoriWritter:
         # convert the shape by apply all modifier
         prevMesh = mesh.to_mesh(bpy.context.scene, True, "PREVIEW")
         
-        # get usefull information of the shape
+        # get useful information of the shape
         exportNormal = (prevMesh.polygons[0].use_smooth)
         exportUV = exportNormal and (prevMesh.uv_layers.active != None)
-		
         haveMaterial = (len(mesh.material_slots) != 0 and mesh.material_slots[0].name != '')
-        # export the base of the obj file (vertex pos, normal and uv)
+        
+        # export obj file base (vertex pos, normal and uv)
+        # but not the face data
         fileObjPath = mesh.name+".obj" 
         fileObj = open(self.workingDir+"/meshes/"+fileObjPath, "w")
 
@@ -207,7 +251,7 @@ class NoriWritter:
             for vert in prevMesh.vertices:
                 fileObj.write('vn %f %f %f\n' % (vert.normal.x, vert.normal.y, vert.normal.z))
         
-        # On ecrit tous les polygones (faces)
+        # write all polygones (faces)
         listMeshXML = []
         if(not haveMaterial):
             self.write_face(prevMesh, fileObj, exportUV, exportNormal)
@@ -223,7 +267,8 @@ class NoriWritter:
             for id_mat in range(len(mesh.material_slots)):
                 slot = mesh.material_slots[id_mat]
                 self.verbose("MESH: "+mesh.name+" BSDF: "+slot.name)
-                # we create an new obj file and concante data files
+                
+                # we create an new obj file and concatenate data files
                 fileObjMatPath = mesh.name+"_"+slot.name+".obj" 
                 fileObjMat = open(self.workingDir+"/meshes/"+fileObjMatPath,"w")
                 shutil.copyfileobj(open(self.workingDir+"/meshes/"+fileObjPath,"r"), fileObjMat)
@@ -247,25 +292,34 @@ class NoriWritter:
         
         return listMeshXML
 
-# La classe d'exporter
+######################
+# blender code
+######################
 from bpy.props import StringProperty, IntProperty, BoolProperty
 from bpy_extras.io_utils import ExportHelper
 
 class NoriExporter(bpy.types.Operator, ExportHelper):
-    """Save a python script which re-creates cameras and markers elsewhere"""
+    """Export a blender scene into Nori scene format"""
+    
+    # add to menu
     bl_idname = "export.nori"
     bl_label = "Export Nori scene"
 
+    # filtering file names
     filename_ext = ".xml"
     filter_glob = StringProperty(default="*.xml", options={'HIDDEN'})
     
+    ###################
+    # other options
+    ###################
+    
     export_light = BoolProperty(
                     name="Export light",
-                    description="Export ligth for Nori",
+                    description="Export light to Nori",
                     default=True)
     
-    nb_samples = IntProperty(name="Numbers of rays",
-                    description="Number of ray casted",
+    nb_samples = IntProperty(name="Numbers of camera rays",
+                    description="Number of camera ray",
                     default=32)
     
     def execute(self, context):
@@ -288,7 +342,7 @@ def menu_export(self, context):
     self.layout.operator(NoriExporter.bl_idname, text="Export Nori scenes...").filepath = default_path
 
 
-# L'enregistrement du module dans blender
+# Register Nori exporter inside blender
 def register():
     bpy.utils.register_module(__name__)
     bpy.types.INFO_MT_file_export.append(menu_export)
