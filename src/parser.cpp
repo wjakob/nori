@@ -290,8 +290,8 @@ NoriObject *loadFromXML(const std::string &filename) {
                             Eigen::Vector3f up = toVector3f(node.attribute("up").value());
 
                             Vector3f dir = (target - origin).normalized();
-                            Vector3f left = up.normalized().cross(dir);
-                            Vector3f newUp = dir.cross(left);
+                            Vector3f left = up.normalized().cross(dir).normalized();
+                            Vector3f newUp = dir.cross(left).normalized();
 
                             Eigen::Matrix4f trafo;
                             trafo << left, newUp, dir, origin,
