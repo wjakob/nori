@@ -94,7 +94,7 @@ public:
             case EScene:      return "scene";
             case EMesh:       return "mesh";
             case EBSDF:       return "bsdf";
-            case EEmitter:  return "emitter";
+            case EEmitter:    return "emitter";
             case ECamera:     return "camera";
             case EIntegrator: return "integrator";
             case ESampler:    return "sampler";
