@@ -168,7 +168,7 @@ public:
         } catch (const NoriException &e) {
             m_warpTypeBox->setSelectedIndex(0);
             refresh();
-            new MessageDialog(this, MessageDialog::Warning, "Error", "An error occurred: " + std::string(e.what()));
+            new MessageDialog(this, MessageDialog::Type::Warning, "Error", "An error occurred: " + std::string(e.what()));
             return;
         }
 
@@ -312,7 +312,7 @@ public:
 
         model.setIdentity();
         model = translate(model, Vector3f(-0.5f, -0.5f, 0.0f));
-        model = m_arcball.matrix(Matrix4f()) * model;
+        model = m_arcball.matrix() * model;
 
         if (m_drawHistogram) {
             /* Render the histograms */
@@ -544,7 +544,7 @@ public:
 
         /* Create an empty panel with a horizontal layout */
         Widget *panel = new Widget(m_window);
-        panel->setLayout(new BoxLayout(BoxLayout::Horizontal, BoxLayout::Middle, 0, 20));
+        panel->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 20));
 
         /* Add a slider and set defaults */
         m_pointCountSlider = new Slider(panel);
@@ -564,7 +564,7 @@ public:
         m_warpTypeBox->setCallback([&](int) { refresh(); });
 
         panel = new Widget(m_window);
-        panel->setLayout(new BoxLayout(BoxLayout::Horizontal, BoxLayout::Middle, 0, 20));
+        panel->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 20));
         m_parameterSlider = new Slider(panel);
         m_parameterSlider->setFixedWidth(55);
         m_parameterSlider->setCallback([&](float) { refresh(); });
@@ -576,7 +576,7 @@ public:
         new Label(m_window, "BSDF parameters", "sans-bold");
 
         panel = new Widget(m_window);
-        panel->setLayout(new BoxLayout(BoxLayout::Horizontal, BoxLayout::Middle, 0, 20));
+        panel->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 20));
 
         m_angleSlider = new Slider(panel);
         m_angleSlider->setFixedWidth(55);
@@ -594,12 +594,12 @@ public:
             "sans-bold");
 
         Button *testBtn = new Button(m_window, "Run", ENTYPO_ICON_CHECK);
-        testBtn->setBackgroundColor(Color(0, 255, 0, 255));
+        testBtn->setBackgroundColor(Color(0, 255, 0, 25));
         testBtn->setCallback([&]{
             try {
                 runTest();
             } catch (const NoriException &e) {
-                new MessageDialog(this, MessageDialog::Warning, "Error", "An error occurred: " + std::string(e.what()));
+                new MessageDialog(this, MessageDialog::Type::Warning, "Error", "An error occurred: " + std::string(e.what()));
             }
         });
 

@@ -1,10 +1,36 @@
-# This is the main CMake build file used to compile Nori
-cmake_minimum_required (VERSION 2.8)
-project("nori")
+cmake_minimum_required (VERSION 2.8.3)
+project(nori)
 
-# This file included below takes care of compiling dependencies
-# and setting compiler flags on different platforms
-include("CMakeConfig.txt")
+add_subdirectory(ext ext_build)
+
+include_directories(
+  # Nori include files
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+  # tinyformat string formatting library
+  ${TFM_INCLUDE_DIR}
+  # Eigen linear algebra library
+  ${EIGEN_INCLUDE_DIR}
+  # OpenEXR high dynamic range bitmap library
+  ${OPENEXR_INCLUDE_DIRS}
+  # Intel Thread Building Blocks
+  ${TBB_INCLUDE_DIR}
+  # Pseudorandom number generator
+  ${PCG32_INCLUDE_DIR}
+  # PugiXML parser
+  ${PUGIXML_INCLUDE_DIR}
+  # Helper functions for statistical hypothesis tests
+  ${HYPOTHESIS_INCLUDE_DIR}
+  # GLFW library for OpenGL context creation
+  ${GLFW_INCLUDE_DIR}
+  # GLEW library for accessing OpenGL functions
+  ${GLEW_INCLUDE_DIR}
+  # NanoVG drawing library
+  ${NANOVG_INCLUDE_DIR}
+  # NanoGUI user interface library
+  ${NANOGUI_INCLUDE_DIR}
+  # Portable filesystem API
+  ${FILESYSTEM_INCLUDE_DIR}
+)
 
 # The following lines build the main executable. If you add a source
 # code file to Nori, be sure to include it in this list.
@@ -63,6 +89,7 @@ add_executable(nori
   src/photonmapper.cpp
 )
 
+
 # The following lines build the warping test application
 add_executable(warptest
   include/nori/warp.h
@@ -74,16 +101,7 @@ add_executable(warptest
   src/common.cpp
 )
 
-# Nori depends on some libraries created in CMakeConfig.txt. The following two
-# lines ensure that Nori is built *after* those libraries have been created.
-add_dependencies(nori OpenEXR_p)
-add_dependencies(nori nanogui_p)
-add_dependencies(nori tbb_p)
-add_dependencies(nori pugixml)
-add_dependencies(warptest nori)
-
-# Link to dependency libraries
-target_link_libraries(nori ${extra_libs})
-target_link_libraries(warptest ${extra_libs})
+target_link_libraries(nori tbb_static pugixml IlmImf nanogui ${NANOGUI_EXTRA_LIBS})
+target_link_libraries(warptest tbb_static nanogui ${NANOGUI_EXTRA_LIBS})
 
 # vim: set et ts=2 sw=2 ft=cmake nospell:

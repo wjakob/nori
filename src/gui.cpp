@@ -13,7 +13,7 @@ NoriScreen::NoriScreen(const ImageBlock &block)
 
     /* Add some UI elements to adjust the exposure value */
     Widget *panel = new Widget(this);
-    panel->setLayout(new BoxLayout(BoxLayout::Horizontal, BoxLayout::Middle, 10, 10));
+    panel->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 10, 10));
     new Label(panel, "Exposure value: ", "sans-bold");
     m_slider = new Slider(panel);
     m_slider->setValue(0.5f);

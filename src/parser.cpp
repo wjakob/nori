@@ -30,7 +30,7 @@ NoriObject *loadFromXML(const std::string &filename) {
     pugi::xml_document doc;
     pugi::xml_parse_result result = doc.load_file(filename.c_str());
 
-    /* Helper function: map a position offset in bytes to a more readable row/column value */
+    /* Helper function: map a position offset in bytes to a more readable line/column value */
     auto offset = [&](ptrdiff_t pos) -> std::string {
         std::fstream is(filename);
         char buffer[1024];
@@ -40,7 +40,7 @@ NoriObject *loadFromXML(const std::string &filename) {
             for (int i = 0; i < is.gcount(); ++i) {
                 if (buffer[i] == '\n') {
                     if (offset + i >= pos)
-                        return tfm::format("row %i, col %i", line + 1, pos - linestart);
+                        return tfm::format("line %i, col %i", line + 1, pos - linestart);
                     ++line;
                     linestart = offset + i;
                 }
