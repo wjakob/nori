@@ -92,14 +92,14 @@ endif()
 
 if (WIN32)
   # Build zlib (only on Windows)
-  set(ZLIB_BUILD_STATIC_LIBS OFF CACHE BOOL " " FORCE)
-  set(ZLIB_BUILD_SHARED_LIBS ON CACHE BOOL " " FORCE)
+  set(ZLIB_BUILD_STATIC_LIBS ON CACHE BOOL " " FORCE)
+  set(ZLIB_BUILD_SHARED_LIBS OFF CACHE BOOL " " FORCE)
   add_subdirectory(zlib)
 
   set(ZLIB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/zlib" CACHE PATH " " FORCE)
-  set(ZLIB_LIBRARY "${CMAKE_CURRENT_BINARY_DIR}/zlib/$<CONFIGURATION>/zlib.lib" CACHE FILEPATH " " FORCE)
+  set(ZLIB_LIBRARY "${CMAKE_CURRENT_BINARY_DIR}/zlib/$<CONFIGURATION>/zlibstatic.lib" CACHE FILEPATH " " FORCE)
 
-  set_property(TARGET zlib PROPERTY FOLDER "dependencies")
+  set_property(TARGET zlibstatic PROPERTY FOLDER "dependencies")
   include_directories(${ZLIB_INCLUDE_DIR} "${CMAKE_CURRENT_BINARY_DIR}/zlib")
 endif()
 
