@@ -66,17 +66,17 @@ public:
     };
 
     enum WarpType {
-        None = 0,
+        Square = 0,
+        Tent,
         Disk,
         UniformSphere,
-        UniformSphereCap,
         UniformHemisphere,
         CosineHemisphere,
         Beckmann,
         MicrofacetBRDF
     };
 
-    WarpTest(): Screen(Vector2i(800, 600), "Assignment 2: Sampling and Warping"), m_bRec(Vector3f()) {
+    WarpTest(): Screen(Vector2i(800, 600), "Assignment 3: Sampling and Warping"), m_bRec(Vector3f()) {
         initializeGUI();
         m_drawHistogram = false;
     }
@@ -92,10 +92,10 @@ public:
         Point3f result;
 
         switch (warpType) {
-            case None: result << Warp::squareToUniformSquare(sample), 0; break;
+            case Square: result << Warp::squareToUniformSquare(sample), 0; break;
+            case Tent: result << Warp::squareToTent(sample), 0; break;
             case Disk: result << Warp::squareToUniformDisk(sample), 0; break;
             case UniformSphere: result << Warp::squareToUniformSphere(sample); break;
-            case UniformSphereCap: result << Warp::squareToUniformSphereCap(sample, parameterValue); break;
             case UniformHemisphere: result << Warp::squareToUniformHemisphere(sample); break;
             case CosineHemisphere: result << Warp::squareToCosineHemisphere(sample); break;
             case Beckmann: result << Warp::squareToBeckmann(sample, parameterValue); break;
@@ -184,7 +184,7 @@ public:
         if (!m_brdfValueCheckBox->checked() || warpType != MicrofacetBRDF)
             value_scale = 0.f;
 
-        if (warpType != None) {
+        if (warpType != Square) {
             for (int i=0; i<m_pointCount; ++i) {
                 if (values(0, i) == 0.0f) {
                     positions.col(i) = Vector3f::Constant(std::numeric_limits<float>::quiet_NaN());
@@ -226,7 +226,7 @@ public:
                     positions.col(idx++) = value_scale == 0.f ? pt.first : (pt.first * pt.second * value_scale);
                 }
             }
-            if (warpType != None) {
+            if (warpType != Square) {
                 for (int i=0; i<m_lineCount; ++i)
                     positions.col(i) = positions.col(i) * 0.5f + Vector3f(0.5f, 0.5f, 0.0f);
             }
@@ -264,8 +264,8 @@ public:
         m_pointCountBox->setValue(str);
         m_parameterBox->setValue(tfm::format("%.1g", parameterValue));
         m_angleBox->setValue(tfm::format("%.1f", m_angleSlider->value() * 180-90));
-        m_parameterSlider->setEnabled(warpType == Beckmann || warpType == MicrofacetBRDF || warpType == UniformSphereCap);
-        m_parameterBox->setEnabled(warpType == Beckmann || warpType == MicrofacetBRDF || warpType == UniformSphereCap);
+        m_parameterSlider->setEnabled(warpType == Beckmann || warpType == MicrofacetBRDF);
+        m_parameterBox->setEnabled(warpType == Beckmann || warpType == MicrofacetBRDF);
         m_angleBox->setEnabled(warpType == MicrofacetBRDF);
         m_angleSlider->setEnabled(warpType == MicrofacetBRDF);
         m_parameterBox->setEnabled(warpType == MicrofacetBRDF);
@@ -323,7 +323,7 @@ public:
             WarpType warpType = (WarpType) m_warpTypeBox->selectedIndex();
             const int spacer = 20;
             const int histWidth = (width() - 3*spacer) / 2;
-            const int histHeight = (warpType == None || warpType == Disk) ? histWidth : histWidth / 2;
+            const int histHeight = (warpType == Square || warpType == Disk || warpType == Tent) ? histWidth : histWidth / 2;
             const int verticalOffset = (height() - histHeight) / 2;
 
             drawHistogram(Point2i(spacer, verticalOffset), Vector2i(histWidth, histHeight), m_textures[0]);
@@ -405,7 +405,7 @@ public:
         WarpType warpType = (WarpType) m_warpTypeBox->selectedIndex();
         float parameterValue = mapParameter(warpType, m_parameterSlider->value());
 
-        if (warpType != None && warpType != Disk)
+        if (warpType != Square && warpType != Disk && warpType != Tent)
             xres *= 2;
 
         int res = yres*xres, sampleCount = 1000 * res;
@@ -424,10 +424,10 @@ public:
             Vector3f sample = points.col(i);
             float x, y;
 
-            if (warpType == None) {
+            if (warpType == Square) {
                 x = sample.x();
                 y = sample.y();
-            } else if (warpType == Disk) {
+            } else if (warpType == Disk || warpType == Tent) {
                 x = sample.x() * 0.5f + 0.5f;
                 y = sample.y() * 0.5f + 0.5f;
             } else {
@@ -443,11 +443,14 @@ public:
         }
 
         auto integrand = [&](double y, double x) -> double {
-            if (warpType == None) {
+            if (warpType == Square) {
                 return Warp::squareToUniformSquarePdf(Point2f(x, y));
             } else if (warpType == Disk) {
                 x = x * 2 - 1; y = y * 2 - 1;
                 return Warp::squareToUniformDiskPdf(Point2f(x, y));
+            } else if (warpType == Tent) {
+                x = x * 2 - 1; y = y * 2 - 1;
+                return Warp::squareToTentPdf(Point2f(x, y));
             } else {
                 x *= 2 * M_PI;
                 y = y * 2 - 1;
@@ -462,8 +465,6 @@ public:
 
                 if (warpType == UniformSphere)
                     return Warp::squareToUniformSpherePdf(v);
-                else if (warpType == UniformSphereCap)
-                    return Warp::squareToUniformSphereCapPdf(v, parameterValue);
                 else if (warpType == UniformHemisphere)
                     return Warp::squareToUniformHemispherePdf(v);
                 else if (warpType == CosineHemisphere)
@@ -482,9 +483,9 @@ public:
         };
 
         double scale = sampleCount;
-        if (warpType == None)
+        if (warpType == Square)
             scale *= 1;
-        else if (warpType == Disk)
+        else if (warpType == Disk || warpType == Tent)
             scale *= 4;
         else
             scale *= 4*M_PI;
@@ -563,7 +564,7 @@ public:
         m_pointTypeBox->setCallback([&](int) { refresh(); });
 
         new Label(m_window, "Warping method", "sans-bold");
-        m_warpTypeBox = new ComboBox(m_window, { "None", "Disk", "Sphere", "Spherical cap", "Hemisphere (unif.)",
+        m_warpTypeBox = new ComboBox(m_window, { "Square", "Tent", "Disk", "Sphere", "Hemisphere (unif.)",
                 "Hemisphere (cos)", "Beckmann distr.", "Microfacet BRDF" });
         m_warpTypeBox->setCallback([&](int) { refresh(); });
 

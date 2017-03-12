@@ -22,22 +22,6 @@
 
 NORI_NAMESPACE_BEGIN
 
-Vector3f Warp::sampleUniformHemisphere(Sampler *sampler, const Normal3f &pole) {
-    // Naive implementation using rejection sampling
-    Vector3f v;
-    do {
-        v.x() = 1.f - 2.f * sampler->next1D();
-        v.y() = 1.f - 2.f * sampler->next1D();
-        v.z() = 1.f - 2.f * sampler->next1D();
-    } while (v.squaredNorm() > 1.f);
-
-    if (v.dot(pole) < 0.f)
-        v = -v;
-    v /= v.norm();
-
-    return v;
-}
-
 Point2f Warp::squareToUniformSquare(const Point2f &sample) {
     return sample;
 }
@@ -46,20 +30,20 @@ float Warp::squareToUniformSquarePdf(const Point2f &sample) {
     return ((sample.array() >= 0).all() && (sample.array() <= 1).all()) ? 1.0f : 0.0f;
 }
 
+Point2f Warp::squareToTent(const Point2f &sample) {
+    throw NoriException("Warp::squareToTent() is not yet implemented!");
+}
+
+float Warp::squareToTentPdf(const Point2f &p) {
+    throw NoriException("Warp::squareToTentPdf() is not yet implemented!");
+}
+
 Point2f Warp::squareToUniformDisk(const Point2f &sample) {
     throw NoriException("Warp::squareToUniformDisk() is not yet implemented!");
 }
 
 float Warp::squareToUniformDiskPdf(const Point2f &p) {
     throw NoriException("Warp::squareToUniformDiskPdf() is not yet implemented!");
-}
-
-Vector3f Warp::squareToUniformSphereCap(const Point2f &sample, float cosThetaMax) {
-    throw NoriException("Warp::squareToUniformSphereCap() is not yet implemented!");
-}
-
-float Warp::squareToUniformSphereCapPdf(const Vector3f &v, float cosThetaMax) {
-    throw NoriException("Warp::squareToUniformSphereCapPdf() is not yet implemented!");
 }
 
 Vector3f Warp::squareToUniformSphere(const Point2f &sample) {
