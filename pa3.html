@@ -248,10 +248,10 @@ git pull https://github.com/wjakob/nori
     rendered. Then this integrator should compute the quantity
     </p>
 \[
-L(\mathbf{x})=\Phi \frac{\mathrm{max}(0, \cos\theta)}{\|\mathbf{x}-\mathbf{p}\|^2} V(\mathbf{x}\leftrightarrow\mathbf{p})
+L(\mathbf{x})=\frac{\Phi}{4\pi^2} \frac{\mathrm{max}(0, \cos\theta)}{\|\mathbf{x}-\mathbf{p}\|^2} V(\mathbf{x}\leftrightarrow\mathbf{p})
 \]
     <p>
-    where \(\theta\) is the angle between the shading surface normal
+    where \(\theta\) is the angle between the direction from \(\mathbf{x}\) to \(\mathbf{p}\) and the shading surface normal
     (available in <code>Intersection::shFrame::n</code>) at \(\mathbf{x}\)
     and
     </p>
