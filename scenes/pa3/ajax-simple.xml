@@ -7,7 +7,7 @@
 	<!-- Use the simple point light integrator -->
     <integrator type="simple">
         <point name="position" value="-20, 40, 20"/>
-        <color name="energy" value="3000, 3000, 3000"/>
+        <color name="energy" value="3.76e4, 3.76e4, 3.76e4"/>
     </integrator>
 
 	<!-- Load the Ajax bust (a freely available scan from the Jotero forum) -->

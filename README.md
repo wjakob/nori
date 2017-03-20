@@ -8,7 +8,7 @@ assignments in the course Advanced Computer Graphics taught at EPFL.
 
 ### Course information and framework documentation
 
-For access to course information including slides and reading material, visit the main [Advanced Computer Graphics website] (https://rgl.epfl.ch/courses/ACG17). The Nori 2 framework and coding assignments will be described on the [Nori website] (https://wjakob.github.io/nori).
+For access to course information including slides and reading material, visit the main [Advanced Computer Graphics website](https://rgl.epfl.ch/courses/ACG17). The Nori 2 framework and coding assignments will be described on the [Nori website](https://wjakob.github.io/nori).
 
 ### Note to researchers and students from other institutions
 
