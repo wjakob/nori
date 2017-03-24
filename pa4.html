@@ -1,0 +1,398 @@
+<div>
+    <h2>Overview</h2>
+    <p>
+        In this assignment, you will develop a rendering algorithm that
+        combines several previously unused architectural components of Nori
+        (Emitters, BSDFs) to compute the illumination integral discussed in
+        class. We will only focus on <em>direct</em> illumination for now (i.e.
+        light which has interacted with at most one material) and leave
+        <em>indirect</em> illumination for the next assignment. In the last
+        part of the assignment, you will also add a new BSDF model for
+        refractive materials ("dielectrics").
+    </p>
+    <p>
+        As usual, begin by importing the latest base code updates into your
+        repository by running
+    </p>
+<pre class="prettyprint lang-bash">
+git pull https://github.com/wjakob/nori
+</pre>
+    <p>
+        If there were any concurrent changes to the same file, you
+        may have to perform a <em>merge</em> (see the git tutorials under
+        "Preliminaries" for more information).
+    </p>
+    <h4>Fast BVH</h4>
+    <p>
+    As promised, we're also providing you with an optimized Bounding Volume Hierarchy for fast ray-intersection computations. To use it (which is entirely optional), download <a href="//rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/03/13/accel.zip"><tt>accel.zip</tt></a>, and overwrite your version of <code>src/accel.cpp</code> and <code>include/nori/accel.h</code> files with the contents of the ZIP file. Naturally, you may also continue using your own acceleration data structure.
+    </p>
+
+    <h3>1. Area lights (30 pts)</h3>
+    <p>
+        Our first goal will be to extend Nori so that any geometric object can
+        be turned into a light source known as an <em>area light</em>.
+    </p>
+    <p style="text-align:center">
+    <img src="images/bunny.png" style="max-width:150px">
+    </p>
+    <p>
+        Each
+        triangle of a mesh that is marked as an area light uniformly emits
+        radiance towards all directions above its surface. In Nori's XML
+        description language, area lights are specified using a nested
+        <tt>emitter</tt> tag of type <tt>area</tt>. Here is an example:
+    </p>
+    <pre class="prettyprint linenums lang-xml">
+&lt;scene&gt;
+    &lt;!-- Load a OBJ file named "bunny.obj" --&gt;
+    &lt;mesh type="obj"&gt;
+        &lt;string name="filename" value="bunny.obj"/&gt;
+
+        &lt;!-- Turn the mesh into an area light source --&gt;
+        &lt;emitter type="area"&gt;
+            &lt;!-- Assign a uniform radiance of 1 W/m<sup>2</sup>sr --&gt;
+            &lt;color name="radiance" value="1, 1, 1"/&gt;
+        &lt;/emitter&gt;
+    &lt;/mesh&gt;
+
+    &lt;!-- ..... --&gt;
+&lt;/scene&gt;</pre>
+    <p>Currently, Nori won't be able to understand the above snippet since
+    area lights are not yet implemented.
+    To add area lights to Nori, follow these steps:
+    </p>
+    <ol>
+
+        <li>Create a new class <code>AreaLight</code> in a file named
+            <code>src/area.cpp</code> that derives from the
+            <code>Emitter</code> class. Connect it to the scene parser using
+            the <code>NORI_*</code> macros similar to the
+            <code>Integrator</code>s you have previously created. Use the constructor's
+            <code>const PropertyList &amp;</code> argument to extract the <code>radiance</code>
+            parameter in the constructor.
+            <br/>
+            <br/>
+        </li>
+
+        <li>
+            <p> The Monte Carlo rendering technique in part 2 of this
+            assignment requires the ability to sample points that are uniformly
+            distributed on area lights. Currently, none of this functionality
+            exists.
+            </p>
+            <p>
+            Begin by familiarizing yourself with the <code>Mesh</code> class to see how
+            vertices, faces and normals are stored. Next, add a method that
+            uniformly samples positions on the surface associated with a
+            specific <code>Mesh</code> instance.
+            The name and precise interface of this method are completely up to you.
+            However, we suggest that it should take a uniformly 2D sample and return
+            </p>
+            <ol>
+                <li>The sampled position \(\mathbb{p}\) on the surface of the mesh</li>
+                <li>The interpolated surface normal \(\mathbb{n}\) at
+                    \(\mathbb{p}\) computed from the per-vertex normals. When the
+                    mesh does not provide per-vertex normals, compute and return
+                    the face normal instead.</li>
+                <li>The probability density of the sample. This should be the reciprocal
+                    of the surface area of the entire mesh.<br/><br/></li>
+            </ol>
+
+            <p>
+            You may find the <code>DiscretePDF</code> class useful to implement the sampling step. We suggest that you use this class to build a discrete probability distribution that will allow you to pick a triangle proportional to its surface area. Once a triangle is chosen, you can (uniformly) sample a barycentric coordinate \((\alpha, \beta, 1-\alpha-\beta)\) using the mapping
+            \[
+            \begin{pmatrix}
+            \alpha\\
+            \beta
+            \end{pmatrix}
+            \mapsto \begin{pmatrix}
+            1 - \sqrt{1 - \xi_1}\\
+            \xi_2\, \sqrt{1 - \xi_1}
+            \end{pmatrix}
+            \]
+            where \(\xi_1\) and \(\xi_2\) are uniform variates.
+        </li>
+
+        The precomputation to build the discrete probability distribution can be performed in the <code>activate()</code> method of the <code>Mesh</code> class, which is automatically invoked by
+        the XML parser.
+    </ol>
+
+
+    <h3>2. Distribution Ray Tracing (30 pts)</h3>
+		<p>
+            In this part you will implement a new direct illumination
+            integrator, which integrates the incident radiance by sampling
+            points on a set of emitters (a.k.a. light sources).
+
+            Emitters can be fully, partially or not at all visible from a point
+            in your scene, hence you will need to perform Monte Carlo
+            integration to compute the reflected radiance while accounting for
+            visibility.
+		</p>
+        <div class="row" style="margin: 30px">
+            <div class="col-md-3"/>
+            <div class="col-md-6">
+                <div class="thumbnail" style="margin: 10px">
+                    <a class="fancybox" href="images/motto-diffuse.jpg"><img src="images/motto-diffuse.jpg"/></a>
+                    <div class="caption">
+                        The motto of the rendering competition modeled as a
+                        diffuse object and illuminated by two spherical lights
+                        sources. Note the presence of smooth shadows below the
+                        text.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p>
+            Recall the <em>Reflection Equation</em> discussed in class, which expresses the reflected
+            radiance due to incident illumination from all directions as an integral over the unit hemisphere centered at \(\mathbf{x}\):
+			\[
+                \newcommand{\vx}{\mathbf{x}}
+                \newcommand{\vc}{\mathbf{c}}
+                \newcommand{\vy}{\mathbf{y}}
+                \newcommand{\vn}{\mathbf{n}}
+                L_r(\vx,\omega_r) = \int_{\mathcal{H}^2} f_r (\vx,\omega_i,\omega_r)\,L_i (\vx,\omega_i)  \cos\theta_i\, \mathrm{d}\omega_i.
+			\]
+            We'll now put together all of the pieces to approximate this
+            integral using Monte Carlo sampling.
+        </p>
+        <p>
+
+            Begin by taking a look at the
+            <code>BSDF</code> class in Nori, which is an abstract
+            interface for materials representing the \(f_r\) term in the above
+            equation. Evaluating \(f_r\) entails a call to the
+            <code>BSDF::eval()</code> function, while sampling and probability
+            evaluation are realized using the <code>BSDF::sample()</code> and
+            <code>BSDF::pdf()</code> methods. All methods take a special
+            <code>BRDFQueryRecord</code> as argument, which stores
+            relevant quantities in a convenient data structure.
+        </p>
+        <p>
+            In this assignment, we will only consider <em>direct</em>
+            illumination, which means that \(L_i(\vx,\omega_i)\) is zero almost
+            everywhere except for rays that happen to hit an area light source.
+            A correct but naïve way of evaluating this integral would be to
+            uniformly sample a direction on the hemisphere and then check if it
+            leads to an intersection with a light source.
+        </p>
+        <p>
+            However, doing so would be extremely inefficient: light sources generally only
+            occupy a tiny area on the hemisphere, hence most samples would be wasted, causing
+            the algorithm to produce unusably noisy and unconverged images.
+        </p>
+        <p>
+            We will thus use a better strategy with a higher chance of success:
+            instead of sampling directions on the hemisphere and checking if
+            they hit a light source, we will directly sample points on the
+            light sources and then check if they are visible as seen from
+            \(\vx\). Conceptually, this means that we will integrate over the light source surfaces \(\mathcal{L}\) instead of the hemisphere \(\mathcal{H}^2\):
+			\[
+                \newcommand{\vr}{\mathbf{r}}
+                L_r(\vx,\omega_r) = \int_{\mathcal{L}} f_r (\vx,\vx\to\vy,\omega_r)\,L_e (\vy,\vy\to\vx) \, \mathrm{d} \vy?? \qquad(\text{warning: this is not (yet) correct})
+			\]
+        </p>
+        <p>
+        Here \(\mathbf{x}\to\mathbf{y}\) refers to the normalized direction from \(\mathbf{x}\) to \(\mathbf{y}\), and \(L_e(\vx,\omega)\) is the amount of emitted radiance at position \(\vx\) into direction \(\omega\).
+        The integral above motivates the algorithm, but it is not correct:
+        since we changed the integration variable from the solid angle domain
+        to positions, there should be a matching change of variables factor
+        that accounts for this (this is not unlike switching from polar coordinates
+        to a Cartesian coordinate system).
+
+        In our case, this change of variable factor is known as the <em>geometric term</em>:
+        \[
+            G(\vx\leftrightarrow\vy) :=V(\vx\leftrightarrow\vy)\frac{
+            |\vn_\vx \cdot(\vx\to\vy)|\,\cdot\,
+            |\vn_\vy \cdot(\vy\to\vx)|}{\|\vx-\vy\|^2}
+        \]
+        </p>
+        <p>
+        The first
+term \(V(\vx\leftrightarrow\vy)\) is the visibility function, which is \(1\) or \(0\) if the
+two points are mutually visible or invisible, respectively. The numerator contains the
+absolute value of two dot products that correspond to the familiar cosine foreshortening factors
+at both \(\vx\) and \(\vy\). The denominator is the inverse square falloff that we already observed
+when rendering with point lights. The \("\leftrightarrow"\) notation expresses that the function is symmetric with respect to its arguments.
+        </p>
+
+        <p>
+            Given the geometric term, we can now write down the final form of the reflection equation
+            defined as an integral over surfaces:
+			\[
+                \newcommand{\vr}{\mathbf{r}}
+                L_r(\vx,\omega_r) = \int_{\mathcal{L}} f_r (\vx,\vx\to\vy,\omega_r)\,G(\vx\leftrightarrow\vy)\,L_e (\vy,\vy\to\vx)\, \mathrm{d} \vy
+			\]
+			Note that the cosine factor in the original integral is absorbed by one of the dot products
+            the geometric term.
+        To implement distribution ray tracing in Nori, follow these steps:
+		</p>
+        <ol>
+            <li>Create a new integrator <code>src/whitted.cpp</code> (the name will become clear later)<br/><br/></li>
+            <li>The integrator should begin by finding the first surface interaction \(\vx\) visible along the ray passed to the <code>Li()</code> function. This part works just like in the <code>simple.cpp</code> integrator.
+                What this step does is to apply the ray tracing operator \(\vr(\vc, \omega_c)\) to convert reflected radiance at surfaces into incident radiance at the camera \(\vc\):
+	\[
+		L_i(\vc,\omega_c)=L_r(\vr(\vc, \omega_c), -\omega_c).
+	\]
+                </li>
+            <li>
+                <p>
+        Given \(\vx\), the distribution ray tracer should then approximate the above integral by sampling a
+        <em>single</em> position \(\vy\in\mathcal{L}\) and then returning the body of the integral,
+        i.e.
+\[
+f_r (\vx,\vx\to\vy,\omega_r)\,G(\vx\leftrightarrow\vy)\,L_e (\vy,\vy\to\vx)
+\]
+<em>divided</em> by the probability of the sample \(\vy\) per unit area.
+However, this will require a few extra pieces of functionality.
+</p>
+<p>
+                Take a look at the <code>Emitter</code> interface. It is almost completely empty. Clearly, some mechanism for sample generation, evaluation of probabilities, and for returning the emitted radiance is needed.
+        As before, we don't explicitly specify an API that
+		you should use to implement the sampling and evaluation operations for
+		emitters—finding suitable abstractions is part of the exercise.
+		That said, you can look at the <code>BSDF</code> definitions in
+		<tt>include/nori/bsdf.h</tt> to get a rough idea as to
+		how one might get started with such an interface.
+</p>
+
+            </li>
+        </ol>
+        Discuss the design choices and challenges you faced in your report. Render the scene <code>scenes/pa4/motto-diffuse.xml</code> and don't forget to include a comparison against our reference solution:
+    <a href="//rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/03/24/motto-diffuse.exr"><tt>motto-diffuse.exr</tt></a>.
+<p>
+    <h3>3. Dielectrics (30 pts)</h3>
+        <div class="row" style="margin: 30px">
+            <div class="col-md-4">
+                <div class="thumbnail" style="margin: 10px">
+                    <a class="fancybox" href="http://taylorsciencegeeks.weebly.com/uploads/5/9/2/0/59201005/829855554.jpg"><img src="http://taylorsciencegeeks.weebly.com/uploads/5/9/2/0/59201005/829855554.jpg"/></a>
+                    <div class="caption">
+                        This seems like a fitting example of a dielectric given our final project theme.
+                        [<a href="http://taylorsciencegeeks.weebly.com/blog/examples-of-refraction-in-our-everyday-life">Science News</a>]
+                    </div>
+                </div>
+            </div>
+        </div>
+    <p>
+        Take a look at the file <code>src/mirror.cpp</code>, which defines BSDF
+        of a perfect mirror based on a <em>Dirac delta function</em>.
+    </p>
+    <p>
+        Complete the template in <code>src/dielectric.cpp</code> to implement
+        the <code>sample()</code> method for a dielectric (i.e. refractive)
+        BSDF based on Snell's law and the Fresnel equations discussed in class.
+        Note that while the <tt>mirror</tt> sampling code is completely
+        deterministic, the <tt>dielectric</tt> BSDF should use the supplied
+        random sample to choose between a reflection (proportional to the
+        amount of reflection) and a refraction event (proportional to the
+        amount of refraction).
+    </p>
+    <p>
+        One potential gotcha: when we discussed specular BRDFs in class, they
+        involved a division by a cosine factor to cancel out a corresponding
+        term from the reflection integral equation. Due to the convention used
+        by implementations of the <code>BSDF::sample</code> interface (see
+        <code>include/nori/bsdf.h</code> for details), this division is not
+        needed in Nori.
+        Specifically, any BRDFs that require a cosine factor in the reflection
+        integral should multiply by it in <code>sample()</code>, while specular
+        materials simply omit this step.
+    </p>
+
+    <h3>4. Whitted-style ray tracing (10 pts)</h3>
+    <p>
+        The final step of this assignment involves extending the distribution
+        ray tracer to turn it into a <em>Whitted</em>-style ray tracer (named after Turner Whitted) that
+        is able to account for specular reflections and refractions.
+    </p>
+	<div class="row" style="margin: 30px">
+		<div class="col-md-4">
+			<div class="thumbnail" style="margin: 10px">
+				<a class="fancybox" href="images/motto-dielectric.jpg"><img src="images/motto-dielectric.jpg"/></a>
+				<div class="caption">
+					The motto of the rendering competition modeled as a dielectric object.
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="thumbnail" style="margin: 10px">
+				<a class="fancybox" href="images/cbox.jpg"><img src="images/cbox.jpg"/></a>
+				<div class="caption">
+				    A Cornell box containing glass and metal spheres
+				</div>
+			</div>
+		</div>
+	</div>
+    <p>
+        Modify <code>src/whitted.cpp</code> as follows:
+    </p>
+    <ol>
+        <li>Once the surface position \(\vx\) is determined, check if the
+            material is specular or diffuse (via <code>BSDF::isSpecular()</code>).
+            In the latter situation, simply fall back to your previous implementation.
+            The specular case is treated specially: instead of sampling a
+            position on a light source, invoke the specular surface's <code>BSDF::sample()</code>
+            method to generate a refracted direction.
+            Note that the BSDF of an intersection <tt>its</tt> can be obtained using the expression <code>its.mesh->getBSDF()</code>.
+            This will produce a sampling weight \(c\) and a new direction \(\omega_r\).<br/><br/>
+        </li>
+        <li>
+            Request an additional random number \(\xi\) from the sampler
+            and then return the following radiance estimate from your
+            rendering algorithm's <code>Li()</code> method:
+            \[
+            L_i(\vc, \omega_c) = \begin{cases}
+            \frac{1}{0.95}c L_i(\vx, \omega_r),&\text{if $\xi < 0.95$}\\
+           0,&\text{otherwise}
+            \end{cases}
+            \]
+            Note that this recursion continous for as long as the reflected or refracted rays hit specular surfaces. It ends when a diffuse surface is found where a single emitter sampling step is performed using part 2 of this assignment.
+            The trick involving the random number \(\xi\) is used to prevent the
+            algorithm from getting stuck in an infinite sequences of refraction and reflection events and will be
+            discussed in more detail later in class.
+        </li>
+    </ol>
+    <p>
+   Discuss design choices you made in your implementation of parts 2 and 3 and explain challenges you faced in your report. Render the scenes <code>scenes/pa4/motto-dielectric.xml</code> and <code>scenes/pa4/cbox.xml</code> and include a comparison against our reference solutions:
+    <a href="//rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/03/24/motto-dielectric.exr"><tt>motto-dielectric.exr</tt></a> and
+    <a href="//rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/03/24/cbox.exr"><tt>cbox.exr</tt></a>.
+    </p>
+
+	<h3> Hacker Points: Specialized Light Source Sampling <em>(15 points)</em></h3>
+<div class="alert alert-info" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points 
+for the daring few. Sometimes you might be required to implement something that was not taught in class and 
+you might have to do some research and creative thinking. Hacker Points are awarded only to students who 
+implemented all of the remaining assignment, and they are added to the final score.
+</div>
+
+	<p>
+		For this part your task is to create three efficient specialized emitters (rectangle,
+		sphere and disk lights) that can improve the sample variance of your
+		integrators with respect to your current generalized mesh emitter implementation.
+		Identify the sources of variance in your existing implementation, address them
+		and validate your results. Possible sources of variance are:
+		<ul>
+			<li> Zero contribution (wasted) samples (e.g. not visible samples on a sphere light). </li>
+			<li> High variance samples (e.g. distance squared in density function). </li>
+			<li> Bad distribution of samples (e.g. clumping of samples because of independent sampling). </li>
+		</ul>
+	</p>
+
+	<p>
+		Your goal is to optimize sampling for these specialized light sources by improving all three sources of variance
+		mentioned above.
+	</p>
+
+
+	<h4> What to submit </h4>
+	<p>
+		<ul>
+			<li> Implementation of your specialized classes for each if the three emitters.</li>
+			<li> A paragraph in your report (per emitter) explaining the optimizations you implemented and how they relate to the aforementioned sources of variance.</li>
+			<li> A table and a paragraph in your report summarizing the variance improvement in a simple test case.</li>
+			<li> An equal sample count comparison with your previous generalized implementation of a scene featuring all emitters.</li>
+			<li> Citations for any papers/ideas that you relied on.</li>
+		</ul>
+	</p>
+
+</div>
