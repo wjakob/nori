@@ -328,7 +328,7 @@ However, this will require a few extra pieces of functionality.
     </p>
     <ol>
         <li>Once the surface position \(\vx\) is determined, check if the
-            material is specular or diffuse (via <code>BSDF::isSpecular()</code>).
+            material is specular or diffuse (via <code>BSDF::isDiffuse()</code>).
             In the latter situation, simply fall back to your previous implementation.
             The specular case is treated specially: instead of sampling a
             position on a light source, invoke the specular surface's <code>BSDF::sample()</code>
