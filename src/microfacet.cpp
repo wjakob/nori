@@ -61,6 +61,19 @@ public:
     /// Sample the BRDF
     Color3f sample(BSDFQueryRecord &bRec, const Point2f &_sample) const {
     	throw NoriException("MicrofacetBRDF::sample(): not implemented!");
+
+        // Note: Once you have implemented the part that computes the scattered
+        // direction, the last part of this function should simply return the
+        // BRDF value divided by the solid angle density and multiplied by the
+        // cosine factor from the reflection equation, i.e.
+        // return eval(bRec) * Frame::cosTheta(bRec.wo) / pdf(bRec);
+    }
+
+    bool isDiffuse() const {
+        /* While microfacet BRDFs are not perfectly diffuse, they can be
+           handled by sampling techniques for diffuse/non-specular materials,
+           hence we return true here */
+        return true;
     }
 
     std::string toString() const {

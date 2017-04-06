@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MI test scene from Eric Veach's thesis - modeled
+     after a file by Steve Marschner (CS667) -->
+
+<scene>
+	<integrator type="path_simple"/>
+
+	<sampler type="independent">
+		<integer name="sampleCount" value="256"/>
+	</sampler>
+
+	<camera type="perspective">
+		<transform name="toWorld">
+			<lookat origin="0, 6, 27.5" target="0, -1.5, 2.5" up="0, 1, 0"/>
+		</transform>
+		<float name="fov" value="25"/>
+		<integer name="width" value="768"/>
+		<integer name="height" value="512"/>
+	</camera>
+
+	<mesh type="obj">
+		<string name="filename" value="sphere.obj"/>
+		<transform name="toWorld">
+			<scale value="0.1, 0.1, 0.1"/>
+			<translate value="-1.25, 0, 0"/>
+		</transform>
+		<emitter type="area">
+           <color name="radiance" value="100, 100, 100"/>
+		</emitter>
+		<bsdf type="diffuse">
+			<color name="albedo" value="0,0,0"/>
+		</bsdf>
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="sphere.obj"/>
+		<transform name="toWorld">
+			<scale value="0.03333, 0.03333, 0.03333"/>
+			<translate value="-3.75, 0, 0"/>
+		</transform>
+		<emitter type="area">
+			<color name="radiance" value="901.803, 901.803, 901.803"/>
+		</emitter>
+		<bsdf type="diffuse">
+			<color name="albedo" value="0,0,0"/>
+		</bsdf>
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="sphere.obj"/>
+		<transform name="toWorld">
+			<scale value="0.3, 0.3, 0.3"/>
+			<translate value="1.25, 0, 0"/>
+		</transform>
+		<emitter type="area">
+           <color name="radiance" value="11.1111, 11.1111, 11.1111"/>
+		</emitter>
+		<bsdf type="diffuse">
+			<color name="albedo" value="0,0,0"/>
+		</bsdf>
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="sphere.obj"/>
+		<transform name="toWorld">
+			<scale value="0.9, 0.9, 0.9"/>
+			<translate value="3.75, 0, 0"/>
+		</transform>
+		<emitter type="area">
+           <color name="radiance" value="1.23457, 1.23457, 1.23457"/>
+		</emitter>
+		<bsdf type="diffuse">
+			<color name="albedo" value="0,0,0"/>
+		</bsdf>
+	</mesh>
+    
+    <mesh type="obj">
+		<string name="filename" value="sphere.obj"/>
+		<transform name="toWorld">
+			<scale value="1, 1, 1"/>
+			<translate value="0, 4, 3"/>
+		</transform>
+		<emitter type="area">
+           <color name="radiance" value="100, 100, 100"/>
+		</emitter>
+		<bsdf type="diffuse">
+			<color name="albedo" value="0,0,0"/>
+		</bsdf>
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="plate1.obj"/>
+		<bsdf type="microfacet">
+			<color name="kd" value="0.0175, 0.0225, 0.0325"/>
+			<float name="alpha" value="0.005"/>
+		</bsdf>
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="plate2.obj"/>
+		<bsdf type="microfacet">
+			<color name="kd" value="0.0175, 0.0225, 0.0325"/>
+			<float name="alpha" value="0.02"/>
+		</bsdf>
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="plate3.obj"/>
+		<bsdf type="microfacet">
+			<color name="kd" value="0.0175, 0.0225, 0.0325"/>
+			<float name="alpha" value="0.05"/>
+		</bsdf>
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="plate4.obj"/>
+		<bsdf type="microfacet">
+			<color name="kd" value="0.0175, 0.0225, 0.0325"/>
+			<float name="alpha" value="0.1"/>
+		</bsdf>
+	</mesh>
+
+	<mesh type="obj">
+		<string name="filename" value="floor.obj"/>
+		<bsdf type="diffuse">
+			<color name="albedo" value="0.1 0.1 0.1"/>
+		</bsdf>
+	</mesh>
+</scene>
