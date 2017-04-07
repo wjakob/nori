@@ -82,19 +82,19 @@ git pull https://github.com/wjakob/nori
     \]
     Take a look
     at the methods in the <code>Frame</code> class if you find yourself
-    evaluating trigonometric functions in the body of <code>Warp::squareToBeckmannPdf</code>. 
+    evaluating trigonometric functions in the body of <code>Warp::squareToBeckmannPdf</code>.
     </p>
    <h4>Part 1.2: Sampling the Beckmann distribution (10 pts)</h4>
    <p>
    Having implemented a way to query this distribution, we'll now want to generate points on the sphere that exactly follow the distribution.
-   Note how the \(D(\theta,\phi)\) is symmetric around the north pole (in other words: its spherical coordinate representation is <em>separable</em>). Sampling can thus be split into two steps: 
+   Note how the \(D(\theta,\phi)\) is symmetric around the north pole (in other words: its spherical coordinate representation is <em>separable</em>). Sampling can thus be split into two steps:
    </p>
    <ol>
    <li>
        Uniformly sampling the azimuth \(\phi=2\pi\xi_1\) given a uniform variate \(\xi_1\).<br/><br/>
    </li>
    <li>
-    Mapping a second uniform variate \(\xi_2\) through the inverse CDF of \(D\)'s 
+    Mapping a second uniform variate \(\xi_2\) through the inverse CDF of \(D\)'s
     longitudinal part to obtain \(\theta\).<br/><br/>
    </li>
     </ol>
@@ -102,7 +102,7 @@ git pull https://github.com/wjakob/nori
 
     <div class="alert alert-info" role="alert"><b>Hint</b>: You might find integration by substitution useful,
     e.g. using the mappings \(x = \cos{\theta}\) and \(\tan^2{\theta} = \frac{1-x^2}{x^2}\).
-    In addition this identity might come in handy: 
+    In addition this identity might come in handy:
     \[
     \int f'(x) ~ e^{~f(x)}\,\mathrm{d}x = e^{~f(x)} + C\text{, where } C\in\mathbb{R}
     \]
@@ -116,7 +116,7 @@ git pull https://github.com/wjakob/nori
             G(\bold{\omega_i},\bold{\omega_o},\bold{\omega_{h}})}{4 \cos{\theta_i} \cos{\theta_o}\cos\theta_h}, ~~
             \bold{\omega_{h}} = \frac{\left(\bold{\omega_i} + \bold{\omega_o}\right)}{\left|\left|\bold{\omega_i} + \bold{\omega_o}\right|\right|_2}
         \]
-        Here, \(k_d \in [0,1]^3\) is the RGB diffuse reflection coefficient, \(k_s = 1 - \max(k_d)\), \(F\) is the Fresnel reflection coefficient (check <tt>common.cpp</tt>), \(\eta_e\) is the exterior index of refraction and \(\eta_i\) is the interior index of refraction. 
+        Here, \(k_d \in [0,1]^3\) is the RGB diffuse reflection coefficient, \(k_s = 1 - \max(k_d)\), \(F\) is the Fresnel reflection coefficient (check <tt>common.cpp</tt>), \(\eta_e\) is the exterior index of refraction and \(\eta_i\) is the interior index of refraction.
         The various \(\cos\theta_k\) cosine factors relate to the angle that the corresponding direction \(\bold{\omega_k}\) makes with the Z axis in the local coordinate system.
         The shadowing term uses the rational function approximation defined in class:
         \[
@@ -148,7 +148,7 @@ git pull https://github.com/wjakob/nori
         \[
             k_s ~ D(\omega_h) \cos{\theta_h} ~ J_h + (1-k_s) \frac{\cos{\theta_o}}{\pi}
         \]
-        where \(J_h = (4 (\omega_h \cdot \omega_o))^{-1}\) 
+        where \(J_h = (4 (\omega_h \cdot \omega_o))^{-1}\)
         is the Jacobian of the half direction mapping discussed in class.
 
         This an be done using the following sequence of steps:
@@ -173,7 +173,7 @@ git pull https://github.com/wjakob/nori
         need to validate the correctness of your code. The base code
         includes two XML files containing sequences of statistical tests that a
         correct implementation should be able to pass.
-        <ul> 
+        <ul>
             <li><tt>scenes/pa5/tests/chi2test-microfacet.xml</tt>, </li>
             <li><tt>scenes/pa5/tests/ttest-microfacet.xml</tt></li>
         </ul>
@@ -181,7 +181,7 @@ git pull https://github.com/wjakob/nori
         Next, use your <tt>whitted</tt> integrator from the previous
         assignment to render a microfacet Ajax bust and ensure that you can
         match our references:
-        <ul> 
+        <ul>
             <li><tt>scenes/pa5/ajax/ajax-rough.xml</tt> (reference: <a href="https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/04/06/ajax-rough.exr">ajax-rough.exr</a>)
             </li>
             <li><tt>scenes/pa5/ajax/ajax-smooth.xml</tt> (reference: <a href="https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/04/06/ajax-smooth.exr">ajax-smooth.exr</a>)
@@ -239,7 +239,7 @@ git pull https://github.com/wjakob/nori
         </li>
     </ol>
     <p>
-    Use your implementation to render 
+    Use your implementation to render
     </p>
     <ol>
         <li>The Cornell box in <code>scenes/pa5/cbox/cbox.xml</code>
@@ -275,7 +275,7 @@ git pull https://github.com/wjakob/nori
         </div>
     </div>
     <p>
-        Following part 2, extend your path tracer with multiple importance sampling. This specifically entails: 
+        Following part 2, extend your path tracer with multiple importance sampling. This specifically entails:
     </p>
     <ol>
         <li>When generating a sample on a light source, determine the density of this
@@ -292,7 +292,7 @@ git pull https://github.com/wjakob/nori
         <li> When generating a BRDF sample (which would normally only be used to estimate
             the indirect illumination component), check if it hits a light source.
             In this case, also use this sample to estimate the <em>direct</em> illumination
-            component at the current vertex. 
+            component at the current vertex.
         </li>
         <li>
             Once more, estimate the probability with which light source sampling <em>would hypothetically</em> have sampled this point, and weight the contribution of the sample using the balance heuristic:
@@ -303,7 +303,7 @@ git pull https://github.com/wjakob/nori
         </li>
     </ol>
     <p>
-    Use your implementation to render 
+    Use your implementation to render
     </p>
     <ol>
         <li>The Veach material test scene in <code>scenes/pa5/veach_mi/veach_path.xml</code>
@@ -311,4 +311,55 @@ git pull https://github.com/wjakob/nori
         <li>The table test scene in <code>scenes/pa5/table/table_path.xml</code>
             (reference: <a href="https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/04/07/table_path.exr">table_path.exr</a>).</li>
     </ol>
+
+	<h3> Hacker Points: refraction through rough dielectrics<em> (20 points)</em></h3>
+<div class="alert alert-info" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points
+for the daring few. Sometimes you might be required to implement something that was not taught in class and
+you might have to do some research and creative thinking. Hacker Points are awarded only to students who
+implemented all of the remaining assignment, and they are added to the final score.
+</div>
+    <div class="row" style="margin: 30px">
+        <div class="col-md-6">
+            <div class="thumbnail" style="margin: 10px">
+                <a class="fancybox" href="images/ajax-rdiel1.jpg"><img src="images/ajax-rdiel1.jpg"/></a>
+                <div class="caption">
+                    Rendering of the Ajax bust with a slightly rough refractive material.
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="thumbnail" style="margin: 10px">
+                <a class="fancybox" href="images/ajax-rdiel2.jpg"><img src="images/ajax-rdiel2.jpg"/></a>
+                <div class="caption">
+                    Rendering of the Ajax bust with a <em>very</em> rough refractive material.
+                </div>
+            </div>
+        </div>
+    </div>
+
+	<p>
+        For this part your task is to extend the rough dielectric BRDF into a
+        complete <em>BSDF</em> that also accounts for refraction. You will also
+        want to remove the diffuse component as well as the \(k_d\) parameter.
+        Begin by reading the paper <em><a href="https://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.html">Microfacet Models for Refraction through Rough Surfaces</a></em> by
+         Bruce Walter, Stephen R. Marschner, Hongsong Li, and Kenneth E.
+         Torrance.
+    </p>
+    <p>
+        To support rough refraction, you implementation will need to randomly
+        choose between the reflection and the refraction component based on the
+        Fresnel coefficient. Follow the instructions in the paper by Walter et
+        al. to add the latter case based on the generalized half-direction
+        vector for refraction.
+    </p>
+
+	<h4> What to submit </h4>
+	<p>
+		<ul>
+            <li> A discussion of how you chose to implement the Walter et al. paper in Nori. </li>
+            <li> The code of your new <code>roughdielectric</code> BSDF.</li>
+            <li> At least two refractive renderings of the Ajax scene with different roughness values.</li>
+            <li> Results of Chi^2 tests, which demonstrate that your sampling technique works correctly.</li>
+		</ul>
+	</p>
 </div>
