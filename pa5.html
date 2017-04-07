@@ -98,7 +98,7 @@ git pull https://github.com/wjakob/nori
     longitudinal part to obtain \(\theta\).<br/><br/>
    </li>
     </ol>
-    Follow these two steps and implement the resulting sampling technique in <code>Warp::squareToBeckmann</code>. Try running the statistical test implemented in the <tt>warptest</tt>executable -- your implementation should pass the tests for different values of \(\alpha\). You do not need to include the test results in your report, this is just for your own guidance.
+    Follow these two steps and implement the resulting sampling technique in <code>Warp::squareToBeckmann</code>. Try running the statistical test implemented in the <tt>warptest</tt> executable -- your implementation should pass the tests for different values of \(\alpha\). You do not need to include the test results in your report, this is just for your own guidance.
 
     <div class="alert alert-info" role="alert"><b>Hint</b>: You might find integration by substitution useful,
     e.g. using the mappings \(x = \cos{\theta}\) and \(\tan^2{\theta} = \frac{1-x^2}{x^2}\).
@@ -141,7 +141,6 @@ git pull https://github.com/wjakob/nori
         \]
         where \(\theta_v\) is the angle between the surface normal \(\bold{n}\)
         and the \(\omega_v\) argument of \(G_1\).
-
     </p>
     <h4>Part 1.4: Sampling the Microfacet BRDF (10 pts)</h4>
     <p>
@@ -165,6 +164,9 @@ git pull https://github.com/wjakob/nori
             </ol>
         </li>
     </ol>
+    <p>
+        Note that you will need to implement both <code>Microfacet::sample()</code> and <code>Microfacet::pdf()</code> to be able to run the following tests.
+    </p>
     <h4>Validation</h4>
     <p>
         To obtain the full set of points for the previous exercises, you will
@@ -185,10 +187,10 @@ git pull https://github.com/wjakob/nori
             <li><tt>scenes/pa5/ajax/ajax-smooth.xml</tt> (reference: <a href="https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/04/06/ajax-smooth.exr">ajax-smooth.exr</a>)
             </li>
         </ul>
-        Note that the visual GUI also contains
+        The <tt>warptest</tt>GUI also contains
         a \(\chi^2\) test for both the Beckmann distribution and the complete BRDF model, but this is just to facilitate debugging and
         visualization; the XML files are the real validation benchmark.
-        Mention in your report if there any errors reported.
+        Mention in your report if running these tests produces any errors.
     </p>
 	<h3>Part 2: Simple Path tracer <em>(15 points)</em></h3>
     <div class="row" style="margin: 30px">
@@ -219,14 +221,16 @@ git pull https://github.com/wjakob/nori
         specular objects. Now you'll extend this approach into a full path
         tracer that accounts for indirect illumination as well. We'll begin
         with a "simple" path tracer named <code>src/path_simple.cpp</code> that
-        does not (yet) use <em>multiple importance sampling</em>. The second
-        step involves adding MIS to create a full-featured path tracer that
-        combines both sampling strategies to reduce variance.
+        does not (yet) use <em>multiple importance sampling</em> (this
+        corresponds to "Path Tracing with explicit shadow rays" discussed
+        during lecture). The second step involves adding MIS to create a
+        full-featured path tracer that combines both sampling strategies to
+        reduce variance.
     </p>
     <p>This simple path tracer differs from <code>src/whitted.cpp</code> in the following ways:</p>
     <ol>
         <li>When the camera ray hits a light source, the value returned by
-            <code>Li()</code> should include the emitted radiance</li>
+            <code>Li()</code> should include the emitted radiance to account for directly visible light sources.</li>
         <li>Instead of sampling a position on the light source <em>or</em> the
             BRDF, both are now done in each iteration. The direction sampled
             from the BRDF is used to estimate the indirect illumination
@@ -246,11 +250,11 @@ git pull https://github.com/wjakob/nori
             (reference: <a href="https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/04/07/table_path_simple.exr">table_path_simple.exr</a>).</li>
     </ol>
     <p>
-    The first scene works only uses diffuse and specular materials and can be
+    The first scene only uses diffuse and specular materials and can be
     used to test your path tracer if you didn't do part 1 of this assignment
     yet. The latter two assume that the microfacet model BRDF is ready.
     </p>
-	<h3>Part 2: Path tracer with Multiple Importance Sampling <em>(25 points)</em></h3>
+	<h3>Part 3: Path tracer with Multiple Importance Sampling <em>(25 points)</em></h3>
     <div class="row" style="margin: 30px">
         <div class="col-md-6">
             <div class="thumbnail" style="margin: 10px">
@@ -279,7 +283,7 @@ git pull https://github.com/wjakob/nori
         <li> Weight the contribution of the light source sample using the following formula
             known as the <em>balance heuristic</em>:
             \[
-            w(p_\mathrm{Light}, p_\mathrm{BRDF}) = \frac{p_\mathrm{Light}}{p_\mathrm{Light} + p_\mathrm{BRDF}}.
+            w_\mathrm{Light}(p_\mathrm{Light}, p_\mathrm{BRDF}) = \frac{p_\mathrm{Light}}{p_\mathrm{Light} + p_\mathrm{BRDF}}.
             \]
             Remember that this only makes sense if both probabilities are expressed in
             the same <em>measure</em> (i.e. with respect to solid angles or unit area). This
@@ -293,8 +297,9 @@ git pull https://github.com/wjakob/nori
         <li>
             Once more, estimate the probability with which light source sampling <em>would hypothetically</em> have sampled this point, and weight the contribution of the sample using the balance heuristic:
             \[
-            w(p_\mathrm{Light}, p_\mathrm{BRDF}) = \frac{p_\mathrm{BRDF}}{p_\mathrm{Light} + p_\mathrm{BRDF}}.
+            w_\mathrm{BRDF}(p_\mathrm{Light}, p_\mathrm{BRDF}) = \frac{p_\mathrm{BRDF}}{p_\mathrm{Light} + p_\mathrm{BRDF}}.
             \]
+            Note the changed numerator in the above expression.
         </li>
     </ol>
     <p>
