@@ -146,9 +146,9 @@ git pull https://github.com/wjakob/nori
     <p>
         In this part you will generate samples according to the following density function:
         \[
-            k_s ~ D(\omega_h) \cos{\theta_h} ~ J_h + (1-k_s) \frac{\cos{\theta_o}}{\pi}
+            k_s ~ D(\omega_h) ~ J_h + (1-k_s) \frac{\cos{\theta_o}}{\pi}
         \]
-        where \(J_h = (4 (\omega_h \cdot \omega_o))^{-1}\)
+        where \(\omega_o\) is sampled and \(J_h = (4 (\omega_h \cdot \omega_o))^{-1}\)
         is the Jacobian of the half direction mapping discussed in class.
 
         This an be done using the following sequence of steps:
