@@ -182,9 +182,9 @@ public:
         std::string result = tfm::format("DiscretePDF[sum=%f, "
             "normalized=%f, pdf = {", m_sum, m_normalized);
 
-        for (size_t i=0; i<m_cdf.size(); ++i) {
+        for (size_t i=0; i<m_cdf.size()-1; ++i) {
             result += std::to_string(operator[](i));
-            if (i != m_cdf.size()-1)
+            if (i != m_cdf.size()-2)
                 result += ", ";
         }
         return result + "}]";
