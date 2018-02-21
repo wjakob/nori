@@ -1,162 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8"/>
-		<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
-		<meta name="description" content="Nori page"/>
-		<meta charset="UTF-8"/>
+    <head>
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <meta name="description" content="Nori page"/>
+        <meta charset="UTF-8"/>
 
-		<title>Nori</title>
+        <title>Nori</title>
 
-		<!-- Bootstrap core CSS -->
-		<link href="css/bootstrap.min.css" rel="stylesheet"/>
+        <!-- Bootstrap core CSS -->
+        <link href="css/bootstrap.min.css" rel="stylesheet"/>
 
-		<!-- Custom styles for this template -->
-		<link href="css/nori.css" rel="stylesheet"/>
+        <!-- Custom styles for this template -->
+        <link href="css/nori.css" rel="stylesheet"/>
 
-		<!-- Fancybox CSS -->
-		<link href="css/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" media="screen"/>
-	</head>
+        <!-- Fancybox CSS -->
+        <link href="css/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" media="screen"/>
+    </head>
 
-	<body>
-		<nav class="navbar navbar-inverse navbar-shadow navbar-fixed-top">
-			<div class="container">
-				<div class="navbar-header">
-					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-						<span class="sr-only">Toggle navigation</span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-					</button>
-					<a class="navbar-brand" href="#">Nori</a>
-				</div>
-				<div id="navbar" class="collapse navbar-collapse">
-					<ul class="nav navbar-nav">
-						<li class="active"><a href="#">Home</a></li>
-						<li><a href="#about">About</a></li>
-						<li><a href="#guidelines">Guidelines</a></li>
-						<li><a href="#pa1" data-toggle="collapse" data-parent="#accordion">Assignment 1</a></li>
+    <body>
+        <nav class="navbar navbar-inverse navbar-shadow navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">Nori</a>
+                </div>
+                <div id="navbar" class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li class="active"><a href="#">Home</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#guidelines">Guidelines</a></li>
+                        <li><a href="#pa1" data-toggle="collapse" data-parent="#accordion">Assignment 1</a></li>
                         <!--
-						<li><a href="#pa2" data-toggle="collapse" data-parent="#accordion">Assignment 2</a></li>
-						<li><a href="#pa3" data-toggle="collapse" data-parent="#accordion">Assignment 3</a></li>
-						<li><a href="#pa4" data-toggle="collapse" data-parent="#accordion">Assignment 4</a></li>
-						<li><a href="#pa5" data-toggle="collapse" data-parent="#accordion">Assignment 5</a></li>
+                        <li><a href="#pa2" data-toggle="collapse" data-parent="#accordion">Assignment 2</a></li>
+                        <li><a href="#pa3" data-toggle="collapse" data-parent="#accordion">Assignment 3</a></li>
+                        <li><a href="#pa4" data-toggle="collapse" data-parent="#accordion">Assignment 4</a></li>
+                        <li><a href="#pa5" data-toggle="collapse" data-parent="#accordion">Assignment 5</a></li>
                         -->
-					</ul>
-				</div><!--/.nav-collapse -->
-			</div>
-		</nav>
+                    </ul>
+                </div><!--/.nav-collapse -->
+            </div>
+        </nav>
 
-		<div class="container tooltips">
-			<div class="row-centered">
-				<div class="col-centered">
-					<img class="img-responsive" src="images/logo-beveled.png"/>
-				</div>
-			</div>
-			<div class="page-header">
-				<h1>Nori <small>an educational ray tracer</small></h1>
-			</div>
+        <div class="container tooltips">
+            <div class="row-centered">
+                <div class="col-centered">
+                    <img class="img-responsive" src="images/logo-beveled.png"/>
+                </div>
+            </div>
+            <div class="page-header">
+                <h1>Nori <small>an educational ray tracer</small></h1>
+            </div>
 
-			<div class="row">
-				<div class="col-md-6 text-justify" id="about">
-					<h2>About</h2>
-					<p>
-						Nori is a minimalistic ray tracer written in C++. It runs
-						on Windows, Linux, and Mac OS and provides a foundation for
-						the homework assignments in the course
-						<a href="http://rgl.epfl.ch/courses/ACG17">Advanced Computer Graphics</a> taught at EPFL.
-					</p>
-					<p>
-						While Nori provides much support code to simplify your development
-						work as much as possible, the code that you will initially receive
-						from us does very little: it loads a scene and saves a rendered image
-						as an <span rel="tooltip" title="A popular high dynamic-range (HDR) image file format"><a href="http://en.wikipedia.org/wiki/OpenEXR">OpenEXR</a></span> image&mdash;but
-						the actual rendering code is missing, hence the output image just
-						consists of black pixels.
+            <div class="row">
+                <div class="col-md-6 text-justify" id="about">
+                    <h2>About</h2>
+                    <p>
+                        Nori is a minimalistic ray tracer written in C++. It runs
+                        on Windows, Linux, and Mac OS and provides a foundation for
+                        the homework assignments in the course
+                        <a href="http://rgl.epfl.ch/courses/ACG17">Advanced Computer Graphics</a> taught at EPFL.
+                    </p>
+                    <p>
+                        While Nori provides much support code to simplify your development
+                        work as much as possible, the code that you will initially receive
+                        from us does very little: it loads a scene and saves a rendered image
+                        as an <span rel="tooltip" title="A popular high dynamic-range (HDR) image file format"><a href="http://en.wikipedia.org/wiki/OpenEXR">OpenEXR</a></span> image&mdash;but
+                        the actual rendering code is missing, hence the output image just
+                        consists of black pixels.
 
-						Your task will be to extend this system to a full-fledged physically-based
-						renderer as part of programming assignments and your final project.
-					</p>
-					<h2>Core features</h2>
-					The Nori base code provides many features that would be tedious
-					to implement from scratch. The following are included:
-					<ul>
-						<li>A simple GUI to watch images as they render</li>
-						<li>An XML-based scene file loader</li>
-						<li>Basic point/vector/normal/ray/bounding box classes</li>
-						<li>A pseudorandom number generator (<a href="http://www.pcg-random.org/">PCG32</a>)</li>
-						<li>Support for saving output as <a href="http://www.openexr.com/">OpenEXR files</a></li>
-						<li>A loader for Wavefront OBJ files</li>
-						<li>Ray-triangle intersection</li>
-						<li>Code for multi-threaded rendering</li>
-						<li>Image reconstruction filters</li>
-						<li>Statistical \(\chi^2\)- and \(t\)-tests to verify sampling code</li>
-						<li>A graphical visualization tool that can be used to inspect and validate sampling code.</li>
-						<li>An efficient parallel <a href="http://www.sci.utah.edu/~wald/Publications/2007/ParallelBVHBuild/fastbuild.pdf">bounding volume hierarchy builder</a> (provided in the third assignment)</li>
-					</ul>
-					<h3>References</h3>
-					<p>
-						You may find the following general references useful:
-						<ul>
+                        Your task will be to extend this system to a full-fledged physically-based
+                        renderer as part of programming assignments and your final project.
+                    </p>
+                    <h2>Core features</h2>
+                    The Nori base code provides many features that would be tedious
+                    to implement from scratch. The following are included:
+                    <ul>
+                        <li>A simple GUI to watch images as they render</li>
+                        <li>An XML-based scene file loader</li>
+                        <li>Basic point/vector/normal/ray/bounding box classes</li>
+                        <li>A pseudorandom number generator (<a href="http://www.pcg-random.org/">PCG32</a>)</li>
+                        <li>Support for saving output as <a href="http://www.openexr.com/">OpenEXR files</a></li>
+                        <li>A loader for Wavefront OBJ files</li>
+                        <li>Ray-triangle intersection</li>
+                        <li>Code for multi-threaded rendering</li>
+                        <li>Image reconstruction filters</li>
+                        <li>Statistical \(\chi^2\)- and \(t\)-tests to verify sampling code</li>
+                        <li>A graphical visualization tool that can be used to inspect and validate sampling code.</li>
+                        <li>An efficient parallel <a href="http://www.sci.utah.edu/~wald/Publications/2007/ParallelBVHBuild/fastbuild.pdf">bounding volume hierarchy builder</a> (provided in the third assignment)</li>
+                    </ul>
+                    <h3>References</h3>
+                    <p>
+                        You may find the following general references useful:
+                        <ul>
                             <li>"<em><a href="http://www.pbrt.org/">Physically Based Rendering, Third Edition: From Theory To Implementation</a></em>" by Matt Pharr, Wenzel Jakob, Greg Humphreys. Morgan Kaufmann.</li>
                             <li>"<em><a href="http://graphics.stanford.edu/papers/veach_thesis/">Robust Monte Carlo Methods for Light Transport Simulation</a></em>", PhD Thesis by Eric Veach, Stanford University, December 1997.</li>
-						</ul>
-					</p>
-					<h4>Permissible sources of information</h4>
-					<p>
-						Feel free to consult additional references
-						when completing projects, but remember cite them in your writeup.
-					</p>
-					<p>
+                        </ul>
+                    </p>
+                    <h4>Permissible sources of information</h4>
+                    <p>
+                        Feel free to consult additional references
+                        when completing projects, but remember cite them in your writeup.
+                    </p>
+                    <p>
                         When asked to implement feature \(X\), we request that
                         you don't go and read the source code of the
                         implementation of \(X\) in some other renderer, because
                         you will likely not learn much in the process. The PBRT
                         book is <span rel="tooltip" title="Technically, this book contains the implementation of a renderer, but that's ok in this case.">excluded</span> from this
                         rule. If in doubt, get in touch with the course staff.
-					</p>
-				</div>
-
-				<div class="col-md-6" id="general">
-					<h2>Guidelines for homework submissions</h2>
-					<p>
-					The goal of these exercises is to help you create the foundation of a good renderer for subsequent assignments and the rendering competition.  It is your job to convince us that you have implemented the assignments correctly, through the information provided in your reports and the quality/readability of your code. We will deduct points for poorly written code or inconclusive comparisons/validations in your report. Make sure to start working on the homework as early as possible.  Building your own advanced renderer is a lot of fun. Use this great opportunity, and don’t forget to have fun!
-					</p>
-
-					<div class="alert alert-danger" role="alert"><b>Note</b>: Undeclared copying of code or images (either from other students or from external sources)
-					is strictly prohibited! Any violation of this rule will lead to expulsion from the class. If you're ever in doubt, just include a citation in your code or report indicating where some idea came from, whether it be a web site, another piece of software, or anything—this always maintains your honesty, whether the source was used in a good way or not. When you turn your assignment in, you are claiming that everything in it is your original idea unless you cite a source for it.
-					</div>
-					<h3>What to submit?</h3>
-					<p>
-                    The codebase with your solution and source files. Do NOT include: binaries (i.e. remove the build folder), external dependencies (i.e. remove <tt>nori/ext</tt>) and class-provided scenes (i.e. remove <tt>nori/scenes</tt>).
                     </p>
-                    <p>
-                    Include a completed report based on the template available <a href="https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/02/21/report.zip">here</a> and adhere to the following conventions:
-					</p>
+                </div>
 
-					<ul>
+                <div class="col-md-6" id="general">
+                    <h2>Guidelines for homework submissions</h2>
+                    <p>
+                    The goal of these exercises is to help you create the foundation of a good renderer for subsequent assignments and the rendering competition.  It is your job to convince us that you have implemented the assignments correctly, through the information provided in your reports and the quality/readability of your code. We will deduct points for poorly written code or inconclusive comparisons/validations in your report. Make sure to start working on the homework as early as possible.  Building your own advanced renderer is a lot of fun. Use this great opportunity, and don’t forget to have fun!
+                    </p>
+
+                    <div class="alert alert-danger" role="alert"><b>Note</b>: Undeclared copying of code or images (either from other students or from external sources)
+                    is strictly prohibited! Any violation of this rule will lead to expulsion from the class. If you're ever in doubt, just include a citation in your code or report indicating where some idea came from, whether it be a web site, another piece of software, or anything—this always maintains your honesty, whether the source was used in a good way or not. When you turn your assignment in, you are claiming that everything in it is your original idea unless you cite a source for it.
+                    </div>
+                    <h3>What to submit?</h3>
+                    <p>
+                    Source code submission is handled via <it>GitHub Classrooms</it> explained below. For each assignment you will write a small report that should adhere to the following conventions:
+                    </p>
+
+                    <ul>
                         <li> Structure your report using numbers and titles following those of the assignment.</li>
                         <li> For every task include all images you generated in a format that is viewable within a web browser. You can use <a href="https://bitbucket.org/edgarv/hdritools/downloads/">HDRI Tools</a> or Photoshop to tonemap you images and save them as JPEG or PNG images. We recommend tonemapping your images by just changing exposure and using sRGB (if available) or a with a gamma value of 2.2.</li>
                         <li>Include descriptions of encountered problems, a list of external libraries that you used (if applicable) and the time you spent on each task.</li>
-					</ul>
+                    </ul>
 
-					The task descriptions may contain more specific instructions on what has to be included.
-					Solutions to programming and theoretical assignments should be uploaded on Moodle.
+                    The task descriptions may contain more specific instructions on what has to be included.
 
                     <h3>Comments</h3>
-					<p>
-					We would appreciate any comments or criticism to improve the
-					projects in future years. Please use the first section of your report
+                    <p>
+                    We would appreciate any comments or criticism to improve the
+                    projects in future years. Please use the first section of your report
                     to provide feedback--naturally, this part will not be graded.
-					Examples of information that is useful to us includes:
-					</p>
-					<ul>
-						<li>How much time did you spend on the assignment? How was it divided between designing, coding, and testing?</li>
-						<li>What advice should we have given you before you started?</li>
-						<li>What was hard or surprising about the assignment?</li>
-						<li>What did you like or dislike? What else would you change?</li>
-					</ul>
+                    Examples of information that is useful to us includes:
+                    </p>
+                    <ul>
+                        <li>How much time did you spend on the assignment? How was it divided between designing, coding, and testing?</li>
+                        <li>What advice should we have given you before you started?</li>
+                        <li>What was hard or surprising about the assignment?</li>
+                        <li>What did you like or dislike? What else would you change?</li>
+                    </ul>
 
                     <h3>Late submissions</h3>
                     <p>
@@ -173,79 +169,79 @@
                         <li>2 days late: max 50% of score</li>
                         <li>3 days late or more: 0%</li>
                     </ul>
-				</div>
-			</div> <!-- row -->
+                </div>
+            </div> <!-- row -->
 
-			<div class="panel-group row" id="accordion" style="margin-top:40px">
-				<div class="panel panel-default">
-					<div id="pa1-header" class="panel-heading">
-						<h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#pa1">Assignment 1: Downloading and Compiling Nori (5 pts)</a></h4>
-					</div>
-					<div id="pa1" class="panel-collapse collapse">
-						<div class="panel-body">
-							<div id="pa1-body"></div>
-						</div>
-					</div>
-				</div>
+            <div class="panel-group row" id="accordion" style="margin-top:40px">
+                <div class="panel panel-default">
+                    <div id="pa1-header" class="panel-heading">
+                        <h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#pa1">Assignment 1: Downloading and Compiling Nori (5 pts)</a></h4>
+                    </div>
+                    <div id="pa1" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <div id="pa1-body"></div>
+                        </div>
+                    </div>
+                </div>
                 <!--
-				<div class="panel panel-default">
-					<div id="pa2-header" class="panel-heading">
-						<h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#pa2">Assignment 2: Ray Tracing Acceleration Data Structures (100 pts)</a></h4>
-					</div>
-					<div id="pa2" class="panel-collapse collapse">
-						<div class="panel-body">
-							<div id="pa2-body"></div>
-						</div>
-					</div>
-				</div>
-				<div class="panel panel-default">
-					<div id="pa3-header" class="panel-heading">
-						<h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#pa3">Assignment 3: Monte Carlo Sampling and Ambient Occlusion (100 pts)</a></h4>
-					</div>
-					<div id="pa3" class="panel-collapse collapse">
-						<div class="panel-body">
-							<div id="pa3-body"></div>
-						</div>
-					</div>
-				</div>
-				<div class="panel panel-default">
-					<div id="pa4-header" class="panel-heading">
-						<h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#pa4">Assignment 4: Distribution and Whitted-style Ray Tracing (100 pts)</a></h4>
-					</div>
-					<div id="pa4" class="panel-collapse collapse">
-						<div class="panel-body">
-							<div id="pa4-body"></div>
-						</div>
-					</div>
-				</div>
-				<div class="panel panel-default">
-					<div id="pa5-header" class="panel-heading">
-						<h5 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#pa5">Assignment 5: Path Tracing, Microfacet Models, and Multiple Importance Sampling (100 pts)</a></h5>
-					</div>
-					<div id="pa5" class="panel-collapse collapse">
-						<div class="panel-body">
-							<div id="pa5-body"></div>
-						</div>
-					</div>
-				</div>
+                <div class="panel panel-default">
+                    <div id="pa2-header" class="panel-heading">
+                        <h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#pa2">Assignment 2: Ray Tracing Acceleration Data Structures (100 pts)</a></h4>
+                    </div>
+                    <div id="pa2" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <div id="pa2-body"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div id="pa3-header" class="panel-heading">
+                        <h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#pa3">Assignment 3: Monte Carlo Sampling and Ambient Occlusion (100 pts)</a></h4>
+                    </div>
+                    <div id="pa3" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <div id="pa3-body"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div id="pa4-header" class="panel-heading">
+                        <h4 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#pa4">Assignment 4: Distribution and Whitted-style Ray Tracing (100 pts)</a></h4>
+                    </div>
+                    <div id="pa4" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <div id="pa4-body"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div id="pa5-header" class="panel-heading">
+                        <h5 class="panel-title"> <a data-toggle="collapse" data-parent="#accordion" href="#pa5">Assignment 5: Path Tracing, Microfacet Models, and Multiple Importance Sampling (100 pts)</a></h5>
+                    </div>
+                    <div id="pa5" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <div id="pa5-body"></div>
+                        </div>
+                    </div>
+                </div>
                 -->
-			</div>
-		</div> <!-- container -->
+            </div>
+        </div> <!-- container -->
 
-		<!-- Bootstrap core JavaScript
-		================================================== -->
-		<!-- Placed at the end of the document so the pages load faster -->
-		<script src="js/jquery.min.js"></script>
-		<script src="js/bootstrap.min.js"></script>
-		<script src="js/google-code-prettify/prettify.js"></script>
-		<script src="js/jquery.fancybox.pack.js?v=2.1.5"></script>
+        <!-- Bootstrap core JavaScript
+        ================================================== -->
+        <!-- Placed at the end of the document so the pages load faster -->
+        <script src="js/jquery.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script src="js/google-code-prettify/prettify.js"></script>
+        <script src="js/jquery.fancybox.pack.js?v=2.1.5"></script>
         <script type="text/javascript" async
           src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
         </script>
-		<script src="js/nori.js"></script>
-		<script type="text/x-mathjax-config">
-		  MathJax.Hub.Config({ TeX: { extensions: ["color.js"] }});
-		</script>
+        <script src="js/nori.js"></script>
+        <script type="text/x-mathjax-config">
+          MathJax.Hub.Config({ TeX: { extensions: ["color.js"] }});
+        </script>
 
-	</body>
+    </body>
 </html>

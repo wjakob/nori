@@ -1,5 +1,5 @@
 <div style="margin-top:-20px">
-<h3>Part 1: the <tt>git</tt> revision control system</h3>
+<h3>The <tt>git</tt> revision control system</h3>
 <div class="text-justify">
 <p>
 	The base code of Nori is provided as a <tt>git</tt> repository. <tt>git</tt>
@@ -81,64 +81,15 @@ the extensive free <a href="http://git-scm.com/book/en/v2">Pro Git</a> ebook.
 The remainder of this section describes the steps needed to clone and compile the Nori base code.
 </p>
 </div>
-<div class="col-md-6 text-justify">
-	<h3>Cloning using the command line</h3>
+<div class="text-justify">
+	<h3>Setting up GitHub Classroom</h3>
 	<p>
-		The source code of Nori is available on <a
-		href="https://github.com/wjakob/nori">github</a>.
-		To check out a copy of the source code, enter
-	</p>
-	<pre class="prettyprint lang-bash">
-$ git clone --recursive
-	https://github.com/wjakob/nori</pre>
-	<p>
-		on the terminal. The <tt>--recursive</tt> flags ensures
-		that all dependency libraries are cloned as well.
-		We'll likely publish extensions and bug-fixes to this
-		repository as the semester progresses. To get them, 
-		navigate into the <tt>nori</tt>directory and run the command
-<pre class="prettyprint lang-bash">
-$ git pull</pre>
-		If there were any concurrent modifications to the same file,
-		<tt>git</tt> may ask you to resolve merge conflicts. We refer you to
-		the learning resources for information about resolving conflicts in
-		general.
+		You will receive your own private <a href="https://classroom.github.com">GitHub Classroom</a> repository to work on your programming assignments. Please follow <a href="https://github.com/cs440-epfl/nori-base/wiki/Working-on-assignments">our instructions</a> to get everything set up.
 	</p>
 </div>
 
-<div class="col-md-6 text-justify">
-	<div class="row">
-		<h3>Cloning using source tree</h3>
-		<div class="col-md-6">
-			On Windows and Mac OS X, <a href="http://www.sourcetreeapp.com/">Source Tree</a>
-			is a convenient visual front-end to Git. We particularly recommend this tool if you've
-			never used Git before. When cloning the project, make sure
-			that the setting for recursive cloning is active under <em>Advanced Options</em>.
-			We'll publish extensions and bug-fixes to this
-			repository as the semester progresses.
-			You can simply <em>pull</em>
-			the changes and merge them into your repository to benefit from the
-			improvements.
-		</div>
-		<div class="thumbnail col-md-5">
-			<a class="fancybox" href="images/sourcetree.png"><img src="images/sourcetree.png"/></a>
-			<div class="caption">
-				Source Tree user interface
-			</div>
-		</div>
-	</div>
-</div>
 <div class="row col-md-12">
-    <div class="alert alert-danger" role="alert"><b>Note</b>: Since your
-        repository will contain homework solutions it is (obviously) not OK to
-        post it online (in particular, don't fork the <tt>nori</tt> project on
-        github or elsewhere). Private forks (i.e. without public access) are
-        allowed, however.
-	</div>
-</div>
-
-<div class="row col-md-12">
-<h3>Part 2: Setting up a C++ compiler and building the base code</h3>
+<h3>Setting up a C++ compiler and building the base code</h3>
 <div class="row">
 	<div class="col-md-6">
 		<h3>Linux / Mac OS X</h3>
@@ -232,7 +183,7 @@ $ make -j 4</pre>
 </div>
 
 <div class="row col-md-12">
-<h3>Part 4: A high-level overview</h3>
+<h3>A high-level overview</h3>
 The Nori repository consists of the base code files (left table)
 and several dependency libraries (right table) that are briefly explained below.
 </div>
@@ -282,12 +233,12 @@ and several dependency libraries (right table) that are briefly explained below.
 			<a href="http://eigen.tuxfamily.org">Eigen 3</a> for this
 			purpose. We don't expect you to understand the inner workings of
 			this library but recommend that you at least take a look at the
-			helpful <a href="http://eigen.tuxfamily.org/dox">tutorial</a> 
+			helpful <a href="http://eigen.tuxfamily.org/dox">tutorial</a>
 			provided on the Eigen web page.
 
 			<p>
 				Nori provides a set of linear algebra types that are
-				derived from Eigen's matrix/vector class (see e.g. the header file 
+				derived from Eigen's matrix/vector class (see e.g. the header file
 				<tt>include/nori/vector.h</tt>). This is necessary
 				because we will be handling various quantities that
 				require different treatment when undergoing homogeneous
@@ -430,8 +381,8 @@ and several dependency libraries (right table) that are briefly explained below.
 			of <tt>BSDF</tt> should be used.
 			The <tt>&lt;color&gt;</tt> tag creates a property of name <tt>albedo</tt>
 			that will be passed to its constructor.
-			If you open up the C++ source file <tt>src/diffuse.cpp</tt>, you will see that 
-			there is a constructor, which looks for 
+			If you open up the C++ source file <tt>src/diffuse.cpp</tt>, you will see that
+			there is a constructor, which looks for
 			<span rel="tooltip" title="Or alternatively substitutes 50% grey when no value is provided.">this specific property</span>:
 		</p>
 		<pre class="prettyprint linenums">
@@ -485,7 +436,7 @@ void Mesh::addChild(NoriObject *obj) {
 			before; otherwise, it throws an exception of type <tt>NoriException</tt>.
 		</p>
 		<p>
-			The following different types of properties can currently be passed to 
+			The following different types of properties can currently be passed to
 			objects within the XML description language:
 		</p>
 		<div class="row">
@@ -534,7 +485,7 @@ void Mesh::addChild(NoriObject *obj) {
         &lt;float name="alpha" value="0.1"/&gt;
     &lt;/bsdf&gt;
 &lt;/test&gt;</pre>
-		
+
 		<h3>Creating your first Nori class</h3>
 		<p>
 			In Nori, rendering algorithms are referred to as <em>integrators</em>
@@ -649,7 +600,7 @@ Configuration: Scene[
 Rendering .. done. (took 93.0ms)
 Writing a 1280x720 OpenEXR file to "test.exr"
 </pre>
-The Nori executable echoed the property value we provided, and 
+The Nori executable echoed the property value we provided, and
 it printed a brief human-readable summary of the scene.
 The rendered scene is saved as an OpenEXR file named <tt>test.exr</tt>.
 </div>
