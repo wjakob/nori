@@ -33,6 +33,16 @@ its size, the actual mesh is not part of the repository and can be downloaded
 Before continuing, merge this new revision into your current Nori codebase. If
 you have difficulties with this step, refer to the git tutorials mentioned in
 Assignment 1.
+
+Make sure you added the nori-base repository as upstream (only needs to be done once):
+<pre class="prettyprint lang-bash">
+$ git remote add upstream https://github.com/cs440-epfl/nori-base.git
+</pre>
+After that, you can get always get the latest changes with:
+<pre class="prettyprint lang-bash">
+$ git pull upstream master
+</pre>
+
 </p>
 <p>
 Try rendering this new scene. You will find that rendering is <em>very</em> slow.
@@ -126,7 +136,7 @@ The specifics of the implementation (naming conventions, memory allocation,
 choice of auxiliary data structures) are completely up to you.
 We'll define "few triangles" as less than 10. For simplicity, you can assume that
 a triangle overlaps with an octree cell if the bounding box of the triangle's
-vertices overlap with the cell. 
+vertices overlap with the cell.
 </p>
 
 <p>
@@ -154,7 +164,7 @@ you've taken. Be sure to also report the following information:
 <ol>
 <li>What information do you store per octree node?</li>
 <li>How many bytes of memory does one of your octree nodes occupy?</li>
-<li>Statistics for the Ajax scene: 
+<li>Statistics for the Ajax scene:
     <ul>
         <li>Construction time</li>
         <li>Number of interior nodes</li>
@@ -219,16 +229,19 @@ you've taken. Be sure to also report the following information:
 <li>How much of a speedup is this relative to Part 2?</li>
 </ol>
 
+<div class="alert alert-info" role="alert"><b>Disclaimer</b>: An efficient ray tracing implementation is essential in modern rendering systems, and considerable care is taken to ensure that this operation runs as quickly as possible. A general rule of thumb is that certain expensive C++ constructs should never be used while tracing a ray (i.e. during octree traversal in your case). This includes operations that perform dynamic memory allocation (<code>malloc</code>, the <code>new</code> operator, or STL data structures that internally perform dynamic memory allocation, such as <code>std::vector</code>). Note that this doesn’t mean that you can’t use <code>std::vector</code>s in your code--in fact, you will find many of them in existing Nori code. However, a <code>std::vector</code> should never be created *per ray* inside performance-critical ray traversal code.
+</div>
+
 </div>
 <h3>Bonus: Hacker Points <em>(10 points)</em></h3>
 
-<div class="alert alert-danger" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points 
-for the daring few. Sometimes you might be required to implement something that was not taught in class and 
-you might have to do some research and creative thinking. Hacker Points are awarded only to students who 
+<div class="alert alert-danger" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points
+for the daring few. Sometimes you might be required to implement something that was not taught in class and
+you might have to do some research and creative thinking. Hacker Points are awarded only to students who
 implemented all of the remaining assignment, and they are added to the final score.
 </div>
 <div class="text-justify">
-<p> 
+<p>
 While the octree greatly accelerates ray tracing, its construction
 unfortunately requires a considerable amount of time. What's worse is that all
 of this time is spent in serial computations that just use a single processor.

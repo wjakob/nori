@@ -1,5 +1,5 @@
 !function ($) {
-	$('a[href*=#]').on('click', function(event){     
+	$('a[href*=#]').on('click', function(event){
 		$('html,body').animate({scrollTop:$(this.hash + "-header").offset().top}, 500);
 	});
 
@@ -11,7 +11,7 @@
 	};
 
 	$("#pa1-body").load("pa1.html", prettify);
-	//$("#pa2-body").load("pa2.html", prettify);
+	$("#pa2-body").load("pa2.html", prettify);
 	//$("#pa3-body").load("pa3.html", prettify);
 	//$("#pa4-body").load("pa4.html", prettify);
 	//$("#pa5-body").load("pa5.html", prettify);
