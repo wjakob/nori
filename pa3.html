@@ -20,15 +20,15 @@
     </p>
     <p>
         As usual, begin by importing the latest base code updates into your
-        repository by running 
+        repository by running
     </p>
 <pre class="prettyprint lang-bash">
-git pull https://github.com/wjakob/nori
+$ git pull upstream master
 </pre>
     <p>
         If there were any concurrent changes to the same file, you
         may have to perform a <em>merge</em> (see the git tutorials under
-        "Preliminaries" for more information). 
+        "Preliminaries" for more information).
     </p>
 
 
@@ -38,7 +38,7 @@ git pull https://github.com/wjakob/nori
         In this exercise you will generate sample points on various domains:
         the plane, disks, spheres, and hemispheres. The base code has been
         extended with an interactive visualization and testing tool to make
-        working with point sets as intuitive as possible. 
+        working with point sets as intuitive as possible.
 	</p>
 
 	<p>
@@ -106,8 +106,6 @@ git pull https://github.com/wjakob/nori
 		</div>
 	</div>
 
-
-	<h3>Part 1.1. Sample Warping <em>(30 points)</em></h3>
 	<p>
         Implement the missing functions in <code>class Warp</code> found in
         <tt>src/warp.cpp</tt>. This class consists of various warp methods that
@@ -121,6 +119,9 @@ git pull https://github.com/wjakob/nori
         the densities, and the PBRT textbook also contains considerable
         information on this topic that you should feel free to use.
 	</p>
+    <p>
+        Pass the \(\chi^2\) test for each one of the following sampling techniques <b>and include corresponding screen shots in your report</b>:
+    </p>
 
 	<ul>
 		<li>
@@ -149,7 +150,7 @@ git pull https://github.com/wjakob/nori
             a photograph of the derivation and embedding the image)
 		</li>
 		<li>
-			<h4><code>Warp::squareToUniformDisk</code> and <code>Warp::squareToUniformDiskPdf</code> <em> (10 Points)</em></h4>
+			<h4><code>Warp::squareToUniformDisk</code> and <code>Warp::squareToUniformDiskPdf</code> <em> (5 Points)</em></h4>
 			<p>
 				Implement a method that transforms uniformly distributed 2D
 				points on the unit square into uniformly distributed points on
@@ -159,7 +160,7 @@ git pull https://github.com/wjakob/nori
 			</p>
 		</li>
 		<li>
-			<h4><code>Warp::squareToUniformSphere</code> and <code>Warp::squareToUniformSpherePdf</code> <em> (10 Points)</em></h4>
+			<h4><code>Warp::squareToUniformSphere</code> and <code>Warp::squareToUniformSpherePdf</code> <em> (5 Points)</em></h4>
 			<p>
 				Implement a method that transforms uniformly distributed 2D
 				points on the unit square into uniformly distributed points on
@@ -189,12 +190,67 @@ git pull https://github.com/wjakob/nori
 				angle between a point on the hemisphere and the north pole.
 			</p>
 		</li>
+        <li>
+            <h4><code>Warp::squareToBeckmann</code> and <code>Warp::squareToBeckmannPdf</code> <em> (25 Points)</em></h4>
+            <div class="row" style="margin: 30px">
+                <div class="col-md-4"/>
+                <div class="col-md-5">
+                    <div class="thumbnail" style="margin: 10px">
+                        <a class="fancybox" href="images/beckmann.png"><img src="images/beckmann.png"/></a>
+                        <div class="caption">
+                            The Beckmann distribution plotted for different values of \(\alpha\).
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p>
+                Transform your 2D point to the <em>Beckmann</em> distribution discussed in, which will be used to model the probability density of normals on a random rough surface in a later assignment:
+                \[
+                D(\theta, \phi) = \underbrace{\frac{1}{2\pi}}_{\text{azimuthal part}}\ \cdot\ \underbrace{\frac{2 e^{\frac{-\tan^2{\theta}}{\alpha^2}}}{\alpha^2 \cos^3 \theta}}_{\text{longitudinal part}}\!\!\!.
+                \]
+                Note that this definition is normalized such that it integrates to one over the hemisphere:
+                \[
+                \int_{0}^{2\pi}\int_0^{\frac{\pi}{2}} D(\theta, \phi)\sin\theta\,\mathrm{d}\theta\,\mathrm{d}\phi=1.
+                \]
+                Complete the function
+                <code>Warp::squareToBeckmannPdf</code> so that it evaluates \(D\) using the above definition.
+                The function takes a normalized Cartesian 3D vector \(\omega\) as input, whose components can be interpreted using the following spherical coordinate representations:
+                \[
+                \omega=\begin{pmatrix}
+                \sin\theta\cos\phi\\
+                \sin\theta\sin\phi\\
+                \cos\theta
+                \end{pmatrix}
+                \]
+                Take a look
+                at the methods in the <code>Frame</code> class if you find yourself
+                evaluating trigonometric functions in the body of <code>Warp::squareToBeckmannPdf</code>.
+            </p>
+            <br>
+            <p>
+                Having implemented a way to query this distribution, we'll now want to generate points on the sphere that exactly follow the distribution.
+                Note how the \(D(\theta,\phi)\) is symmetric around the north pole (in other words: its spherical coordinate representation is <em>separable</em>). Sampling can thus be split into two steps:
+                <ol>
+               <li>
+                   Uniformly sampling the azimuth \(\phi=2\pi\xi_1\) given a uniform variate \(\xi_1\).<br/><br/>
+               </li>
+               <li>
+                Mapping a second uniform variate \(\xi_2\) through the inverse CDF of \(D\)'s
+                longitudinal part to obtain \(\theta\).<br/><br/>
+               </li>
+                </ol>
+                Follow these two steps and implement the resulting sampling technique in <code>Warp::squareToBeckmann</code>. Show the details of the necessary steps and derivations in your report. The statistical test implemented in the <tt>warptest</tt> executable should pass for different values of \(\alpha\).
+
+                <div class="alert alert-info" role="alert"><b>Hint</b>: You might find integration by substitution useful,
+                e.g. using the mappings \(x = \cos{\theta}\) and \(\tan^2{\theta} = \frac{1-x^2}{x^2}\).
+                In addition this identity might come in handy:
+                \[
+                \int f'(x) ~ e^{~f(x)}\,\mathrm{d}x = e^{~f(x)} + C\text{, where } C\in\mathbb{R}
+                \]
+                </div>
+            </p>
+        </li>
 	</ul>
-	<h3>Part 1.2: Validation <em>(30 points)</em></h3>
-	<p>
-		Pass the \(\chi^2\) test for each one of the above sampling techniques
-        and include screen shots in your report.
-	</p>
 
 	<h2>Part 2: Two simple rendering algorithms <em>(40 points)</em></h2>
     <p>
@@ -222,7 +278,7 @@ git pull https://github.com/wjakob/nori
 			</div>
 		</div>
 	</div>
-	<h3>Part 2.2: Point lights <em>(20 points)</em></h3>
+	<h3>Part 2.1: Point lights <em>(20 points)</em></h3>
 	<p>
         The updated base code includes a new scene <code>scenes/pa3/ajax-simple.xml</code> that instantiates a (currently nonexistent) integrator/rendering algorithm named <code>simple</code>, which simulates a single point
         light source located at a 3D position <tt>position</tt>, and which emits an amount of
@@ -232,7 +288,7 @@ git pull https://github.com/wjakob/nori
 &lt;!-- An excerpt from scenes/pa3/ajax-simple.xml: --&gt;
 &lt;integrator type="simple"&gt;
     &lt;point name="position" value="-20, 40, 20"/&gt;
-    &lt;color name="energy" value="3000, 3000, 3000"/&gt;
+    &lt;color name="energy" value="3.76e4, 3.76e4, 3.76e4"/&gt;
 &lt;/integrator&gt;
 </pre>
     <p>
@@ -241,7 +297,7 @@ git pull https://github.com/wjakob/nori
     integrator from Assignment 1. Take a look at the <code>PropertyList</code> class, which
     should be used to extract the two parameters.
     </p>
-    
+
     <p>
     Let \(\mathbf{p}\) and \(\mathbf{\Phi}\) denote the position and energy of
     the light source, and suppose that \(\mathbf{x}\) is the point being
@@ -273,7 +329,7 @@ L(\mathbf{x})=\frac{\Phi}{4\pi^2} \frac{\mathrm{max}(0, \cos\theta)}{\|\mathbf{x
     Include a comparison against our <a href="https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/03/13/ajax-simple.exr">reference image</a> in your report.
 	</p>
 
-	<h3>Part 2.1: Ambient occlusion <em>(20 points)</em></h3>
+	<h3>Part 2.2: Ambient occlusion <em>(20 points)</em></h3>
     <p>
         Ambient occlusion is rendering technique which assumes that a (diffuse)
         surface receives uniform illumination from all directions (similar to
@@ -308,9 +364,9 @@ One potential gotcha is that the samples produced by <code>squareToCosineHemisph
 
     <h2> Hacker Points: Hierarchical Sample Warping <em>(20 points)</em></h2>
 
-<div class="alert alert-info" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points 
-for the daring few. Sometimes you might be required to implement something that was not taught in class and 
-you might have to do some research and creative thinking. Hacker Points are awarded only to students who 
+<div class="alert alert-info" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points
+for the daring few. Sometimes you might be required to implement something that was not taught in class and
+you might have to do some research and creative thinking. Hacker Points are awarded only to students who
 implemented all of the remaining assignment, and they are added to the final score.
 </div>
 
@@ -335,7 +391,7 @@ implemented all of the remaining assignment, and they are added to the final sco
 		</div>
 	</div>
 
-	<p> 
+	<p>
 		The goal of this exercise is to implement hierarchical sample warping,
 		which will come in very handy if you decide you'll want to later add
 		<a href="http://ict.usc.edu/pubs/Image-Based%20Lighting.pdf">Image Based Lighting</a> (IBL)
@@ -358,7 +414,7 @@ implemented all of the remaining assignment, and they are added to the final sco
 
 	<div>
 		<p>
-			Your implementation of Hierarchical Sample Warping with the help of mip mapping should work as follows: 
+			Your implementation of Hierarchical Sample Warping with the help of mip mapping should work as follows:
 			<ul>
 				<li> <em>Input</em>: an EXR image with \(2^M \times 2^M \) pixels and a 2D sample uniformly distributed on the unit square.</li>
 				<li> Compute the luminance of that image and normalize it. </li>
@@ -369,7 +425,7 @@ implemented all of the remaining assignment, and they are added to the final sco
 				<li> Repeat this process for the quadrant where your sample fell in, until the bottom level of your mipmap is reached (full resolution).</li>
 				<li> <em>Output</em>: a sample distributed according to the density function defined by the image (in \(O(M)\)).</li>
 			</ul>
-			
+
 		</p>
 	</div>
 	<div class="row-centered">
@@ -380,12 +436,12 @@ implemented all of the remaining assignment, and they are added to the final sco
 			</div>
 		</div>
 	</div>
-	
+
 	<h4> What to submit </h4>
 	<p>
 		<ul>
-			<li> A correct implementation of the hierarchical sample warping algorithm described above. </li> 
-			<li> A modified version of the <tt>warptest</tt> user interface that visualizes your generated points sets.</li> 
+			<li> A correct implementation of the hierarchical sample warping algorithm described above. </li>
+			<li> A modified version of the <tt>warptest</tt> user interface that visualizes your generated points sets.</li>
 			<li> Two screen shots of the \(\chi^2\)-test (with many input points), which verifies that your warping function and density function are mutually consistent.
 				The first should be with a simple \(2 \times 2\) pixel image as shown above, and for the second, you can choose any
 				light probe you like (<a href="http://gl.ict.usc.edu/Data/HighResProbes/">Paul Debevec</a> and

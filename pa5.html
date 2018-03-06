@@ -46,68 +46,9 @@ git pull https://github.com/wjakob/nori
         </div>
     </div>
     <p>
-    In this part we will extend the rudimentary interface in <tt>microfacet.cpp</tt> into a full-fledge reflectance model based on the <em>microfacet theory</em> presented in class. This process is split into four parts:
+    In this part we will extend the rudimentary interface in <tt>microfacet.cpp</tt> into a full-fledge reflectance model based on the <em>microfacet theory</em> presented in class. This utilizes the sampling techniques for the Beckmann distribution that you implemented in a previous assignment. The process is split into two parts:
    </p>
-   <h4>Part 1.1: Evaluating the Beckmann distribution (10 pts)</h4>
-    <div class="row" style="margin: 30px">
-        <div class="col-md-4"/>
-        <div class="col-md-5">
-            <div class="thumbnail" style="margin: 10px">
-                <a class="fancybox" href="images/beckmann.png"><img src="images/beckmann.png"/></a>
-                <div class="caption">
-                    The Beckmann distribution plotted for different values of \(\alpha\).
-                </div>
-            </div>
-        </div>
-    </div>
-   <p>
-   Recall the <em>Beckmann</em> distribution discussed in class, which models the probability density of normals on a random rough surface:
-    \[
-    D(\theta, \phi) = \underbrace{\frac{1}{2\pi}}_{\text{azimuthal part}}\ \cdot\ \underbrace{\frac{2 e^{\frac{-\tan^2{\theta}}{\alpha^2}}}{\alpha^2 \cos^3 \theta}}_{\text{longitudinal part}}\!\!\!.
-    \]
-    Note that this definition is slightly different from the one shown in class: the density includes an extra cosine factor for normalization purposes so that
-    \[
-    \int_{0}^{2\pi}\int_0^{\frac{\pi}{2}} D(\theta, \phi)\sin\theta\,\mathrm{d}\theta\,\mathrm{d}\phi=1.
-    \]
-    Complete the function
-    <code>Warp::squareToBeckmannPdf</code> in
-    <code>warp.cpp</code> so that it evaluates \(D\) using the above definition.
-    The function takes a normalized Cartesian 3D vector \(\omega\) as input, whose components can be interpreted using the following spherical coordinate representations:
-    \[
-    \omega=\begin{pmatrix}
-    \sin\theta\cos\phi\\
-    \sin\theta\sin\phi\\
-    \cos\theta
-    \end{pmatrix}
-    \]
-    Take a look
-    at the methods in the <code>Frame</code> class if you find yourself
-    evaluating trigonometric functions in the body of <code>Warp::squareToBeckmannPdf</code>.
-    </p>
-   <h4>Part 1.2: Sampling the Beckmann distribution (10 pts)</h4>
-   <p>
-   Having implemented a way to query this distribution, we'll now want to generate points on the sphere that exactly follow the distribution.
-   Note how the \(D(\theta,\phi)\) is symmetric around the north pole (in other words: its spherical coordinate representation is <em>separable</em>). Sampling can thus be split into two steps:
-   </p>
-   <ol>
-   <li>
-       Uniformly sampling the azimuth \(\phi=2\pi\xi_1\) given a uniform variate \(\xi_1\).<br/><br/>
-   </li>
-   <li>
-    Mapping a second uniform variate \(\xi_2\) through the inverse CDF of \(D\)'s
-    longitudinal part to obtain \(\theta\).<br/><br/>
-   </li>
-    </ol>
-    Follow these two steps and implement the resulting sampling technique in <code>Warp::squareToBeckmann</code>. Try running the statistical test implemented in the <tt>warptest</tt> executable -- your implementation should pass the tests for different values of \(\alpha\). You do not need to include the test results in your report, this is just for your own guidance.
-
-    <div class="alert alert-info" role="alert"><b>Hint</b>: You might find integration by substitution useful,
-    e.g. using the mappings \(x = \cos{\theta}\) and \(\tan^2{\theta} = \frac{1-x^2}{x^2}\).
-    In addition this identity might come in handy:
-    \[
-    \int f'(x) ~ e^{~f(x)}\,\mathrm{d}x = e^{~f(x)} + C\text{, where } C\in\mathbb{R}
-    \]
-    </div>
-    <h4>Part 1.3: Evaluating the Microfacet BRDF (10 pts)</h4>
+    <h4>Part 1.1: Evaluating the Microfacet BRDF (10 pts)</h4>
     <p>
     The Microfacet BRDF in <code>src/microfacet.cpp</code> will be used to simulate platic-like materials. It consists of a linear blend between a diffuse BRDF (to simulate a potentially colored reflection from the interior of the material) and a rough dielectric microfacet BRDF (to simulate a non-colored specular reflection from the rough boundary). Implement <code>Microfacet::eval()</code> which evaluates the described microfacet BRDF for a given pair of directions in the local shading coordinate frame:
         \[
@@ -142,7 +83,14 @@ git pull https://github.com/wjakob/nori
         where \(\theta_v\) is the angle between the surface normal \(\bold{n}\)
         and the \(\omega_v\) argument of \(G_1\).
     </p>
-    <h4>Part 1.4: Sampling the Microfacet BRDF (10 pts)</h4>
+    <p>
+        Recall the <em>Beckmann</em> distribution from PA3, which is used to model the probability density of normals on a random rough surface:
+        \[
+        D(\theta, \phi) = \underbrace{\frac{1}{2\pi}}_{\text{azimuthal part}}\ \cdot\ \underbrace{\frac{2 e^{\frac{-\tan^2{\theta}}{\alpha^2}}}{\alpha^2 \cos^3 \theta}}_{\text{longitudinal part}}\!\!\!.
+        \]
+        Note that this definition is slightly different from the one shown in class: the density includes an extra cosine factor for normalization purposes so that it integrates to one over the hemisphere.
+    </p>
+    <h4>Part 1.2: Sampling the Microfacet BRDF (10 pts)</h4>
     <p>
         In this part you will generate samples according to the following density function:
         \[
@@ -159,7 +107,7 @@ git pull https://github.com/wjakob/nori
         <li>In the diffuse case, generate a cosine-weighted direction on the sphere following the approach in <tt>src/diffuse.cpp</tt></li>
         <li>In the specular case:
             <ol>
-                <li>Sample a normal from the Beckmann distribution using the approach from Part 1.2</li>
+                <li>Sample a normal from the Beckmann distribution using <code>Warp::squareToBeckmann</code> that you previously implemented in PA3.</li>
                 <li>Reflect the incident direction using this normal to generate an outgoing direction.</li>
             </ol>
         </li>
@@ -188,11 +136,12 @@ git pull https://github.com/wjakob/nori
             </li>
         </ul>
         The <tt>warptest</tt>GUI also contains
-        a \(\chi^2\) test for both the Beckmann distribution and the complete BRDF model, but this is just to facilitate debugging and
+        a \(\chi^2\) test for the BRDF model, but this is just to facilitate debugging and
         visualization; the XML files are the real validation benchmark.
         Mention in your report if running these tests produces any errors.
     </p>
-	<h3>Part 2: Simple Path tracer <em>(15 points)</em></h3>
+    <h3>Part 2: <tt>path_mats</tt> Brute force path tracer <em>(15 points)</em></h3>
+	<h3>Part 3: <tt>path_ems</tt> Path tracer with next event estimation <em>(15 points)</em></h3>
     <div class="row" style="margin: 30px">
         <div class="col-md-6">
             <div class="thumbnail" style="margin: 10px">
@@ -254,7 +203,7 @@ git pull https://github.com/wjakob/nori
     used to test your path tracer if you didn't do part 1 of this assignment
     yet. The latter two assume that the microfacet model BRDF is ready.
     </p>
-	<h3>Part 3: Path tracer with Multiple Importance Sampling <em>(25 points)</em></h3>
+	<h3>Part 4: <tt>path_mis</tt> Path tracer with Multiple Importance Sampling <em>(25 points)</em></h3>
     <div class="row" style="margin: 30px">
         <div class="col-md-6">
             <div class="thumbnail" style="margin: 10px">
@@ -275,7 +224,7 @@ git pull https://github.com/wjakob/nori
         </div>
     </div>
     <p>
-        Following part 2, extend your path tracer with multiple importance sampling. This specifically entails:
+        Following part 3, extend your path tracer with multiple importance sampling. This specifically entails:
     </p>
     <ol>
         <li>When generating a sample on a light source, determine the density of this
