@@ -6,7 +6,7 @@
         (Emitters, BSDFs) to compute the illumination integral discussed in
         class. We will only focus on <em>direct</em> illumination for now (i.e.
         light which has interacted with at most one material) and leave
-        <em>indirect</em> illumination for the next assignment. In the last
+        <em>indirect</em> illumination for the next assignment. In the second
         part of the assignment, you will also add a new BSDF model for
         refractive materials ("dielectrics").
     </p>
@@ -15,7 +15,7 @@
         repository by running
     </p>
 <pre class="prettyprint lang-bash">
-git pull https://github.com/wjakob/nori
+$ git pull upstream master
 </pre>
     <p>
         If there were any concurrent changes to the same file, you
@@ -27,7 +27,7 @@ git pull https://github.com/wjakob/nori
     As promised, we're also providing you with an optimized Bounding Volume Hierarchy for fast ray-intersection computations. To use it (which is entirely optional), download <a href="//rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/03/13/accel.zip"><tt>accel.zip</tt></a>, and overwrite your version of <code>src/accel.cpp</code> and <code>include/nori/accel.h</code> files with the contents of the ZIP file. Naturally, you may also continue using your own acceleration data structure.
     </p>
 
-    <h3>1. Area lights (30 pts)</h3>
+    <h3>1. Area lights (25 pts)</h3>
     <p>
         Our first goal will be to extend Nori so that any geometric object can
         be turned into a light source known as an <em>area light</em>.
@@ -36,8 +36,7 @@ git pull https://github.com/wjakob/nori
     <img src="images/bunny.png" style="max-width:150px">
     </p>
     <p>
-        Each
-        triangle of a mesh that is marked as an area light uniformly emits
+        Each triangle of a mesh that is marked as an area light uniformly emits
         radiance towards all directions above its surface. In Nori's XML
         description language, area lights are specified using a nested
         <tt>emitter</tt> tag of type <tt>area</tt>. Here is an example:
@@ -62,18 +61,6 @@ git pull https://github.com/wjakob/nori
     To add area lights to Nori, follow these steps:
     </p>
     <ol>
-
-        <li>Create a new class <code>AreaLight</code> in a file named
-            <code>src/area.cpp</code> that derives from the
-            <code>Emitter</code> class. Connect it to the scene parser using
-            the <code>NORI_*</code> macros similar to the
-            <code>Integrator</code>s you have previously created. Use the constructor's
-            <code>const PropertyList &amp;</code> argument to extract the <code>radiance</code>
-            parameter in the constructor.
-            <br/>
-            <br/>
-        </li>
-
         <li>
             <p> The Monte Carlo rendering technique in part 2 of this
             assignment requires the ability to sample points that are uniformly
@@ -111,14 +98,29 @@ git pull https://github.com/wjakob/nori
             \end{pmatrix}
             \]
             where \(\xi_1\) and \(\xi_2\) are uniform variates.
+            </p>
+            <p>
+            The precomputation to build the discrete probability distribution can be performed in the <code>activate()</code> method of the <code>Mesh</code> class, which is automatically invoked by the XML parser.
+            </p>
+
         </li>
 
-        The precomputation to build the discrete probability distribution can be performed in the <code>activate()</code> method of the <code>Mesh</code> class, which is automatically invoked by
-        the XML parser.
+        <li>
+            <p>
+            Take a look at the <code>Emitter</code> interface. It is almost completely empty. Clearly, some mechanism for sample generation, evaluation of probabilities, and for returning the emitted radiance is needed.
+            As before, we don't explicitly specify an API that you should use to implement the sampling and evaluation operations for emitters—finding suitable abstractions is part of the exercise. That said, you can look at the <code>BSDF</code> definitions in <tt>include/nori/bsdf.h</tt> to get a rough idea as to how one might get started with such an interface. Your design should be built around the functionality you need to implement the integrator in the next task.
+            </p>
+            <p>
+            Create a new class <code>AreaLight</code> in a file named <code>src/area.cpp</code> that derives from the <code>Emitter</code> class. Connect it to the scene parser using the <code>NORI_*</code> macros similar to the <code>Integrator</code>s you have previously created. Use the constructor's <code>const PropertyList &amp;</code> argument to extract the <code>radiance</code> parameter in the constructor.
+        </li>
     </ol>
 
+    <p>
+    <b>Make sure to include a section in the report about your design of the two components above.</b>
+    </p>
 
-    <h3>2. Distribution Ray Tracing (30 pts)</h3>
+
+    <h3>2. Distribution Ray Tracing (40 pts)</h3>
 		<p>
             In this part you will implement a new direct illumination
             integrator, which integrates the incident radiance by sampling
@@ -130,18 +132,25 @@ git pull https://github.com/wjakob/nori
             visibility.
 		</p>
         <div class="row" style="margin: 30px">
-            <div class="col-md-3"/>
-            <div class="col-md-6">
+            <div class="col-md-1"/>
+            <div class="col-md-5">
                 <div class="thumbnail" style="margin: 10px">
-                    <a class="fancybox" href="images/motto-diffuse.jpg"><img src="images/motto-diffuse.jpg"/></a>
+                    <a class="fancybox" href="images/motto-diffuse.png"><img src="images/motto-diffuse.png"/></a>
                     <div class="caption">
                         The motto of the rendering competition modeled as a
                         diffuse object and illuminated by two spherical lights
-                        sources. Note the presence of smooth shadows below the
-                        text.
+                        sources.
                     </div>
                 </div>
             </div>
+            <div class="col-md-5">
+            <div class="thumbnail" style="margin: 10px">
+                <a class="fancybox" href="images/cbox-distributed.png"><img src="images/cbox-distributed.png"/></a>
+                <div class="caption">
+                    A Cornell box containing diffuse spheres. Note the presence of smooth shadows.
+                </div>
+            </div>
+        </div>
         </div>
         <p>
             Recall the <em>Reflection Equation</em> discussed in class, which expresses the reflected
@@ -167,6 +176,7 @@ git pull https://github.com/wjakob/nori
             <code>BSDF::pdf()</code> methods. All methods take a special
             <code>BRDFQueryRecord</code> as argument, which stores
             relevant quantities in a convenient data structure.
+            Note that the BSDF of an intersection <tt>its</tt> can be obtained using the expression <code>its.mesh->getBSDF()</code>.
         </p>
         <p>
             In this assignment, we will only consider <em>direct</em>
@@ -232,9 +242,10 @@ when rendering with point lights. The \("\leftrightarrow"\) notation expresses t
             <li>The integrator should begin by finding the first surface interaction \(\vx\) visible along the ray passed to the <code>Li()</code> function. This part works just like in the <code>simple.cpp</code> integrator.
                 What this step does is to apply the ray tracing operator \(\vr(\vc, \omega_c)\) to convert reflected radiance at surfaces into incident radiance at the camera \(\vc\):
 	\[
-		L_i(\vc,\omega_c)=L_r(\vr(\vc, \omega_c), -\omega_c).
+		L_i(\vc,\omega_c)= L_e(\vr(\vc, \omega_c), -\omega_c) + L_r(\vr(\vc, \omega_c), -\omega_c).
 	\]
-                </li>
+            Note that \(L_r\) is the quantity computed by the integral above and that we need an additional \(L_e\) term here to account for light sources that were direcly hit by the camera ray.
+            </li>
             <li>
                 <p>
         Given \(\vx\), the distribution ray tracer should then approximate the above integral by sampling a
@@ -246,33 +257,33 @@ f_r (\vx,\vx\to\vy,\omega_r)\,G(\vx\leftrightarrow\vy)\,L_e (\vy,\vy\to\vx)
 <em>divided</em> by the probability of the sample \(\vy\) per unit area.
 However, this will require a few extra pieces of functionality.
 </p>
-<p>
-                Take a look at the <code>Emitter</code> interface. It is almost completely empty. Clearly, some mechanism for sample generation, evaluation of probabilities, and for returning the emitted radiance is needed.
-        As before, we don't explicitly specify an API that
-		you should use to implement the sampling and evaluation operations for
-		emitters—finding suitable abstractions is part of the exercise.
-		That said, you can look at the <code>BSDF</code> definitions in
-		<tt>include/nori/bsdf.h</tt> to get a rough idea as to
-		how one might get started with such an interface.
-</p>
-
             </li>
         </ol>
-        Discuss the design choices and challenges you faced in your report. Render the scene <code>scenes/pa4/motto-diffuse.xml</code> and don't forget to include a comparison against our reference solution:
-    <a href="//rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/03/24/motto-diffuse.exr"><tt>motto-diffuse.exr</tt></a>.
+
+        <h4>Validation</h4>
+        <ol>
+            <li>Render the following scenes in <code>scenes/pa4</code>:</li>
+                <ul>
+                    <li>motto/motto-diffuse.xml (<a href="references/motto-diffuse.exr">Reference</a>)</li>
+                    <li>cbox/cbox-distributed.xml (<a href="references/cbox-distributed.exr">Reference</a>)</li>
+                </ul>
+            <br>
+            <li>Pass the following statistical tests in <code>scenes/pa4/tests</code>:</li>
+                <ul>
+                    <li>test-mesh.xml</li>
+                    <li>test-mesh-furnace.xml</li>
+                </ul>
+                <p>
+                The tests are also part of the continous integration environment, so note that your build will "fail" as long as not all tests pass.
+                </p>
+        </ol>
+
+
+        <p>
+        <b>Make sure to discuss the design choices and relevant technical information about your implementation in the report and include comparisons against our reference renderings.</b>
+        </p>
 <p>
-    <h3>3. Dielectrics (30 pts)</h3>
-        <div class="row" style="margin: 30px">
-            <div class="col-md-4">
-                <div class="thumbnail" style="margin: 10px">
-                    <a class="fancybox" href="http://taylorsciencegeeks.weebly.com/uploads/5/9/2/0/59201005/829855554.jpg"><img src="images/cat-fishbowl.jpg"/></a>
-                    <div class="caption">
-                        This seems like a fitting example of a dielectric given our final project theme.
-                        [<a href="http://taylorsciencegeeks.weebly.com/blog/examples-of-refraction-in-our-everyday-life">Science News</a>]
-                    </div>
-                </div>
-            </div>
-        </div>
+    <h3>3. Dielectrics (25 pts)</h3>
     <p>
         Take a look at the file <code>src/mirror.cpp</code>, which defines BSDF
         of a perfect mirror based on a <em>Dirac delta function</em>.
@@ -298,6 +309,13 @@ However, this will require a few extra pieces of functionality.
         integral should multiply by it in <code>sample()</code>, while specular
         materials simply omit this step.
     </p>
+    <p>
+        <b>Hint</b>: We already provide you with the implementation of the Fresnel equations <code>fresnelDielectric</code>, which you can find in <code>common.h</code>/<code>common.cpp</code>.
+    </p>
+    <p>
+        <b>Make sure to discuss the relevant technical information about your implementation in the report.</b>
+    </p>
+
 
     <h3>4. Whitted-style ray tracing (10 pts)</h3>
     <p>
@@ -306,9 +324,10 @@ However, this will require a few extra pieces of functionality.
         is able to account for specular reflections and refractions.
     </p>
 	<div class="row" style="margin: 30px">
+        <div class="col-md-2"/>
 		<div class="col-md-4">
 			<div class="thumbnail" style="margin: 10px">
-				<a class="fancybox" href="images/motto-dielectric.jpg"><img src="images/motto-dielectric.jpg"/></a>
+				<a class="fancybox" href="images/motto-dielectric.png"><img src="images/motto-dielectric.png"/></a>
 				<div class="caption">
 					The motto of the rendering competition modeled as a dielectric object.
 				</div>
@@ -316,7 +335,7 @@ However, this will require a few extra pieces of functionality.
 		</div>
 		<div class="col-md-4">
 			<div class="thumbnail" style="margin: 10px">
-				<a class="fancybox" href="images/cbox.jpg"><img src="images/cbox.jpg"/></a>
+				<a class="fancybox" href="images/cbox-whitted.png"><img src="images/cbox-whitted.png"/></a>
 				<div class="caption">
 				    A Cornell box containing glass and metal spheres
 				</div>
@@ -332,9 +351,9 @@ However, this will require a few extra pieces of functionality.
             In the latter situation, simply fall back to your previous implementation.
             The specular case is treated specially: instead of sampling a
             position on a light source, invoke the specular surface's <code>BSDF::sample()</code>
-            method to generate a refracted direction.
-            Note that the BSDF of an intersection <tt>its</tt> can be obtained using the expression <code>its.mesh->getBSDF()</code>.
-            This will produce a sampling weight \(c\) and a new direction \(\omega_r\).<br/><br/>
+            method to generate a refracted direction. This will produce a sampling weight \(c\) and a new direction \(\omega_r\).
+            Again, the BSDF of an intersection <tt>its</tt> can be obtained using the expression <code>its.mesh->getBSDF()</code>.
+            <br/><br/>
         </li>
         <li>
             Request an additional random number \(\xi\) from the sampler
@@ -352,18 +371,41 @@ However, this will require a few extra pieces of functionality.
             discussed in more detail later in class.
         </li>
     </ol>
+
+    <h4>Validation</h4>
+    <ol>
+        <li>Render the following scenes in <code>scenes/pa4</code>:</li>
+            <ul>
+                <li>motto/motto-dielectric.xml (<a href="references/motto-dielectric.exr">Reference</a>)</li>
+                <li>cbox/cbox-whitted.xml (<a href="references/cbox-whitted.exr">Reference</a>)</li>
+            </ul>
+        <br>
+        <li>The validation scenes and tests from task 2 should not be affected by your changes.</li>
+    </ol>
+
     <p>
-   Discuss design choices you made in your implementation of parts 2 and 3 and explain challenges you faced in your report. Render the scenes <code>scenes/pa4/motto-dielectric.xml</code> and <code>scenes/pa4/cbox.xml</code> and include a comparison against our reference solutions:
-    <a href="//rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/03/24/motto-dielectric.exr"><tt>motto-dielectric.exr</tt></a> and
-    <a href="//rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/03/24/cbox.exr"><tt>cbox.exr</tt></a>.
+    <b>Please discuss the design choices and relevant technical information about your implementation in the report and include comparisons against our reference renderings.</b>
+    </p>
+
+    <h3>Artist Points: Interesting scene (5 points)</h3>
+    <div class="alert alert-info" role="alert"><b>Disclaimer</b>: Artist points are bonus tasks where you get the opportunity to showcase your own renderings created with your implemented algorithms. They are added to the final score.
+    </div>
+    <p>
+        Build your own artistically appealing scene and include a rendering of it in your report. Use any of the implemented integrators so far - or build something entirely new! Be creative, your renderings may be posted in a gallery on the course website, with your permission. This is a good exercise to get some practice putting together a scene by yourself. <b>This skill will be very useful for creating your scene for the final project.</b>
+    </p>
+    <p>
+        We recommend to use the 3D modeling tool <a href="https://www.blender.org/">Blender</a>. It can be used to arrange models or to create your own. Feel free to use existing models from websites such as <a href="https://www.blendswap.com/">Blendswap</a>. We provide a (rudimentary) Blender plugin (<code>ext/plugin</code>) that can help with some of the steps involved with exporting a scene to the Nori description language.
+    </p>
+    <p>
+        Please include a short section in the report with your render and credits to any 3D models you used. The artistic characteristics will be graded very leniently :)
     </p>
 
 	<h3> Hacker Points: Specialized Light Source Sampling <em>(15 points)</em></h3>
-<div class="alert alert-info" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points 
-for the daring few. Sometimes you might be required to implement something that was not taught in class and 
-you might have to do some research and creative thinking. Hacker Points are awarded only to students who 
-implemented all of the remaining assignment, and they are added to the final score.
-</div>
+    <div class="alert alert-info" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points
+    for the daring few. Sometimes you might be required to implement something that was not taught in class and
+    you might have to do some research and creative thinking. Hacker Points are awarded only to students who
+    implemented all of the remaining assignment, and they are added to the final score.
+    </div>
 
 	<p>
 		For this part your task is to create three efficient specialized emitters (rectangle,
@@ -382,7 +424,6 @@ implemented all of the remaining assignment, and they are added to the final sco
 		Your goal is to optimize sampling for these specialized light sources by improving all three sources of variance
 		mentioned above.
 	</p>
-
 
 	<h4> What to submit </h4>
 	<p>
