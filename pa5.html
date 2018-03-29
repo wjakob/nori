@@ -323,6 +323,19 @@ $ git pull upstream master
     <b>Make sure to discuss the design choices and relevant technical information about your implementation in the report and include comparisons against our reference renderings.</b>
     </p>
 
+    <h3>Artist Points: Interesting scene (5 points)</h3>
+    <div class="alert alert-info" role="alert"><b>Disclaimer</b>: Artist points are bonus tasks where you get the opportunity to showcase your own renderings created with your implemented algorithms. They are added to the final score.
+    </div>
+    <p>
+        Build your own artistically appealing scene and include a rendering of it in your report. Use any of the implemented integrators so far - or build something entirely new! Be creative, your renderings may be posted in a gallery on the course website, with your permission. This is a good exercise to get some practice putting together a scene by yourself. <b>This skill will be very useful for creating your scene for the final project.</b>
+    </p>
+    <p>
+        We recommend to use the 3D modeling tool <a href="https://www.blender.org/">Blender</a>. It can be used to arrange models or to create your own. Feel free to use existing models from websites such as <a href="https://www.blendswap.com/">Blendswap</a>. We provide a (rudimentary) Blender plugin (<code>ext/plugin</code>) that can help with some of the steps involved with exporting a scene to the Nori description language.
+    </p>
+    <p>
+        Please include a short section in the report with your render and credits to any 3D models you used. The artistic characteristics will be graded very leniently :)
+    </p>
+
 	<h3> Hacker Points: refraction through rough dielectrics<em> (20 points)</em></h3>
 <div class="alert alert-info" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points
 for the daring few. Sometimes you might be required to implement something that was not taught in class and
@@ -364,11 +377,10 @@ implemented all of the remaining assignment, and they are added to the final sco
         vector for refraction.
     </p>
 
-	<h4> What to submit </h4>
+	<h4> What to include in your report </h4>
 	<p>
 		<ul>
             <li> A discussion of how you chose to implement the Walter et al. paper in Nori. </li>
-            <li> The code of your new <code>roughdielectric</code> BSDF.</li>
             <li> At least two refractive renderings of the Ajax scene with different roughness values.</li>
             <li> Results of Chi^2 tests, which demonstrate that your sampling technique works correctly.</li>
 		</ul>
