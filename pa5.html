@@ -18,7 +18,7 @@
         repository by running
     </p>
 <pre class="prettyprint lang-bash">
-git pull https://github.com/wjakob/nori
+$ git pull upstream master
 </pre>
     <p>
         If there were any concurrent changes to the same file, you
@@ -26,7 +26,7 @@ git pull https://github.com/wjakob/nori
         "Preliminaries" for more information).
     </p>
 
-	<h3>Part 1: Microfacet BRDF <em>(60 points)</em></h3>
+	<h3>Part 1: Microfacet BRDF <em>(40 points)</em></h3>
     <div class="row" style="margin: 30px">
         <div class="col-md-6">
             <div class="thumbnail" style="margin: 10px">
@@ -48,7 +48,7 @@ git pull https://github.com/wjakob/nori
     <p>
     In this part we will extend the rudimentary interface in <tt>microfacet.cpp</tt> into a full-fledge reflectance model based on the <em>microfacet theory</em> presented in class. This utilizes the sampling techniques for the Beckmann distribution that you implemented in a previous assignment. The process is split into two parts:
    </p>
-    <h4>Part 1.1: Evaluating the Microfacet BRDF (10 pts)</h4>
+    <h4>Part 1.1: Evaluating the Microfacet BRDF (20 pts)</h4>
     <p>
     The Microfacet BRDF in <code>src/microfacet.cpp</code> will be used to simulate platic-like materials. It consists of a linear blend between a diffuse BRDF (to simulate a potentially colored reflection from the interior of the material) and a rough dielectric microfacet BRDF (to simulate a non-colored specular reflection from the rough boundary). Implement <code>Microfacet::eval()</code> which evaluates the described microfacet BRDF for a given pair of directions in the local shading coordinate frame:
         \[
@@ -90,7 +90,7 @@ git pull https://github.com/wjakob/nori
         \]
         Note that this definition is slightly different from the one shown in class: the density includes an extra cosine factor for normalization purposes so that it integrates to one over the hemisphere.
     </p>
-    <h4>Part 1.2: Sampling the Microfacet BRDF (10 pts)</h4>
+    <h4>Part 1.2: Sampling the Microfacet BRDF (20 pts)</h4>
     <p>
         In this part you will generate samples according to the following density function:
         \[
@@ -115,33 +115,38 @@ git pull https://github.com/wjakob/nori
     <p>
         Note that you will need to implement both <code>Microfacet::sample()</code> and <code>Microfacet::pdf()</code> to be able to run the following tests.
     </p>
-    <h4>Validation</h4>
-    <p>
-        To obtain the full set of points for the previous exercises, you will
-        need to validate the correctness of your code. The base code
-        includes two XML files containing sequences of statistical tests that a
-        correct implementation should be able to pass.
-        <ul>
-            <li><tt>scenes/pa5/tests/chi2test-microfacet.xml</tt>, </li>
-            <li><tt>scenes/pa5/tests/ttest-microfacet.xml</tt></li>
-        </ul>
 
-        Next, use your <tt>whitted</tt> integrator from the previous
-        assignment to render a microfacet Ajax bust and ensure that you can
-        match our references:
-        <ul>
-            <li><tt>scenes/pa5/ajax/ajax-rough.xml</tt> (reference: <a href="https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/04/06/ajax-rough.exr">ajax-rough.exr</a>)
-            </li>
-            <li><tt>scenes/pa5/ajax/ajax-smooth.xml</tt> (reference: <a href="https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/04/06/ajax-smooth.exr">ajax-smooth.exr</a>)
-            </li>
-        </ul>
-        The <tt>warptest</tt>GUI also contains
-        a \(\chi^2\) test for the BRDF model, but this is just to facilitate debugging and
-        visualization; the XML files are the real validation benchmark.
-        Mention in your report if running these tests produces any errors.
+    <h4>Validation</h4>
+    <p>To obtain the full set of points for the previous exercises, you will
+        need to validate the correctness of your code.</p>
+    <ol>
+        <li>Pass the following statistical tests in <code>scenes/pa5/tests</code>:</li>
+            <ul>
+                <li><tt>chi2test-microfacet.xml</tt></li>
+                <li><tt>ttest-microfacet.xml</tt></li>
+            </ul>
+            <p>
+            The tests are also part of the continous integration environment, so note that your build will "fail" as long as not all tests pass.
+            </p>
+            <p>
+                The <tt>warptest</tt>GUI also contains
+                a \(\chi^2\) test for the BRDF model, but this is just to facilitate debugging and
+                visualization; the XML files are the real validation benchmark.
+                Mention in your report if running these tests produces any errors.
+            </p>
+
+        <br>
+        <li>Use your <tt>whitted</tt> integrator from the previous assignment to render a microfacet Ajax bust and ensure that you can match our references for the following scenes in <code>scenes/pa5</code>:</li>
+            <ul>
+                <li><tt>ajax/ajax-smooth.xml</tt> (<a href="references/ajax-smooth.exr">Reference</a>)</li>
+                <li><tt>ajax/ajax-rough.xml</tt> (<a href="references/ajax-rough.exr">Reference</a>)</li>
+            </ul>
+    </ol>
+    <p>
+    <b>Make sure to discuss the design choices and relevant technical information about your implementation in the report and include comparisons against our reference renderings.</b>
     </p>
-    <h3>Part 2: <tt>path_mats</tt> Brute force path tracer <em>(15 points)</em></h3>
-	<h3>Part 3: <tt>path_ems</tt> Path tracer with next event estimation <em>(15 points)</em></h3>
+
+	<h3>Part 2: <tt>path_ems</tt> Path tracer with next event estimation <em>(15 points)</em></h3>
     <div class="row" style="margin: 30px">
         <div class="col-md-6">
             <div class="thumbnail" style="margin: 10px">
@@ -169,10 +174,10 @@ git pull https://github.com/wjakob/nori
         performed area light sampling on diffuse objects and BRDF sampling on
         specular objects. Now you'll extend this approach into a full path
         tracer that accounts for indirect illumination as well. We'll begin
-        with a "simple" path tracer named <code>src/path_simple.cpp</code> that
+        with a "emitter sampling" (ems) path tracer named <code>src/path_ems.cpp</code> that
         does not (yet) use <em>multiple importance sampling</em> (this
         corresponds to "Path Tracing with explicit shadow rays" discussed
-        during lecture). The second step involves adding MIS to create a
+        during lecture). The last part of the assignment will involve adding MIS to create a
         full-featured path tracer that combines both sampling strategies to
         reduce variance.
     </p>
@@ -187,22 +192,67 @@ git pull https://github.com/wjakob/nori
             efficiently using a loop.
         </li>
     </ol>
-    <p>
-    Use your implementation to render
-    </p>
+
+    <h4>Validation</h4>
     <ol>
-        <li>The Cornell box in <code>scenes/pa5/cbox/cbox.xml</code>
-            (reference: <a href="https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/04/07/cbox.exr">cbox.exr</a>).</li>
-        <li>The Veach material test scene in <code>scenes/pa5/veach_mi/veach_path_simple.xml</code>
-            (reference: <a href="https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/04/07/veach_path_simple.exr">veach_path_simple.exr</a>).</li>
-        <li>The table test scene in <code>scenes/pa5/table/table_path_simple.xml</code>
-            (reference: <a href="https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/04/07/table_path_simple.exr">table_path_simple.exr</a>).</li>
+        <li>Render the following scenes in <code>scenes/pa5</code>:</li>
+            <ul>
+                <li><tt>cbox/cbox_ems.xml</tt> (<a href="references/cbox_ems.exr">Reference</a>)</li>
+                <li><tt>veach_mi/veach_ems.xml</tt> (<a href="references/veach_ems.exr">Reference</a>)</li>
+                <li><tt>table/table_ems.xml</tt> (<a href="references/table_ems.exr">Reference</a>)</li>
+            </ul>
+
+            <p>
+            The first scene only uses diffuse and specular materials and can be
+            used to test your path tracer if you didn't do part 1 of this assignment
+            yet. The latter two assume that the microfacet model BRDF is ready.
+            </p>
+        <br>
+        <li>Pass the following statistical tests in <code>scenes/pa5/tests</code>:</li>
+            <ul>
+                <li><tt>test-mesh.xml</tt> (Tests 1-5)</li>
+                <li><tt>test-mesh-furnace.xml</tt> (Tests 1-2)</li>
+            </ul>
+            <p>
+            The tests are also part of the continous integration environment, so note that your build will "fail" as long as not all tests pass.
+            </p>
     </ol>
-    <p>
-    The first scene only uses diffuse and specular materials and can be
-    used to test your path tracer if you didn't do part 1 of this assignment
-    yet. The latter two assume that the microfacet model BRDF is ready.
+    <b>Make sure to discuss the design choices and relevant technical information about your implementation in the report and include comparisons against our reference renderings.</b>
     </p>
+
+    </p>
+    <h3>Part 3: <tt>path_mats</tt> Brute force path tracer <em>(10 points)</em></h3>
+
+    <p>
+        In the lecture you saw that there are multiple ways to solve the rendering equation and the emitter sampling strategy implemented in part 2 was just one possibility. A much simpler (but also more naive) version of path tracing relies on hitting light sources in the scene by pure chance instead of explicitly sampling points on them during integration. In other words, you exchange emitter sampling with sampling outgoing directions on the sphere directly.
+    </p>
+
+    <p>
+        Create a new "material sampling" (mats) path tracer named <code>src/path_mats.cpp</code> that does exactly this. Note that you again should use <code>BSDF::sample()</code> to generate new outoing directions at each scattering event.
+    </p>
+
+
+    <h4>Validation</h4>
+    <ol>
+        <li>Render the following scenes in <code>scenes/pa5</code>:</li>
+            <ul>
+                <li><tt>cbox/cbox_mats.xml</tt> (<a href="references/cbox_mats.exr">Reference</a>)</li>
+                <li><tt>veach_mi/veach_mats.xml</tt> (<a href="references/veach_mats.exr">Reference</a>)</li>
+                <li><tt>table/table_mats.xml</tt> (<a href="references/table_mats.exr">Reference</a>)</li>
+            </ul>
+        <br>
+        <li>Pass the following statistical tests in <code>scenes/pa5/tests</code>:</li>
+            <ul>
+                <li><tt>test-mesh.xml</tt> (Tests 6-10)</li>
+                <li><tt>test-mesh-furnace.xml</tt> (Tests 3-4)</li>
+            </ul>
+            <p>
+            The tests are also part of the continous integration environment, so note that your build will "fail" as long as not all tests pass.
+            </p>
+    </ol>
+    <b>Make sure to discuss the design choices and relevant technical information about your implementation in the report and include comparisons against our reference renderings.</b>
+    </p>
+
 	<h3>Part 4: <tt>path_mis</tt> Path tracer with Multiple Importance Sampling <em>(25 points)</em></h3>
     <div class="row" style="margin: 30px">
         <div class="col-md-6">
@@ -224,7 +274,7 @@ git pull https://github.com/wjakob/nori
         </div>
     </div>
     <p>
-        Following part 3, extend your path tracer with multiple importance sampling. This specifically entails:
+        For this last part you will combine both sampling strategies from the previous tasks into one integrator <code>src/path_mis.cpp</code> that has <em>multiple importance sampling</em>:
     </p>
     <ol>
         <li>When generating a sample on a light source, determine the density of this
@@ -251,15 +301,27 @@ git pull https://github.com/wjakob/nori
             Note the changed numerator in the above expression.
         </li>
     </ol>
-    <p>
-    Use your implementation to render
-    </p>
+
+    <h4>Validation</h4>
     <ol>
-        <li>The Veach material test scene in <code>scenes/pa5/veach_mi/veach_path.xml</code>
-            (reference: <a href="https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/04/07/veach_path.exr">veach_path.exr</a>).</li>
-        <li>The table test scene in <code>scenes/pa5/table/table_path.xml</code>
-            (reference: <a href="https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/04/07/table_path.exr">table_path.exr</a>).</li>
+        <li>Render the following scenes in <code>scenes/pa5</code>:</li>
+            <ul>
+                <li><tt>cbox/cbox_mis.xml</tt> (<a href="references/cbox_mis.exr">Reference</a>)</li>
+                <li><tt>veach_mi/veach_mis.xml</tt> (<a href="references/veach_mis.exr">Reference</a>)</li>
+                <li><tt>table/table_mis.xml</tt> (<a href="references/table_mis.exr">Reference</a>)</li>
+            </ul>
+        <br>
+        <li>Pass the following statistical tests in <code>scenes/pa5/tests</code>:</li>
+            <ul>
+                <li><tt>test-mesh.xml</tt> (Tests 11-15)</li>
+                <li><tt>test-mesh-furnace.xml</tt> (Tests 5-6)</li>
+            </ul>
+            <p>
+            The tests are also part of the continous integration environment, so note that your build will "fail" as long as not all tests pass.
+            </p>
     </ol>
+    <b>Make sure to discuss the design choices and relevant technical information about your implementation in the report and include comparisons against our reference renderings.</b>
+    </p>
 
 	<h3> Hacker Points: refraction through rough dielectrics<em> (20 points)</em></h3>
 <div class="alert alert-info" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points
