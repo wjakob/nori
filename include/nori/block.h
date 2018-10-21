@@ -149,6 +149,10 @@ public:
 
     /// Return the total number of blocks
     int getBlockCount() const { return m_blocksLeft; }
+
+    /// Set total number of blocks (for progressive rendering)
+    void setBlockCount(const Vector2i &size, int blockSize);
+
 protected:
     enum EDirection { ERight = 0, EDown, ELeft, EUp };
 

@@ -130,6 +130,19 @@ BlockGenerator::BlockGenerator(const Vector2i &size, int blockSize)
     m_numSteps = 1;
 }
 
+void BlockGenerator::setBlockCount(const Vector2i &size, int blockSize) {
+	m_size = size;
+	m_blockSize = blockSize;
+	m_numBlocks = Vector2i(
+			(int) std::ceil(size.x() / (float) blockSize),
+			(int) std::ceil(size.y() / (float) blockSize));
+	m_blocksLeft = m_numBlocks.x() * m_numBlocks.y();
+	m_direction = ERight;
+	m_block = Point2i(m_numBlocks / 2);
+	m_stepsLeft = 1;
+	m_numSteps = 1;
+}
+
 bool BlockGenerator::next(ImageBlock &block) {
     tbb::mutex::scoped_lock lock(m_mutex);
 
