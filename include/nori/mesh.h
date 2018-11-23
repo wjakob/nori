@@ -79,10 +79,10 @@ public:
     /// Initialize internal data structures (called once by the XML parser)
     virtual void activate();
 
-    /// Return the total number of triangles in this hsape
+    /// Return the total number of triangles in this shape
     uint32_t getTriangleCount() const { return (uint32_t) m_F.cols(); }
 
-    /// Return the total number of vertices in this hsape
+    /// Return the total number of vertices in this shape
     uint32_t getVertexCount() const { return (uint32_t) m_V.cols(); }
 
     /**
