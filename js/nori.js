@@ -7,14 +7,16 @@
 		$("code").addClass("prettyprint");
 		$("code").addClass("lang-cpp");
 		prettyPrint();
-		MathJax.Hub.Typeset();
+        if (typeof(MathJax) === undefined) {
+    		MathJax.Hub.Typeset();
+        }
 	};
 
 	$("#pa1-body").load("pa1.html", prettify);
-	$("#pa2-body").load("pa2.html", prettify);
-	$("#pa3-body").load("pa3.html", prettify);
-	$("#pa4-body").load("pa4.html", prettify);
-	$("#pa5-body").load("pa5.html", prettify);
+	// $("#pa2-body").load("pa2.html", prettify);
+	// $("#pa3-body").load("pa3.html", prettify);
+	// $("#pa4-body").load("pa4.html", prettify);
+	// $("#pa5-body").load("pa5.html", prettify);
 	// $("#project-body").load("project.html", prettify);
 
 	$(".fancybox").fancybox();
