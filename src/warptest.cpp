@@ -57,61 +57,198 @@ using nori::BSDF;
 using nori::BSDFQueryRecord;
 using nori::Color3f;
 
-class WarpTest : public Screen {
-public:
-    enum PointType {
-        Independent = 0,
-        Grid,
-        Stratified
-    };
 
-    enum WarpType {
-        Square = 0,
-        Tent,
-        Disk,
-        UniformSphere,
-        UniformHemisphere,
-        CosineHemisphere,
-        Beckmann,
-        MicrofacetBRDF
-    };
+enum PointType {
+    Independent = 0,
+    Grid,
+    Stratified
+};
 
-    WarpTest(): Screen(Vector2i(800, 600), "Assignment 3: Sampling and Warping"), m_bRec(Vector3f()) {
-        initializeGUI();
-        m_drawHistogram = false;
+enum WarpType {
+    Square = 0,
+    Tent,
+    Disk,
+    UniformSphere,
+    UniformHemisphere,
+    CosineHemisphere,
+    Beckmann,
+    MicrofacetBRDF,
+    WarpTypeCount
+};
+static const std::string kWarpTypeNames[WarpTypeCount] = {
+    "square", "tent", "disk", "uniform_sphere", "uniform_hemisphere",
+    "cosine_hemisphere", "beckmann", "microfacet_brdf"
+};
+
+struct WarpTest {
+    static const int kDefaultXres = 51;
+    static const int kDefaultYres = 51;
+
+    WarpType warpType;
+    float parameterValue;
+    BSDF *bsdf;
+    BSDFQueryRecord bRec;
+    int xres, yres, res;
+
+    // Observed and expected frequencies, initialized after calling run().
+    std::unique_ptr<double[]> obsFrequencies, expFrequencies;
+
+    WarpTest(WarpType warpType_, float parameterValue_, BSDF *bsdf_ = nullptr,
+             BSDFQueryRecord bRec_ = BSDFQueryRecord(Vector3f()),
+             int xres_ = kDefaultXres, int yres_ = kDefaultYres)
+        : warpType(warpType_), parameterValue(parameterValue_), bsdf(bsdf_),
+          bRec(bRec_), xres(xres_), yres(yres_) {
+
+        if (warpType != Square && warpType != Disk && warpType != Tent)
+            xres *= 2;
+        res = xres * yres;
     }
 
-    static float mapParameter(WarpType warpType, float parameterValue) {
-        if (warpType == Beckmann || warpType == MicrofacetBRDF)
-            parameterValue = std::exp(std::log(0.05f) * (1 - parameterValue) +
-                                      std::log(1.f)   *  parameterValue);
-        return parameterValue;
+    std::pair<bool, std::string> run() {
+        int sampleCount = 1000 * res;
+        obsFrequencies.reset(new double[res]);
+        expFrequencies.reset(new double[res]);
+        memset(obsFrequencies.get(), 0, res*sizeof(double));
+        memset(expFrequencies.get(), 0, res*sizeof(double));
+
+        MatrixXf points, values;
+        generatePoints(sampleCount, Independent, points, values);
+
+        for (int i=0; i<sampleCount; ++i) {
+            if (values(0, i) == 0)
+                continue;
+            Vector3f sample = points.col(i);
+            float x, y;
+
+            if (warpType == Square) {
+                x = sample.x();
+                y = sample.y();
+            } else if (warpType == Disk || warpType == Tent) {
+                x = sample.x() * 0.5f + 0.5f;
+                y = sample.y() * 0.5f + 0.5f;
+            } else {
+                x = std::atan2(sample.y(), sample.x()) * INV_TWOPI;
+                if (x < 0)
+                    x += 1;
+                y = sample.z() * 0.5f + 0.5f;
+            }
+
+            int xbin = std::min(xres-1, std::max(0, (int) std::floor(x * xres)));
+            int ybin = std::min(yres-1, std::max(0, (int) std::floor(y * yres)));
+            obsFrequencies[ybin * xres + xbin] += 1;
+        }
+
+        auto integrand = [&](double y, double x) -> double {
+            if (warpType == Square) {
+                return Warp::squareToUniformSquarePdf(Point2f(x, y));
+            } else if (warpType == Disk) {
+                x = x * 2 - 1; y = y * 2 - 1;
+                return Warp::squareToUniformDiskPdf(Point2f(x, y));
+            } else if (warpType == Tent) {
+                x = x * 2 - 1; y = y * 2 - 1;
+                return Warp::squareToTentPdf(Point2f(x, y));
+            } else {
+                x *= 2 * M_PI;
+                y = y * 2 - 1;
+
+                double sinTheta = std::sqrt(1 - y * y);
+                double sinPhi = std::sin(x),
+                       cosPhi = std::cos(x);
+
+                Vector3f v((float) (sinTheta * cosPhi),
+                           (float) (sinTheta * sinPhi),
+                           (float) y);
+
+                if (warpType == UniformSphere)
+                    return Warp::squareToUniformSpherePdf(v);
+                else if (warpType == UniformHemisphere)
+                    return Warp::squareToUniformHemispherePdf(v);
+                else if (warpType == CosineHemisphere)
+                    return Warp::squareToCosineHemispherePdf(v);
+                else if (warpType == Beckmann)
+                    return Warp::squareToBeckmannPdf(v, parameterValue);
+                else if (warpType == MicrofacetBRDF) {
+                    BSDFQueryRecord br(bRec);
+                    br.wo = v;
+                    br.measure = nori::ESolidAngle;
+                    return bsdf->pdf(br);
+                } else {
+                    throw NoriException("Invalid warp type");
+                }
+            }
+        };
+
+        double scale = sampleCount;
+        if (warpType == Square)
+            scale *= 1;
+        else if (warpType == Disk || warpType == Tent)
+            scale *= 4;
+        else
+            scale *= 4*M_PI;
+
+        double *ptr = expFrequencies.get();
+        for (int y=0; y<yres; ++y) {
+            double yStart =  y    / (double) yres;
+            double yEnd   = (y+1) / (double) yres;
+            for (int x=0; x<xres; ++x) {
+                double xStart =  x    / (double) xres;
+                double xEnd   = (x+1) / (double) xres;
+                ptr[y * xres + x] = hypothesis::adaptiveSimpson2D(
+                    integrand, yStart, xStart, yEnd, xEnd) * scale;
+                if (ptr[y * xres + x] < 0)
+                    throw NoriException("The Pdf() function returned negative values!");
+            }
+        }
+
+        /* Write the test input data to disk for debugging */
+        hypothesis::chi2_dump(yres, xres, obsFrequencies.get(), expFrequencies.get(), "chitest.m");
+
+        /* Perform the Chi^2 test */
+        const int minExpFrequency = 5;
+        const float significanceLevel = 0.01f;
+
+        return hypothesis::chi2_test(yres*xres, obsFrequencies.get(),
+                                     expFrequencies.get(), sampleCount,
+                                     minExpFrequency, significanceLevel, 1);
     }
 
-    std::pair<Point3f, float> warpPoint(WarpType warpType, const Point2f &sample, float parameterValue) {
+
+    std::pair<Point3f, float> warpPoint(const Point2f &sample) {
         Point3f result;
 
         switch (warpType) {
-            case Square: result << Warp::squareToUniformSquare(sample), 0; break;
-            case Tent: result << Warp::squareToTent(sample), 0; break;
-            case Disk: result << Warp::squareToUniformDisk(sample), 0; break;
-            case UniformSphere: result << Warp::squareToUniformSphere(sample); break;
-            case UniformHemisphere: result << Warp::squareToUniformHemisphere(sample); break;
-            case CosineHemisphere: result << Warp::squareToCosineHemisphere(sample); break;
-            case Beckmann: result << Warp::squareToBeckmann(sample, parameterValue); break;
+            case Square:
+                result << Warp::squareToUniformSquare(sample), 0; break;
+            case Tent:
+                result << Warp::squareToTent(sample), 0; break;
+            case Disk:
+                result << Warp::squareToUniformDisk(sample), 0; break;
+            case UniformSphere:
+                result << Warp::squareToUniformSphere(sample); break;
+            case UniformHemisphere:
+                result << Warp::squareToUniformHemisphere(sample); break;
+            case CosineHemisphere:
+                result << Warp::squareToCosineHemisphere(sample); break;
+            case Beckmann:
+                result << Warp::squareToBeckmann(sample, parameterValue); break;
             case MicrofacetBRDF: {
-                BSDFQueryRecord bRec(m_bRec);
-                float value = m_brdf->sample(bRec, sample).getLuminance();
-                return std::make_pair(bRec.wo, value == 0 ? 0.f : m_brdf->eval(bRec)[0]);
+                BSDFQueryRecord br(bRec);
+                float value = bsdf->sample(br, sample).getLuminance();
+                return std::make_pair(
+                    br.wo,
+                    value == 0 ? 0.f : bsdf->eval(br)[0]
+                );
              }
+             default:
+                throw std::runtime_error("Unsupported warp type.");
         }
 
         return std::make_pair(result, 1.f);
     }
 
-    void generatePoints(int &pointCount, PointType pointType, WarpType warpType,
-                        float parameterValue, MatrixXf &positions,
-                        MatrixXf &weights) {
+
+    void generatePoints(int &pointCount, PointType pointType,
+                        MatrixXf &positions, MatrixXf &weights) {
         /* Determine the number of points that should be sampled */
         int sqrtVal = (int) (std::sqrt((float) pointCount) + 0.5f);
         float invSqrtVal = 1.f / sqrtVal;
@@ -141,10 +278,26 @@ public:
                     break;
             }
 
-            auto result = warpPoint(warpType, sample, parameterValue);
+            auto result = warpPoint(sample);
             positions.col(i) = result.first;
             weights(0, i) = result.second;
         }
+    }
+};
+
+class WarpTestScreen : public Screen {
+public:
+
+    WarpTestScreen(): Screen(Vector2i(800, 600), "Assignment 3: Sampling and Warping"), m_bRec(Vector3f()) {
+        initializeGUI();
+        m_drawHistogram = false;
+    }
+
+    static float mapParameter(WarpType warpType, float parameterValue) {
+        if (warpType == Beckmann || warpType == MicrofacetBRDF)
+            parameterValue = std::exp(std::log(0.05f) * (1 - parameterValue) +
+                                      std::log(1.f)   *  parameterValue);
+        return parameterValue;
     }
 
     void refresh() {
@@ -168,7 +321,8 @@ public:
         /* Generate the point positions */
         MatrixXf positions, values;
         try {
-            generatePoints(m_pointCount, pointType, warpType, parameterValue, positions, values);
+            WarpTest tester(warpType, parameterValue, m_brdf.get(), m_bRec);
+            tester.generatePoints(m_pointCount, pointType, positions, values);
         } catch (const NoriException &e) {
             m_warpTypeBox->setSelectedIndex(0);
             refresh();
@@ -214,15 +368,17 @@ public:
             m_lineCount = 4 * (gridRes+1) * (fineGridRes+1);
             positions.resize(3, m_lineCount);
             float coarseScale = 1.f / gridRes, fineScale = 1.f / fineGridRes;
+
+            WarpTest tester(warpType, parameterValue, m_brdf.get(), m_bRec);
             for (int i=0; i<=gridRes; ++i) {
                 for (int j=0; j<=fineGridRes; ++j) {
-                    auto pt = warpPoint(warpType, Point2f(j     * fineScale, i * coarseScale), parameterValue);
+                    auto pt = tester.warpPoint(Point2f(j * fineScale, i * coarseScale));
                     positions.col(idx++) = value_scale == 0.f ? pt.first : (pt.first * pt.second * value_scale);
-                    pt = warpPoint(warpType, Point2f((j+1) * fineScale, i * coarseScale), parameterValue);
+                    pt = tester.warpPoint(Point2f((j+1) * fineScale, i * coarseScale));
                     positions.col(idx++) = value_scale == 0.f ? pt.first : (pt.first * pt.second * value_scale);
-                    pt = warpPoint(warpType, Point2f(i*coarseScale, j     * fineScale), parameterValue);
+                    pt = tester.warpPoint(Point2f(i*coarseScale, j     * fineScale));
                     positions.col(idx++) = value_scale == 0.f ? pt.first : (pt.first * pt.second * value_scale);
-                    pt = warpPoint(warpType, Point2f(i*coarseScale, (j+1) * fineScale), parameterValue);
+                    pt = tester.warpPoint(Point2f(i*coarseScale, (j+1) * fineScale));
                     positions.col(idx++) = value_scale == 0.f ? pt.first : (pt.first * pt.second * value_scale);
                 }
             }
@@ -273,7 +429,7 @@ public:
         m_pointCountSlider->setValue((std::log((float) m_pointCount) / std::log(2.f) - 5) / 15);
     }
 
-    ~WarpTest() {
+    ~WarpTestScreen() {
         glDeleteTextures(2, &m_textures[0]);
         delete m_pointShader;
         delete m_gridShader;
@@ -401,137 +557,33 @@ public:
     }
 
     void runTest() {
-        int xres = 51, yres = 51;
+        // Prepare and run test, passing parameters from UI.
         WarpType warpType = (WarpType) m_warpTypeBox->selectedIndex();
         float parameterValue = mapParameter(warpType, m_parameterSlider->value());
 
-        if (warpType != Square && warpType != Disk && warpType != Tent)
-            xres *= 2;
-
-        int res = yres*xres, sampleCount = 1000 * res;
-        std::unique_ptr<double[]> obsFrequencies(new double[res]);
-        std::unique_ptr<double[]> expFrequencies(new double[res]);
-        memset(obsFrequencies.get(), 0, res*sizeof(double));
-        memset(expFrequencies.get(), 0, res*sizeof(double));
-
-        MatrixXf points, values;
-        generatePoints(sampleCount, Independent, warpType,
-                       parameterValue, points, values);
-
-        for (int i=0; i<sampleCount; ++i) {
-            if (values(0, i) == 0)
-                continue;
-            Vector3f sample = points.col(i);
-            float x, y;
-
-            if (warpType == Square) {
-                x = sample.x();
-                y = sample.y();
-            } else if (warpType == Disk || warpType == Tent) {
-                x = sample.x() * 0.5f + 0.5f;
-                y = sample.y() * 0.5f + 0.5f;
-            } else {
-                x = std::atan2(sample.y(), sample.x()) * INV_TWOPI;
-                if (x < 0)
-                    x += 1;
-                y = sample.z() * 0.5f + 0.5f;
-            }
-
-            int xbin = std::min(xres-1, std::max(0, (int) std::floor(x * xres)));
-            int ybin = std::min(yres-1, std::max(0, (int) std::floor(y * yres)));
-            obsFrequencies[ybin * xres + xbin] += 1;
-        }
-
-        auto integrand = [&](double y, double x) -> double {
-            if (warpType == Square) {
-                return Warp::squareToUniformSquarePdf(Point2f(x, y));
-            } else if (warpType == Disk) {
-                x = x * 2 - 1; y = y * 2 - 1;
-                return Warp::squareToUniformDiskPdf(Point2f(x, y));
-            } else if (warpType == Tent) {
-                x = x * 2 - 1; y = y * 2 - 1;
-                return Warp::squareToTentPdf(Point2f(x, y));
-            } else {
-                x *= 2 * M_PI;
-                y = y * 2 - 1;
-
-                double sinTheta = std::sqrt(1 - y * y);
-                double sinPhi = std::sin(x),
-                       cosPhi = std::cos(x);
-
-                Vector3f v((float) (sinTheta * cosPhi),
-                           (float) (sinTheta * sinPhi),
-                           (float) y);
-
-                if (warpType == UniformSphere)
-                    return Warp::squareToUniformSpherePdf(v);
-                else if (warpType == UniformHemisphere)
-                    return Warp::squareToUniformHemispherePdf(v);
-                else if (warpType == CosineHemisphere)
-                    return Warp::squareToCosineHemispherePdf(v);
-                else if (warpType == Beckmann)
-                    return Warp::squareToBeckmannPdf(v, parameterValue);
-                else if (warpType == MicrofacetBRDF) {
-                    BSDFQueryRecord bRec(m_bRec);
-                    bRec.wo = v;
-                    bRec.measure = nori::ESolidAngle;
-                    return m_brdf->pdf(bRec);
-                } else {
-                    throw NoriException("Invalid warp type");
-                }
-            }
-        };
-
-        double scale = sampleCount;
-        if (warpType == Square)
-            scale *= 1;
-        else if (warpType == Disk || warpType == Tent)
-            scale *= 4;
-        else
-            scale *= 4*M_PI;
-
-        double *ptr = expFrequencies.get();
-        for (int y=0; y<yres; ++y) {
-            double yStart =  y    / (double) yres;
-            double yEnd   = (y+1) / (double) yres;
-            for (int x=0; x<xres; ++x) {
-                double xStart =  x    / (double) xres;
-                double xEnd   = (x+1) / (double) xres;
-                ptr[y * xres + x] = hypothesis::adaptiveSimpson2D(
-                    integrand, yStart, xStart, yEnd, xEnd) * scale;
-                if (ptr[y * xres + x] < 0)
-                    throw NoriException("The Pdf() function returned negative values!");
-            }
-        }
-
-        /* Write the test input data to disk for debugging */
-        hypothesis::chi2_dump(yres, xres, obsFrequencies.get(), expFrequencies.get(), "chitest.m");
-
-        /* Perform the Chi^2 test */
-        const int minExpFrequency = 5;
-        const float significanceLevel = 0.01f;
-
-        m_testResult =
-            hypothesis::chi2_test(yres*xres, obsFrequencies.get(), expFrequencies.get(),
-                sampleCount, minExpFrequency, significanceLevel, 1);
+        WarpTest tester(warpType, parameterValue, m_brdf.get(), m_bRec);
+        m_testResult = tester.run();
 
         float maxValue = 0, minValue = std::numeric_limits<float>::infinity();
-        for (int i=0; i<res; ++i) {
-            maxValue = std::max(maxValue, (float) std::max(obsFrequencies[i], expFrequencies[i]));
-            minValue = std::min(minValue, (float) std::min(obsFrequencies[i], expFrequencies[i]));
+        for (int i=0; i<tester.res; ++i) {
+            maxValue = std::max(maxValue,
+                                (float) std::max(tester.obsFrequencies[i], tester.expFrequencies[i]));
+            minValue = std::min(minValue,
+                                (float) std::min(tester.obsFrequencies[i], tester.expFrequencies[i]));
         }
         minValue /= 2;
         float texScale = 1/(maxValue - minValue);
 
         /* Upload histograms to GPU */
-        std::unique_ptr<float[]> buffer(new float[res]);
+        std::unique_ptr<float[]> buffer(new float[tester.res]);
         for (int k=0; k<2; ++k) {
-            for (int i=0; i<res; ++i)
-                buffer[i] = ((k == 0 ? obsFrequencies[i] : expFrequencies[i]) - minValue) * texScale;
+            for (int i=0; i<tester.res; ++i)
+                buffer[i] = ((k == 0 ? tester.obsFrequencies[i]
+                                     : tester.expFrequencies[i]) - minValue) * texScale;
 
             glBindTexture(GL_TEXTURE_2D, m_textures[k]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, xres, yres,
-                    0, GL_RED, GL_FLOAT, buffer.get());
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, tester.xres, tester.yres,
+                         0, GL_RED, GL_FLOAT, buffer.get());
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         }
@@ -781,7 +833,7 @@ private:
 int main(int argc, char **argv) {
     nanogui::init();
 
-    WarpTest *screen = new WarpTest();
+    WarpTestScreen *screen = new WarpTestScreen();
     nanogui::mainloop();
     delete screen;
 
