@@ -31,6 +31,7 @@
 #include <nanogui/messagedialog.h>
 #include <pcg32.h>
 #include <hypothesis.h>
+#include <tinyformat.h>
 
 /* =======================================================================
  *   WARNING    WARNING    WARNING    WARNING    WARNING    WARNING
@@ -58,13 +59,13 @@ using nori::BSDFQueryRecord;
 using nori::Color3f;
 
 
-enum PointType {
+enum PointType : int {
     Independent = 0,
     Grid,
     Stratified
 };
 
-enum WarpType {
+enum WarpType : int {
     Square = 0,
     Tent,
     Disk,
@@ -283,6 +284,20 @@ struct WarpTest {
             weights(0, i) = result.second;
         }
     }
+
+    static std::pair<BSDF *, BSDFQueryRecord>
+    create_microfacet_bsdf(float alpha, float bsdfAngle) {
+        PropertyList list;
+        list.setFloat("alpha", alpha);
+        list.setColor("kd", Color3f(0.f));
+        auto * brdf = (BSDF *) NoriObjectFactory::createInstance("microfacet", list);
+
+        Vector3f wi(std::sin(bsdfAngle), 0.f,
+                    std::max(std::cos(bsdfAngle), 1e-4f));
+        wi = wi.normalized();
+        BSDFQueryRecord bRec(wi);
+        return { brdf, bRec };
+    }
 };
 
 class WarpTestScreen : public Screen {
@@ -307,15 +322,11 @@ public:
         m_pointCount = (int) std::pow(2.f, 15 * m_pointCountSlider->value() + 5);
 
         if (warpType == MicrofacetBRDF) {
-            PropertyList list;
-            list.setFloat("alpha", parameterValue);
-            list.setColor("kd", Color3f(0.f));
-            m_brdf = std::unique_ptr<BSDF>((BSDF *) NoriObjectFactory::createInstance("microfacet", list));
-
+            BSDF *ptr;
             float bsdfAngle = M_PI * (m_angleSlider->value() - 0.5f);
-            m_bRec.wi =
-                Vector3f(std::sin(bsdfAngle), 0,
-                         std::max(std::cos(bsdfAngle), 1e-4f)).normalized();
+            std::tie(ptr, m_bRec) = WarpTest::create_microfacet_bsdf(
+                parameterValue, bsdfAngle);
+            m_brdf.reset(ptr);
         }
 
         /* Generate the point positions */
@@ -830,14 +841,56 @@ private:
     std::pair<bool, std::string> m_testResult;
 };
 
+
+std::pair<WarpType, float> parse_arguments(int argc, char **argv) {
+    WarpType tp = WarpTypeCount;
+    for (int i = 0; i < WarpTypeCount; ++i) {
+        if (strcmp(kWarpTypeNames[i].c_str(), argv[1]) == 0)
+            tp = WarpType(i);
+    }
+    if (tp >= WarpTypeCount)
+        throw std::runtime_error("Invalid warp type!");
+
+    float value = 0.f;
+    if (argc > 2)
+        value = std::stof(argv[2]);
+
+    return { tp, value };
+}
+
+
 int main(int argc, char **argv) {
-    nanogui::init();
+    if (argc <= 1) {
+        // GUI mode
+        nanogui::init();
+        WarpTestScreen *screen = new WarpTestScreen();
+        nanogui::mainloop();
+        delete screen;
+        nanogui::shutdown();
+        return 0;
+    }
 
-    WarpTestScreen *screen = new WarpTestScreen();
-    nanogui::mainloop();
-    delete screen;
+    // CLI mode
+    WarpType warpType;
+    float paramValue;
+    std::unique_ptr<BSDF> bsdf;
+    auto bRec = BSDFQueryRecord(Vector3f());
+    std::tie(warpType, paramValue) = parse_arguments(argc, argv);
+    if (warpType == MicrofacetBRDF) {
+        float bsdfAngle = M_PI * 0.f;
+        BSDF *ptr;
+        std::tie(ptr, bRec) = WarpTest::create_microfacet_bsdf(
+            paramValue, bsdfAngle);
+        bsdf.reset(ptr);
+    }
 
-    nanogui::shutdown();
+    std::cout << tfm::format("Testing warp %s, parameter value = %f",
+                 kWarpTypeNames[int(warpType)], paramValue) << std::endl;
+    WarpTest tester(warpType, paramValue, bsdf.get(), bRec);
+    auto res = tester.run();
+    if (res.first)
+        return 0;
 
-    return 0;
+    std::cout << tfm::format("warptest failed: %s", res.second) << std::endl;
+    return 1;
 }
