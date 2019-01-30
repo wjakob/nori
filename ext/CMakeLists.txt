@@ -48,6 +48,19 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU"
     message(FATAL_ERROR "Unsupported compiler -- Nori requires C++11 support!")
   endif()
 
+  # Prefer libc++ in conjunction with Clang
+  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    CHECK_CXX_COMPILER_FLAG("-stdlib=libc++" HAS_LIBCPP)
+    if (HAS_LIBCPP)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -D_LIBCPP_VERSION")
+      set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
+      set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
+      message(STATUS "Nori: using libc++.")
+    else()
+      message(WARNING "libc++ is recommended in conjunction with clang. Please insteall the libc++ development headers, provided e.g. by the packages 'libc++-dev' and 'libc++abi-dev' on Debian/Ubuntu.")
+    endif()
+  endif()
+
   # Enable link time optimization and set the default symbol
   # visibility to hidden (very important to obtain small binaries)
   if (NOT ${U_CMAKE_BUILD_TYPE} MATCHES DEBUG)
