@@ -45,7 +45,10 @@ public:
     Bitmap(const std::string &filename);
 
     /// Save the bitmap as an EXR file with the specified filename
-    void save(const std::string &filename);
+    void saveEXR(const std::string &filename);
+
+    /// Save the bitmap as a PNG file (with sRGB tonemapping) with the specified filename
+    void savePNG(const std::string &filename);
 };
 
 NORI_NAMESPACE_END

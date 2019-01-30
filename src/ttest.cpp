@@ -193,6 +193,8 @@ public:
             }
         }
         cout << "Passed " << passed << "/" << total << " tests." << endl;
+        if (passed < total)
+            throw std::runtime_error("Some tests failed :(");
     }
 
     std::string toString() const {

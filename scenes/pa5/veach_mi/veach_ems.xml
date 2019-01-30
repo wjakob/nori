@@ -3,7 +3,7 @@
      after a file by Steve Marschner (CS667) -->
 
 <scene>
-	<integrator type="path"/>
+	<integrator type="path_ems"/>
 
 	<sampler type="independent">
 		<integer name="sampleCount" value="256"/>
@@ -19,7 +19,7 @@
 	</camera>
 
 	<mesh type="obj">
-		<string name="filename" value="sphere.obj"/>
+		<string name="filename" value="meshes/sphere.obj"/>
 		<transform name="toWorld">
 			<scale value="0.1, 0.1, 0.1"/>
 			<translate value="-1.25, 0, 0"/>
@@ -33,7 +33,7 @@
 	</mesh>
 
 	<mesh type="obj">
-		<string name="filename" value="sphere.obj"/>
+		<string name="filename" value="meshes/sphere.obj"/>
 		<transform name="toWorld">
 			<scale value="0.03333, 0.03333, 0.03333"/>
 			<translate value="-3.75, 0, 0"/>
@@ -47,7 +47,7 @@
 	</mesh>
 
 	<mesh type="obj">
-		<string name="filename" value="sphere.obj"/>
+		<string name="filename" value="meshes/sphere.obj"/>
 		<transform name="toWorld">
 			<scale value="0.3, 0.3, 0.3"/>
 			<translate value="1.25, 0, 0"/>
@@ -61,7 +61,7 @@
 	</mesh>
 
 	<mesh type="obj">
-		<string name="filename" value="sphere.obj"/>
+		<string name="filename" value="meshes/sphere.obj"/>
 		<transform name="toWorld">
 			<scale value="0.9, 0.9, 0.9"/>
 			<translate value="3.75, 0, 0"/>
@@ -73,9 +73,9 @@
 			<color name="albedo" value="0,0,0"/>
 		</bsdf>
 	</mesh>
-    
+
     <mesh type="obj">
-		<string name="filename" value="sphere.obj"/>
+		<string name="filename" value="meshes/sphere.obj"/>
 		<transform name="toWorld">
 			<scale value="1, 1, 1"/>
 			<translate value="0, 4, 3"/>
@@ -89,7 +89,7 @@
 	</mesh>
 
 	<mesh type="obj">
-		<string name="filename" value="plate1.obj"/>
+		<string name="filename" value="meshes/plate1.obj"/>
 		<bsdf type="microfacet">
 			<color name="kd" value="0.0175, 0.0225, 0.0325"/>
 			<float name="alpha" value="0.005"/>
@@ -97,7 +97,7 @@
 	</mesh>
 
 	<mesh type="obj">
-		<string name="filename" value="plate2.obj"/>
+		<string name="filename" value="meshes/plate2.obj"/>
 		<bsdf type="microfacet">
 			<color name="kd" value="0.0175, 0.0225, 0.0325"/>
 			<float name="alpha" value="0.02"/>
@@ -105,7 +105,7 @@
 	</mesh>
 
 	<mesh type="obj">
-		<string name="filename" value="plate3.obj"/>
+		<string name="filename" value="meshes/plate3.obj"/>
 		<bsdf type="microfacet">
 			<color name="kd" value="0.0175, 0.0225, 0.0325"/>
 			<float name="alpha" value="0.05"/>
@@ -113,7 +113,7 @@
 	</mesh>
 
 	<mesh type="obj">
-		<string name="filename" value="plate4.obj"/>
+		<string name="filename" value="meshes/plate4.obj"/>
 		<bsdf type="microfacet">
 			<color name="kd" value="0.0175, 0.0225, 0.0325"/>
 			<float name="alpha" value="0.1"/>
@@ -121,7 +121,7 @@
 	</mesh>
 
 	<mesh type="obj">
-		<string name="filename" value="floor.obj"/>
+		<string name="filename" value="meshes/floor.obj"/>
 		<bsdf type="diffuse">
 			<color name="albedo" value="0.1 0.1 0.1"/>
 		</bsdf>

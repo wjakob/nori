@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<test type="ttest">
+	<string name="references"
+		value="0.0898394, 0.02292, 0.0534198, 0.0205314, 0.26174"/>
+
+	<scene>
+		<integrator type="whitted"/>
+
+		<camera type="perspective">
+		        <transform name="toWorld">
+			        <lookat origin="0, 0.01, 0"
+					target="0, 0, 0"
+					up="0, 0, 1"/>
+			</transform>
+			<float name="fov" value="1e-6"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="meshes/floor.obj"/>
+			<bsdf type="diffuse">
+				<color name="albedo" value="0.5, 0.5, 0.5"/>
+			</bsdf>
+		</mesh>
+
+		<mesh type="obj">
+			<string name="filename" value="meshes/polylum1.obj"/>
+			<bsdf type="diffuse">
+				<color name="albedo" value="0, 0, 0"/>
+			</bsdf>
+			<emitter type="area">
+				<color name="radiance" value="1, 1, 1"/>
+			</emitter>
+		</mesh>
+	</scene>
+
+	<scene>
+		<integrator type="whitted"/>
+
+		<camera type="perspective">
+		        <transform name="toWorld">
+			        <lookat origin="0, 0.01, 0"
+					target="0, 0, 0"
+					up="0, 0, 1"/>
+			</transform>
+			<float name="fov" value="1e-6"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="meshes/floor.obj"/>
+			<bsdf type="diffuse">
+				<color name="albedo" value="0.5, 0.5, 0.5"/>
+			</bsdf>
+		</mesh>
+
+		<mesh type="obj">
+			<string name="filename" value="meshes/polylum2.obj"/>
+			<bsdf type="diffuse">
+				<color name="albedo" value="0, 0, 0"/>
+			</bsdf>
+			<emitter type="area">
+				<color name="radiance" value="1, 1, 1"/>
+			</emitter>
+		</mesh>
+	</scene>
+
+	<scene>
+		<integrator type="whitted"/>
+
+		<camera type="perspective">
+		        <transform name="toWorld">
+			        <lookat origin="0, 0.01, 0"
+					target="0, 0, 0"
+					up="0, 0, 1"/>
+			</transform>
+			<float name="fov" value="1e-6"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="meshes/floor.obj"/>
+			<bsdf type="diffuse">
+				<color name="albedo" value="0.5, 0.5, 0.5"/>
+			</bsdf>
+		</mesh>
+
+		<mesh type="obj">
+			<string name="filename" value="meshes/polylum3.obj"/>
+			<bsdf type="diffuse">
+				<color name="albedo" value="0, 0, 0"/>
+			</bsdf>
+			<emitter type="area">
+				<color name="radiance" value="1, 1, 1"/>
+			</emitter>
+		</mesh>
+	</scene>
+
+	<scene>
+		<integrator type="whitted"/>
+
+		<camera type="perspective">
+		        <transform name="toWorld">
+			        <lookat origin="0, 0.01, 0"
+					target="0, 0, 0"
+					up="0, 0, 1"/>
+			</transform>
+			<float name="fov" value="1e-6"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="meshes/floor.obj"/>
+			<bsdf type="diffuse">
+				<color name="albedo" value="0.5, 0.5, 0.5"/>
+			</bsdf>
+		</mesh>
+
+		<mesh type="obj">
+			<string name="filename" value="meshes/polylum4.obj"/>
+			<bsdf type="diffuse">
+				<color name="albedo" value="0, 0, 0"/>
+			</bsdf>
+			<emitter type="area">
+				<color name="radiance" value="1, 1, 1"/>
+			</emitter>
+		</mesh>
+	</scene>
+
+	<scene>
+		<integrator type="whitted"/>
+
+		<camera type="perspective">
+		        <transform name="toWorld">
+			        <lookat origin="0, 0.01, 0"
+					target="0, 0, 0"
+					up="0, 0, 1"/>
+			</transform>
+			<float name="fov" value="1e-6"/>
+			<integer name="width" value="1"/>
+			<integer name="height" value="1"/>
+		</camera>
+
+		<mesh type="obj">
+			<string name="filename" value="meshes/floor.obj"/>
+			<bsdf type="diffuse">
+				<color name="albedo" value="0.5, 0.5, 0.5"/>
+			</bsdf>
+		</mesh>
+
+		<mesh type="obj">
+			<string name="filename" value="meshes/polylum5.obj"/>
+			<bsdf type="diffuse">
+				<color name="albedo" value="0, 0, 0"/>
+			</bsdf>
+			<emitter type="area">
+				<color name="radiance" value="1, 1, 1"/>
+			</emitter>
+		</mesh>
+	</scene>
+</test>

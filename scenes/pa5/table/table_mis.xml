@@ -1,19 +1,19 @@
 <!-- Table scene designed by Olesya Jakob -->
 
 <scene>
-	<!-- Independent sample generator, 512 samples per pixel -->
+	<!-- Independent sample generator, 64 samples per pixel -->
 	<sampler type="independent">
-		<integer name="sampleCount" value="512"/>
+		<integer name="sampleCount" value="64"/>
 	</sampler>
 
-	<!-- Use the path tracer with multiple importance sampling -->
-    <integrator type="path"/>
+	<!-- Use the path tracer without multiple importance sampling -->
+    <integrator type="path_mis"/>
 
 	<!-- Render the scene as viewed by a perspective camera -->
 	<camera type="perspective">
 		<transform name="toWorld">
-			<lookat target="31.6866, -67.2776, 36.1392" 
-				origin="32.1259, -68.0505, 36.597" 
+			<lookat target="31.6866, -67.2776, 36.1392"
+				origin="32.1259, -68.0505, 36.597"
 				up="-0.22886, 0.39656, 0.889024"/>
 		</transform>
 
@@ -43,7 +43,7 @@
 			<translate value="10,0,25"/>
 		</transform>
 	</mesh>
-	
+
 	<mesh type="obj">
 		<string name="filename" value="meshes/mesh_1.obj"/>
 

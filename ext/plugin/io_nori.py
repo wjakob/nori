@@ -18,7 +18,7 @@ from xml.dom.minidom import Document
 class NoriWritter:
     def verbose(self,text):
         print(text)
-    
+
     def __init__(self, context, filepath):
         self.context = context
         self.filepath = filepath
@@ -35,7 +35,7 @@ class NoriWritter:
         return el
 
     def __createEntry(self, t, name, value):
-        return self.__createElement(t,{"name":name,"value":value}) 
+        return self.__createElement(t,{"name":name,"value":value})
 
     def __createVector(self, t, vec):
         return self.__createElement(t, {"value": "%f %f %f" % (vec[0],vec[1],vec[2])})
@@ -59,12 +59,12 @@ class NoriWritter:
          3) export one camera
          4) export all light sources
          5) export all meshes"""
-        
+
         # create xml document
         self.doc = Document()
         self.scene = self.doc.createElement("scene")
         self.doc.appendChild(self.scene)
-        
+
         ######################
         # 1) write integrator configuration
         ######################
@@ -108,21 +108,21 @@ class NoriWritter:
                     self.scene.appendChild(pointLight)
                 else:
                     self.verbose("WARN: Light source type (%s) is not supported" % source.data.type)
-        
+
         ######################
         # 5) export all meshes
         ######################
         # create the directory for store the meshes
         if not os.path.exists(self.workingDir+"/meshes"):
                 os.makedirs(self.workingDir+"/meshes")
-        
+
         # export all of them
         meshes = [obj for obj in self.context.scene.objects
                       if obj.type in {'MESH', 'EMPTY'}
                       and obj.parent is None]
         for mesh in meshes:
             self.write_mesh(mesh)
-        
+
         ######################
         # 6) write the xml file
         ######################
@@ -153,8 +153,8 @@ class NoriWritter:
     def __createBSDFEntry(self, slot):
         """method responsible to the auto-conversion
         between Blender internal BSDF (not Cycles!) and Nori BSDF
-        
-        For more advanced implementation: 
+
+        For more advanced implementation:
         http://tinyurl.com/nnhxwuh
         """
         if slot.material.raytrace_mirror.use:
@@ -171,16 +171,16 @@ class NoriWritter:
 
         for child in children_mesh:
             self.write_mesh(child)
-        
+
         if mesh.type == 'MESH':
             for meshEntry in self.write_mesh_objs(mesh):
                 self.scene.appendChild(meshEntry)
-    
+
     def write_face(self, prevMesh, fileObj, exportUV, exportNormal, idMat = -1):
         for poly in prevMesh.polygons:
-            
+
             if((idMat != -1) and (poly.material_index == idMat)):
-                
+
                 # Check if it's not a cube
                 vertFaces = [poly.vertices[:]]
                 if len(vertFaces[0]) == 4:
@@ -190,72 +190,75 @@ class NoriWritter:
                     pass # Nothing to do
                 else:
                     raise "Exception: Difficult poly, abord"
-                
+
                 for vert in vertFaces:
                     face = "f"
-                    
-                    
+
                     # Order checking
                     if(not exportNormal):
                         ac = prevMesh.vertices[vert[2]].co - prevMesh.vertices[vert[0]].co
                         ab = prevMesh.vertices[vert[1]].co - prevMesh.vertices[vert[0]].co
                         norm = ab.cross(ac)
                         norm.normalize()
-                        
+
                         # Need to inverse order
                         if(norm.dot(poly.normal) < 0.0):
                             print("Normal flip: "+str(poly.normal)+" != "+str(norm))
                             vert = (vert[2],vert[1],vert[0])
-                            
+
                     for idVert in vert:
                         face += " "+str(idVert+1)
-                        
+
                         # Nothing to do for the export
                         if((not exportUV) and (not exportNormal)):
                             continue
-                        
+
                         if(exportUV):
                             face += "/"+str(idVert+1)
                         else:
                             face += "/"
-                        
+
                         if(exportNormal):
                             face += "/"+str(idVert+1)
-                        
+
                     fileObj.write(face+"\n")
-    
+
     def write_mesh_objs(self, mesh):
         # convert the shape by apply all modifier
         prevMesh = mesh.to_mesh(bpy.context.scene, True, "PREVIEW")
-        
+
         # get useful information of the shape
         exportNormal = (prevMesh.polygons[0].use_smooth)
-        exportUV = exportNormal and (prevMesh.uv_layers.active != None)
+        exportUV = (prevMesh.uv_layers.active != None)
         haveMaterial = (len(mesh.material_slots) != 0 and mesh.material_slots[0].name != '')
-        
+
         # export obj file base (vertex pos, normal and uv)
         # but not the face data
-        fileObjPath = mesh.name+".obj" 
+        fileObjPath = mesh.name+".obj"
         fileObj = open(self.workingDir+"/meshes/"+fileObjPath, "w")
 
         # write all vertex informations
         for vert in prevMesh.vertices:
             fileObj.write('v %f %f %f\n' % (vert.co.x, vert.co.y, vert.co.z))
-        
+
         if exportUV:
-            uvlist =  prevMesh.uv_layers.active.data
-            for uvvert in uvlist:
-                fileObj.write('vt %f %f \n' % (uvvert.uv.x, uvvert.uv.y))
-        
+            # By default, UVs are not necessarily ordered like vertices.
+            # We use `mesh.loops` to recover the right ordering.
+            # See: https://blender.stackexchange.com/a/3537
+            for poly in prevMesh.polygons:
+                for loop_i in poly.loop_indices:
+                    uv = prevMesh.uv_layers.active.data[loop_i].uv
+                    fileObj.write('vt %f %f \n' % (uv[0], uv[1]))
+
         if exportNormal:
             for vert in prevMesh.vertices:
                 fileObj.write('vn %f %f %f\n' % (vert.normal.x, vert.normal.y, vert.normal.z))
-        
+
         # write all polygones (faces)
         listMeshXML = []
         if(not haveMaterial):
             self.write_face(prevMesh, fileObj, exportUV, exportNormal)
-                
+
             # add default BSDF
             meshElement = self.__createMeshEntry(fileObjPath, mesh.matrix_world)
             bsdfElement = self.__createElement("bsdf", {"type":"diffuse"})
@@ -267,29 +270,29 @@ class NoriWritter:
             for id_mat in range(len(mesh.material_slots)):
                 slot = mesh.material_slots[id_mat]
                 self.verbose("MESH: "+mesh.name+" BSDF: "+slot.name)
-                
+
                 # we create an new obj file and concatenate data files
-                fileObjMatPath = mesh.name+"_"+slot.name+".obj" 
+                fileObjMatPath = mesh.name+"_"+slot.name+".obj"
                 fileObjMat = open(self.workingDir+"/meshes/"+fileObjMatPath,"w")
                 shutil.copyfileobj(open(self.workingDir+"/meshes/"+fileObjPath,"r"), fileObjMat)
-                
+
                 # we write all face material specific
                 self.write_face(prevMesh, fileObjMat, exportUV, exportNormal, id_mat)
-                
+
                 # We create xml related entry
                 meshElement = self.__createMeshEntry(fileObjMatPath, mesh.matrix_world)
                 meshElement.appendChild(self.__createBSDFEntry(slot))
                 listMeshXML.append(meshElement)
-                
+
                 fileObjMat.close()
-            
+
             # Clean temporal obj file
             os.remove(self.workingDir+"/meshes/"+fileObjPath)
-                
+
         # free the memory
         bpy.data.meshes.remove(prevMesh)
 
-        
+
         return listMeshXML
 
 ######################
@@ -300,7 +303,7 @@ from bpy_extras.io_utils import ExportHelper
 
 class NoriExporter(bpy.types.Operator, ExportHelper):
     """Export a blender scene into Nori scene format"""
-    
+
     # add to menu
     bl_idname = "export.nori"
     bl_label = "Export Nori scene"
@@ -308,25 +311,25 @@ class NoriExporter(bpy.types.Operator, ExportHelper):
     # filtering file names
     filename_ext = ".xml"
     filter_glob = StringProperty(default="*.xml", options={'HIDDEN'})
-    
+
     ###################
     # other options
     ###################
-    
+
     export_light = BoolProperty(
                     name="Export light",
                     description="Export light to Nori",
                     default=True)
-    
+
     nb_samples = IntProperty(name="Numbers of camera rays",
                     description="Number of camera ray",
                     default=32)
-    
+
     def execute(self, context):
         nori = NoriWritter(context, self.filepath)
         nori.write(self.export_light, self.nb_samples)
         return {'FINISHED'}
-    
+
     def invoke(self, context, event):
         #self.frame_start = context.scene.frame_start
         #self.frame_end = context.scene.frame_end

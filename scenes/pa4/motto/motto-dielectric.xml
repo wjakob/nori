@@ -1,0 +1,49 @@
+
+<scene>
+    <integrator type="whitted"/>
+
+    <sampler type="independent">
+        <!-- You might want to reduce this number during development -->
+        <integer name="sampleCount" value="512"/>
+    </sampler>
+
+    <camera type="perspective">
+        <!-- Camera-to-world coordinate system transformation -->
+        <transform name="toWorld">
+            <matrix value="-0.8990397887494896, -0.10195732585744223, -0.42583114253101817, 9.67120708926533, -0.014501815214377626, 0.9789123711002534, -0.20376522535105876, 2.701559486129863, 0.437626730902902, -0.17701772061259594, -0.8815597376175706, 12.558229946078217, -0.0, 0.0, -0.0, 1.0"/>
+        </transform>
+
+        <!-- Field of view: 35 degrees -->
+        <float name="fov" value="35"/>
+
+        <!-- 768 x 768 pixels -->
+        <integer name="width" value="768"/>
+        <integer name="height" value="384"/>
+    </camera>
+
+    <mesh type="obj">
+        <string name="filename" value="meshes/motto_2018.obj"/>
+        <bsdf type="dielectric"/>
+    </mesh>
+
+    <mesh type="obj">
+        <string name="filename" value="meshes/floor.obj"/>
+        <bsdf type="diffuse">
+            <color name="albedo" value="0.5, 0.5, 0.5"/>
+        </bsdf>
+    </mesh>
+
+    <mesh type="obj">
+        <string name="filename" value="meshes/light1.obj"/>
+        <emitter type="area">
+            <color name="radiance" value="20, 80, 30"/>
+        </emitter>
+    </mesh>
+
+    <mesh type="obj">
+        <string name="filename" value="meshes/light2.obj"/>
+        <emitter type="area">
+            <color name="radiance" value="20, 20, 200"/>
+        </emitter>
+    </mesh>
+</scene>

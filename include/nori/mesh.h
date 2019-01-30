@@ -85,12 +85,6 @@ public:
     /// Return the total number of vertices in this shape
     uint32_t getVertexCount() const { return (uint32_t) m_V.cols(); }
 
-    /**
-     * \brief Uniformly sample a position on the mesh with
-     * respect to surface area. Returns both position and normal
-     */
-    void samplePosition(const Point2f &sample, Point3f &p, Normal3f &n) const;
-
     /// Return the surface area of the given triangle
     float surfaceArea(uint32_t index) const;
 

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 
 <scene>
-	<integrator type="path_simple"/>
+	<integrator type="whitted"/>
 
 	<camera type="perspective">
 		<float name="fov" value="27.7856"/>
@@ -13,7 +13,7 @@
 		<integer name="height" value="600"/>
 		<integer name="width" value="800"/>
 	</camera>
-	
+
 	<sampler type="independent">
 		<integer name="sampleCount" value="512"/>
 	</sampler>

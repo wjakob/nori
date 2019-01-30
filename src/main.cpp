@@ -139,10 +139,12 @@ static void render(Scene *scene, const std::string &filename) {
     size_t lastdot = outputName.find_last_of(".");
     if (lastdot != std::string::npos)
         outputName.erase(lastdot, std::string::npos);
-    outputName += ".exr";
 
     /* Save using the OpenEXR format */
-    bitmap->save(outputName);
+    bitmap->saveEXR(outputName);
+
+    /* Save tonemapped (sRGB) output using the PNG format */
+    bitmap->savePNG(outputName);
 }
 
 int main(int argc, char **argv) {
