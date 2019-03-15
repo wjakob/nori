@@ -64,7 +64,7 @@ $ git pull upstream master
             uniformly samples positions on the surface associated with a
             specific <code>Mesh</code> instance.
             The name and precise interface of this method are completely up to you.
-            However, we suggest that it should take a uniformly 2D sample and return
+            However, we suggest that it should take a uniformly distributed 2D sample and return
             </p>
             <ol>
                 <li>The sampled position \(\mathbb{p}\) on the surface of the mesh</li>
@@ -83,7 +83,7 @@ $ git pull upstream master
             \alpha\\
             \beta
             \end{pmatrix}
-            \mapsto \begin{pmatrix}
+            = \begin{pmatrix}
             1 - \sqrt{1 - \xi_1}\\
             \xi_2\, \sqrt{1 - \xi_1}
             \end{pmatrix}
@@ -126,11 +126,9 @@ $ git pull upstream master
             <div class="col-md-1"/>
             <div class="col-md-5">
                 <div class="thumbnail" style="margin: 10px">
-                    <a class="fancybox" href="images/motto-diffuse.png"><img src="images/motto-diffuse.png"/></a>
+                    <a class="fancybox" href="images/logo-diffuse.png"><img src="images/logo-diffuse.png"/></a>
                     <div class="caption">
-                        The motto of the rendering competition modeled as a
-                        diffuse object and illuminated by two spherical lights
-                        sources.
+                        A logo modeled as a diffuse object and illuminated by two spherical lights sources.
                     </div>
                 </div>
             </div>
@@ -246,6 +244,8 @@ when rendering with point lights. The \("\leftrightarrow"\) notation expresses t
 f_r (\vx,\vx\to\vy,\omega_r)\,G(\vx\leftrightarrow\vy)\,L_e (\vy,\vy\to\vx)
 \]
 <em>divided</em> by the probability of the sample \(\vy\) per unit area.
+If there are several light sources in the scene, you should pick one at uniformly at random. Note that
+you will have to account for the PDF of selecting that light source.
 However, this will require a few extra pieces of functionality.
 </p>
             </li>
@@ -255,7 +255,7 @@ However, this will require a few extra pieces of functionality.
         <ol>
             <li>Render the following scenes in <code>scenes/pa4</code>:</li>
                 <ul>
-                    <li>motto/motto-diffuse.xml (<a href="references/motto-diffuse.exr">Reference</a>)</li>
+                    <li>logo/logo-diffuse.xml (<a href="references/logo-diffuse.exr">Reference</a>)</li>
                     <li>cbox/cbox-distributed.xml (<a href="references/cbox-distributed.exr">Reference</a>)</li>
                 </ul>
             <br>
@@ -318,9 +318,9 @@ However, this will require a few extra pieces of functionality.
         <div class="col-md-2"/>
 		<div class="col-md-4">
 			<div class="thumbnail" style="margin: 10px">
-				<a class="fancybox" href="images/motto-dielectric.png"><img src="images/motto-dielectric.png"/></a>
+				<a class="fancybox" href="images/logo-dielectric.png"><img src="images/logo-dielectric.png"/></a>
 				<div class="caption">
-					The motto of the rendering competition modeled as a dielectric object.
+					A logo modeled as a dielectric object.
 				</div>
 			</div>
 		</div>
@@ -367,7 +367,7 @@ However, this will require a few extra pieces of functionality.
     <ol>
         <li>Render the following scenes in <code>scenes/pa4</code>:</li>
             <ul>
-                <li>motto/motto-dielectric.xml (<a href="references/motto-dielectric.exr">Reference</a>)</li>
+                <li>logo/logo-dielectric.xml (<a href="references/logo-dielectric.exr">Reference</a>)</li>
                 <li>cbox/cbox-whitted.xml (<a href="references/cbox-whitted.exr">Reference</a>)</li>
             </ul>
         <br>
