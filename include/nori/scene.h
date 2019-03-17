@@ -19,6 +19,7 @@
 #pragma once
 
 #include <nori/accel.h>
+#include <nori/rendermode.h>
 
 NORI_NAMESPACE_BEGIN
 
@@ -54,6 +55,9 @@ public:
 
     /// Return a pointer to the scene's sample generator
     Sampler *getSampler() { return m_sampler; }
+
+    /// Return a pointer to the scene's render mode
+    RenderMode *getRenderMode() { return m_rendermode; }
 
     /// Return a reference to an array containing all meshes
     const std::vector<Mesh *> &getMeshes() const { return m_meshes; }
@@ -122,6 +126,7 @@ private:
     Sampler *m_sampler = nullptr;
     Camera *m_camera = nullptr;
     Accel *m_accel = nullptr;
+    RenderMode *m_rendermode = nullptr;
 };
 
 NORI_NAMESPACE_END

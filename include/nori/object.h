@@ -42,6 +42,7 @@ public:
         ESampler,
         ETest,
         EReconstructionFilter,
+		ERenderMode,
         EClassTypeCount
     };
 
@@ -97,6 +98,7 @@ public:
             case ECamera:     return "camera";
             case EIntegrator: return "integrator";
             case ESampler:    return "sampler";
+            case ERenderMode: return "rendermode";
             case ETest:       return "test";
             default:          return "<unknown>";
         }

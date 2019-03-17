@@ -67,6 +67,7 @@ NoriObject *loadFromXML(const std::string &filename) {
         ESampler              = NoriObject::ESampler,
         ETest                 = NoriObject::ETest,
         EReconstructionFilter = NoriObject::EReconstructionFilter,
+		ERenderMode			  = NoriObject::ERenderMode,
 
         /* Properties */
         EBoolean = NoriObject::EClassTypeCount,
@@ -89,6 +90,7 @@ NoriObject *loadFromXML(const std::string &filename) {
     /* Create a mapping from tag names to tag IDs */
     std::map<std::string, ETag> tags;
     tags["scene"]      = EScene;
+    tags["rendermode"] = ERenderMode;
     tags["mesh"]       = EMesh;
     tags["bsdf"]       = EBSDF;
     tags["emitter"]  = EEmitter;

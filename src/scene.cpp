@@ -34,6 +34,7 @@ Scene::~Scene() {
     delete m_sampler;
     delete m_camera;
     delete m_integrator;
+    delete m_rendermode;
 }
 
 void Scene::activate() {
@@ -48,6 +49,12 @@ void Scene::activate() {
         /* Create a default (independent) sampler */
         m_sampler = static_cast<Sampler*>(
             NoriObjectFactory::createInstance("independent", PropertyList()));
+    }
+
+    if(!m_rendermode) {
+    	/* Crate default render mode 'blockwise' */
+    	m_rendermode = static_cast<RenderMode*>(
+    			NoriObjectFactory::createInstance("blockwise", PropertyList()));
     }
 
     cout << endl;
@@ -89,6 +96,12 @@ void Scene::addChild(NoriObject *obj) {
             m_integrator = static_cast<Integrator *>(obj);
             break;
 
+        case ERenderMode:
+        	if (m_rendermode)
+        		throw NoriException("There can only be one active render mode per scene!");
+			m_rendermode = static_cast<RenderMode *>(obj);
+        	break;
+
         default:
             throw NoriException("Scene::addChild(<%s>) is not supported!",
                 classTypeName(obj->getClassType()));
@@ -106,12 +119,14 @@ std::string Scene::toString() const {
 
     return tfm::format(
         "Scene[\n"
+    	"  rendermode = %s, \n"
         "  integrator = %s,\n"
         "  sampler = %s\n"
         "  camera = %s,\n"
         "  meshes = {\n"
         "  %s  }\n"
         "]",
+		indent(m_rendermode->toString()),
         indent(m_integrator->toString()),
         indent(m_sampler->toString()),
         indent(m_camera->toString()),
