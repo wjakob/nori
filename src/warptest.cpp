@@ -286,10 +286,10 @@ struct WarpTest {
     }
 
     static std::pair<BSDF *, BSDFQueryRecord>
-    create_microfacet_bsdf(float alpha, float bsdfAngle) {
+    create_microfacet_bsdf(float alpha, float kd, float bsdfAngle) {
         PropertyList list;
         list.setFloat("alpha", alpha);
-        list.setColor("kd", Color3f(0.f));
+        list.setColor("kd", Color3f(kd));
         auto * brdf = (BSDF *) NoriObjectFactory::createInstance("microfacet", list);
 
         Vector3f wi(std::sin(bsdfAngle), 0.f,
@@ -303,14 +303,14 @@ struct WarpTest {
 class WarpTestScreen : public Screen {
 public:
 
-    WarpTestScreen(): Screen(Vector2i(800, 600), "Assignment 3: Sampling and Warping"), m_bRec(Vector3f()) {
+    WarpTestScreen(): Screen(Vector2i(800, 600), "warptest: Sampling and Warping"), m_bRec(Vector3f()) {
         initializeGUI();
         m_drawHistogram = false;
     }
 
     static float mapParameter(WarpType warpType, float parameterValue) {
         if (warpType == Beckmann || warpType == MicrofacetBRDF)
-            parameterValue = std::exp(std::log(0.05f) * (1 - parameterValue) +
+            parameterValue = std::exp(std::log(0.01f) * (1 - parameterValue) +
                                       std::log(1.f)   *  parameterValue);
         return parameterValue;
     }
@@ -319,13 +319,14 @@ public:
         PointType pointType = (PointType) m_pointTypeBox->selectedIndex();
         WarpType warpType = (WarpType) m_warpTypeBox->selectedIndex();
         float parameterValue = mapParameter(warpType, m_parameterSlider->value());
+        float parameter2Value = mapParameter(warpType, m_parameter2Slider->value());
         m_pointCount = (int) std::pow(2.f, 15 * m_pointCountSlider->value() + 5);
 
         if (warpType == MicrofacetBRDF) {
             BSDF *ptr;
             float bsdfAngle = M_PI * (m_angleSlider->value() - 0.5f);
             std::tie(ptr, m_bRec) = WarpTest::create_microfacet_bsdf(
-                parameterValue, bsdfAngle);
+                parameterValue, parameter2Value, bsdfAngle);
             m_brdf.reset(ptr);
         }
 
@@ -430,12 +431,14 @@ public:
         }
         m_pointCountBox->setValue(str);
         m_parameterBox->setValue(tfm::format("%.1g", parameterValue));
+        m_parameter2Box->setValue(tfm::format("%.1g", parameter2Value));
         m_angleBox->setValue(tfm::format("%.1f", m_angleSlider->value() * 180-90));
         m_parameterSlider->setEnabled(warpType == Beckmann || warpType == MicrofacetBRDF);
         m_parameterBox->setEnabled(warpType == Beckmann || warpType == MicrofacetBRDF);
+        m_parameter2Slider->setEnabled(warpType == MicrofacetBRDF);
+        m_parameter2Box->setEnabled(warpType == MicrofacetBRDF);
         m_angleBox->setEnabled(warpType == MicrofacetBRDF);
         m_angleSlider->setEnabled(warpType == MicrofacetBRDF);
-        m_parameterBox->setEnabled(warpType == MicrofacetBRDF);
         m_brdfValueCheckBox->setEnabled(warpType == MicrofacetBRDF);
         m_pointCountSlider->setValue((std::log((float) m_pointCount) / std::log(2.f) - 5) / 15);
     }
@@ -638,6 +641,13 @@ public:
         m_parameterSlider->setCallback([&](float) { refresh(); });
         m_parameterBox = new TextBox(panel);
         m_parameterBox->setFixedSize(Vector2i(80, 25));
+        panel = new Widget(m_window);
+        panel->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 20));
+        m_parameter2Slider = new Slider(panel);
+        m_parameter2Slider->setFixedWidth(55);
+        m_parameter2Slider->setCallback([&](float) { refresh(); });
+        m_parameter2Box = new TextBox(panel);
+        m_parameter2Box->setFixedSize(Vector2i(80, 25));
         m_gridCheckBox = new CheckBox(m_window, "Visualize warped grid");
         m_gridCheckBox->setCallback([&](bool) { refresh(); });
 
@@ -814,6 +824,7 @@ public:
         /* Set default and register slider callback */
         m_pointCountSlider->setValue(7.f/15.f);
         m_parameterSlider->setValue(.5f);
+        m_parameter2Slider->setValue(0.f);
         m_angleSlider->setValue(.5f);
 
         refresh();
@@ -826,8 +837,8 @@ private:
     GLShader *m_histogramShader = nullptr;
     GLShader *m_arrowShader = nullptr;
     Window *m_window;
-    Slider *m_pointCountSlider, *m_parameterSlider, *m_angleSlider;
-    TextBox *m_pointCountBox, *m_parameterBox, *m_angleBox;
+    Slider *m_pointCountSlider, *m_parameterSlider, *m_parameter2Slider, *m_angleSlider;
+    TextBox *m_pointCountBox, *m_parameterBox, *m_parameter2Box, *m_angleBox;
     GLuint m_textures[2];
     ComboBox *m_pointTypeBox;
     ComboBox *m_warpTypeBox;
@@ -842,7 +853,7 @@ private:
 };
 
 
-std::pair<WarpType, float> parse_arguments(int argc, char **argv) {
+std::tuple<WarpType, float, float> parse_arguments(int argc, char **argv) {
     WarpType tp = WarpTypeCount;
     for (int i = 0; i < WarpTypeCount; ++i) {
         if (strcmp(kWarpTypeNames[i].c_str(), argv[1]) == 0)
@@ -851,11 +862,13 @@ std::pair<WarpType, float> parse_arguments(int argc, char **argv) {
     if (tp >= WarpTypeCount)
         throw std::runtime_error("Invalid warp type!");
 
-    float value = 0.f;
+    float value = 0.f, value2 = 0.f;
     if (argc > 2)
         value = std::stof(argv[2]);
+    if (argc > 3)
+        value2 = std::stof(argv[3]);
 
-    return { tp, value };
+    return { tp, value, value2 };
 }
 
 
@@ -872,20 +885,25 @@ int main(int argc, char **argv) {
 
     // CLI mode
     WarpType warpType;
-    float paramValue;
+    float paramValue, param2Value;
     std::unique_ptr<BSDF> bsdf;
     auto bRec = BSDFQueryRecord(Vector3f());
-    std::tie(warpType, paramValue) = parse_arguments(argc, argv);
+    std::tie(warpType, paramValue, param2Value) = parse_arguments(argc, argv);
     if (warpType == MicrofacetBRDF) {
         float bsdfAngle = M_PI * 0.f;
         BSDF *ptr;
         std::tie(ptr, bRec) = WarpTest::create_microfacet_bsdf(
-            paramValue, bsdfAngle);
+            paramValue, param2Value, bsdfAngle);
         bsdf.reset(ptr);
     }
 
-    std::cout << tfm::format("Testing warp %s, parameter value = %f",
-                 kWarpTypeNames[int(warpType)], paramValue) << std::endl;
+    std::string extra = "";
+    if (param2Value > 0)
+        extra = tfm::format(", second parameter value = %f", param2Value);
+    std::cout << tfm::format(
+        "Testing warp %s, parameter value = %f%s",
+         kWarpTypeNames[int(warpType)], paramValue, extra
+    ) << std::endl;
     WarpTest tester(warpType, paramValue, bsdf.get(), bRec);
     auto res = tester.run();
     if (res.first)
