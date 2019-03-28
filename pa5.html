@@ -26,7 +26,7 @@ $ git pull upstream master
         "Preliminaries" for more information).
     </p>
 
-	<h3>Part 1: Microfacet BRDF <em>(40 points)</em></h3>
+	<h3>Part 1: Microfacet BRDF <em>(30 points)</em></h3>
     <div class="row" style="margin: 30px">
         <div class="col-md-6">
             <div class="thumbnail" style="margin: 10px">
@@ -46,11 +46,11 @@ $ git pull upstream master
         </div>
     </div>
     <p>
-    In this part we will extend the rudimentary interface in <tt>microfacet.cpp</tt> into a full-fledge reflectance model based on the <em>microfacet theory</em> presented in class. This utilizes the sampling techniques for the Beckmann distribution that you implemented in a previous assignment. The process is split into two parts:
+    In this part we will extend the rudimentary implementation in <tt>microfacet.cpp</tt> into a full-fledge reflectance model based on the <em>microfacet theory</em> presented in class. This utilizes the sampling techniques for the Beckmann distribution that you implemented in a previous assignment. The process is split into two parts:
    </p>
-    <h4>Part 1.1: Evaluating the Microfacet BRDF (20 pts)</h4>
+    <h4>Part 1.1: Evaluating the Microfacet BRDF (15 pts)</h4>
     <p>
-    The Microfacet BRDF in <code>src/microfacet.cpp</code> will be used to simulate platic-like materials. It consists of a linear blend between a diffuse BRDF (to simulate a potentially colored reflection from the interior of the material) and a rough dielectric microfacet BRDF (to simulate a non-colored specular reflection from the rough boundary). Implement <code>Microfacet::eval()</code> which evaluates the described microfacet BRDF for a given pair of directions in the local shading coordinate frame:
+    The Microfacet BRDF in <code>src/microfacet.cpp</code> will be used to simulate plastic-like materials. It consists of a linear blend between a diffuse BRDF (to simulate a potentially colored reflection from the interior of the material) and a rough dielectric microfacet BRDF (to simulate a non-colored specular reflection from the rough boundary). Implement <code>Microfacet::eval()</code> which evaluates the described microfacet BRDF for a given pair of directions in the local shading coordinate frame:
         \[
             f_r(\bold{\omega_i},\bold{\omega_o}) = \frac{k_d}{\pi} + {k_s} \frac{D(\bold{\omega_{h}})~
             F\left({(\bold{\omega_h} \cdot \bold{\omega_i})}, \eta_{e},\eta_{i}\right)~
@@ -84,13 +84,14 @@ $ git pull upstream master
         and the \(\omega_v\) argument of \(G_1\).
     </p>
     <p>
-        Recall the <em>Beckmann</em> distribution from PA3, which is used to model the probability density of normals on a random rough surface:
+        Recall the <em>Beckmann</em> distribution from Assignment 3, which is used to model the probability density of normals on a random rough surface:
         \[
         D(\theta, \phi) = \underbrace{\frac{1}{2\pi}}_{\text{azimuthal part}}\ \cdot\ \underbrace{\frac{2 e^{\frac{-\tan^2{\theta}}{\alpha^2}}}{\alpha^2 \cos^3 \theta}}_{\text{longitudinal part}}\!\!\!.
         \]
         Note that this definition is slightly different from the one shown in class: the density includes an extra cosine factor for normalization purposes so that it integrates to one over the hemisphere.
     </p>
-    <h4>Part 1.2: Sampling the Microfacet BRDF (20 pts)</h4>
+
+    <h4>Part 1.2: Sampling the Microfacet BRDF (15 pts)</h4>
     <p>
         In this part you will generate samples according to the following density function:
         \[
@@ -99,15 +100,15 @@ $ git pull upstream master
         where \(\omega_o\) is sampled and \(J_h = (4 (\omega_h \cdot \omega_o))^{-1}\)
         is the Jacobian of the half direction mapping discussed in class.
 
-        This an be done using the following sequence of steps:
+        This can be done using the following sequence of steps:
     </p>
     <ol>
         <li>Decide between a diffuse or a specular reflection by comparing a uniform variate \(\xi_1\) against \(k_s\)</li>
-        <li>Scale and potentially offset the uniform variate \(\xi_1\) so that it can be reused for a later sampling step</li>
+        <li>Scale and potentially offset the uniform variate \(\xi_1\) so that it can be reused for a later sampling step (see <tt>DiscretePDF::sampleReuse</tt>)</li>
         <li>In the diffuse case, generate a cosine-weighted direction on the sphere following the approach in <tt>src/diffuse.cpp</tt></li>
         <li>In the specular case:
             <ol>
-                <li>Sample a normal from the Beckmann distribution using <code>Warp::squareToBeckmann</code> that you previously implemented in PA3.</li>
+                <li>Sample a normal from the Beckmann distribution using <code>Warp::squareToBeckmann</code> that you previously implemented in Assignment 3.</li>
                 <li>Reflect the incident direction using this normal to generate an outgoing direction.</li>
             </ol>
         </li>
@@ -146,15 +147,81 @@ $ git pull upstream master
     <b>Make sure to discuss the design choices and relevant technical information about your implementation in the report and include comparisons against our reference renderings.</b>
     </p>
 
-	<h3>Part 2: <tt>path_ems</tt> Path tracer with next event estimation <em>(20 points)</em></h3>
+    <h3>Part 2: <tt>path_mats</tt> Brute force path tracer <em>(15 points)</em></h3>
+    <div class="row" style="margin: 30px">
+        <div class="col-md-6">
+            <div class="thumbnail" style="margin: 10px">
+                <a class="fancybox" href="images/cbox_mats.png"><img src="images/cbox_mats.png"/></a>
+                <div class="caption">
+                    The Cornell box rendered using the brute-force path tracer. Note
+                    the indirect illumination on the ceiling and the light-focusing
+                    behavior of the sphere.
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="thumbnail" style="margin: 10px">
+                <a class="fancybox" href="images/veach_mats.png"><img src="images/veach_mats.png"/></a>
+                <div class="caption">
+                    The Veach material test scene, rendered with brute-force path tracing.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p>
+        In the lecture you saw that there are multiple ways to solve the rendering equation and the emitter sampling strategy implemented in Assignment 4 was just one possibility. A much simpler (but also more naive) version of path tracing relies on hitting light sources in the scene by pure chance instead of explicitly sampling points on them during integration.
+        In other words, you exchange emitter sampling with sampling outgoing directions according to the BSDF.
+        <br/>
+        Furthermore, we will extend the Whitted-style algorithm into a full path tracer that accounts for indirect illumination as well.
+        The main differences from <code>src/whitted.cpp</code> are:
+        <ol>
+            <li>We (temporarily) removed emitter sampling.</li>
+            <li>Paths should now continue not only after specular surface interactions, but for all interactions.</li>
+        </ol>
+    </p>
+
+    <p>
+        Create a new "material sampling" (mats) path tracer named <code>src/path_mats.cpp</code> that does exactly this. Note that you should use <code>BSDF::sample()</code> to generate new outoing directions at each scattering event. This outgoing direction
+        is used to estimate the indirect illumination component, which could be implemented using recursion, or more efficiently using a loop.
+    </p>
+
+    <p>
+        <strong>Note</strong>: to match the reference renders exactly, you will need to use the following Russian Roulette heuristic for path termination:<br/>
+        <pre class="prettyprint">
+continuation probability = min(maximum component of the throughput * eta^2, 0.99)</pre>
+        where <tt>eta</tt> is the product of all \(\eta\) terms encountered along the path, starting with <tt>eta = 1.f</tt>.
+    </p>
+
+
+    <h4>Validation</h4>
+    <ol>
+        <li>Render the following scenes in <code>scenes/pa5</code>:</li>
+            <ul>
+                <li><tt>cbox/cbox_mats.xml</tt> (<a href="references/cbox_mats.exr">Reference</a>)</li>
+                <li><tt>veach_mi/veach_mats.xml</tt> (<a href="references/veach_mats.exr">Reference</a>)</li>
+                <li><tt>table/table_mats.xml</tt> (<a href="references/table_mats.exr">Reference</a>)</li>
+            </ul>
+        <br>
+        <li>Pass the following statistical tests in <code>scenes/pa5/tests</code>:</li>
+            <ul>
+                <li><tt>test-direct.xml</tt> (Tests 6-10)</li>
+                <li><tt>test-furnace.xml</tt> (Tests 3-4)</li>
+            </ul>
+            <p>
+            The tests are also part of the continous integration environment, so note that your build will "fail" as long as not all tests pass.
+            </p>
+    </ol>
+    <b>Make sure to discuss the design choices and relevant technical information about your implementation in the report and include comparisons against our reference renderings.</b>
+    </p>
+
+    <h3>Part 3: <tt>path_ems</tt> Path tracer with next event estimation <em>(25 points)</em></h3>
     <div class="row" style="margin: 30px">
         <div class="col-md-6">
             <div class="thumbnail" style="margin: 10px">
                 <a class="fancybox" href="images/cbox-gi.jpg"><img src="images/cbox-gi.jpg"/></a>
                 <div class="caption">
-                    The Cornell box rendered using the simple path tracer. Note
-                    the indirect illumination on the ceiling and the light
-                    focusing behavior of the sphere.
+                    The Cornell box rendered using the Next Event Estimation path tracer.
                 </div>
             </div>
         </div>
@@ -170,28 +237,16 @@ $ git pull upstream master
         </div>
     </div>
     <p>
-        In Assignment 4, you implemented a Whitted-style integrator that
-        performed area light sampling on diffuse objects and BRDF sampling on
-        specular objects. Now you'll extend this approach into a full path
-        tracer that accounts for indirect illumination as well. We'll begin
-        with a "emitter sampling" (ems) path tracer named <code>src/path_ems.cpp</code> that
-        does not (yet) use <em>multiple importance sampling</em> (this
-        corresponds to "Path Tracing with explicit shadow rays" discussed
-        during lecture). The last part of the assignment will involve adding MIS to create a
-        full-featured path tracer that combines both sampling strategies to
-        reduce variance.
+        In part 2, you implemented a brute-force path tracer. As you may have noticed, it suffers
+        from high variance due to its naive sampling strategy. We'll now implement
+        an "emitter sampling" (ems) path tracer named <code>src/path_ems.cpp</code> (this
+        corresponds to the "Path Tracing with explicit shadow rays" discussed
+        during the lecture). The last part of the assignment will involve adding <em>multiple
+        importance sampling</em> (MIS) to create a full-featured path tracer that combines both
+        sampling strategies to reduce variance.<br/>
+        Starting from <tt>path_mats</tt>, simply add back emitter sampling while taking care of the
+        "double counting" problem discussed in the lecture.
     </p>
-    <p>This simple path tracer differs from <code>src/whitted.cpp</code> in the following ways:</p>
-    <ol>
-        <li>When the camera ray hits a light source, the value returned by
-            <code>Li()</code> should include the emitted radiance to account for directly visible light sources.</li>
-        <li>Instead of sampling a position on the light source <em>or</em> the
-            BRDF, both are now done in each iteration. The direction sampled
-            from the BRDF is used to estimate the indirect illumination
-            component. This could be implemented using recursion, or more
-            efficiently using a loop.
-        </li>
-    </ol>
 
     <h4>Validation</h4>
     <ol>
@@ -217,43 +272,11 @@ $ git pull upstream master
             The tests are also part of the continous integration environment, so note that your build will "fail" as long as not all tests pass.
             </p>
     </ol>
-    <b>Make sure to discuss the design choices and relevant technical information about your implementation in the report and include comparisons against our reference renderings.</b>
-    </p>
-
-    </p>
-    <h3>Part 3: <tt>path_mats</tt> Brute force path tracer <em>(10 points)</em></h3>
-
     <p>
-        In the lecture you saw that there are multiple ways to solve the rendering equation and the emitter sampling strategy implemented in part 2 was just one possibility. A much simpler (but also more naive) version of path tracing relies on hitting light sources in the scene by pure chance instead of explicitly sampling points on them during integration. In other words, you exchange emitter sampling with sampling outgoing directions on the sphere directly.
+        <b>Make sure to discuss the design choices and relevant technical information about your implementation in the report and include comparisons against our reference renderings.</b>
     </p>
 
-    <p>
-        Create a new "material sampling" (mats) path tracer named <code>src/path_mats.cpp</code> that does exactly this. Note that you again should use <code>BSDF::sample()</code> to generate new outoing directions at each scattering event.
-    </p>
-
-
-    <h4>Validation</h4>
-    <ol>
-        <li>Render the following scenes in <code>scenes/pa5</code>:</li>
-            <ul>
-                <li><tt>cbox/cbox_mats.xml</tt> (<a href="references/cbox_mats.exr">Reference</a>)</li>
-                <li><tt>veach_mi/veach_mats.xml</tt> (<a href="references/veach_mats.exr">Reference</a>)</li>
-                <li><tt>table/table_mats.xml</tt> (<a href="references/table_mats.exr">Reference</a>)</li>
-            </ul>
-        <br>
-        <li>Pass the following statistical tests in <code>scenes/pa5/tests</code>:</li>
-            <ul>
-                <li><tt>test-direct.xml</tt> (Tests 6-10)</li>
-                <li><tt>test-furnace.xml</tt> (Tests 3-4)</li>
-            </ul>
-            <p>
-            The tests are also part of the continous integration environment, so note that your build will "fail" as long as not all tests pass.
-            </p>
-    </ol>
-    <b>Make sure to discuss the design choices and relevant technical information about your implementation in the report and include comparisons against our reference renderings.</b>
-    </p>
-
-	<h3>Part 4: <tt>path_mis</tt> Path tracer with Multiple Importance Sampling <em>(30 points)</em></h3>
+    <h3>Part 4: <tt>path_mis</tt> Path tracer with Multiple Importance Sampling <em>(30 points)</em></h3>
     <div class="row" style="margin: 30px">
         <div class="col-md-6">
             <div class="thumbnail" style="margin: 10px">
@@ -322,6 +345,7 @@ $ git pull upstream master
     </ol>
     <b>Make sure to discuss the design choices and relevant technical information about your implementation in the report and include comparisons against our reference renderings.</b>
     </p>
+
 
     <h3>Artist Points: Interesting scene (5 points)</h3>
     <div class="alert alert-info" role="alert"><b>Disclaimer</b>: Artist points are bonus tasks where you get the opportunity to showcase your own renderings created with your implemented algorithms. They are added to the final score.
