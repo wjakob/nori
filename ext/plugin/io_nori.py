@@ -178,50 +178,50 @@ class NoriWritter:
 
     def write_face(self, prevMesh, fileObj, exportUV, exportNormal, idMat = -1):
         for poly in prevMesh.polygons:
+            if idMat not in [-1, poly.material_index]:
+                continue
 
-            if((idMat != -1) and (poly.material_index == idMat)):
+            # Check if it's not a cube
+            vertFaces = [poly.vertices[:]]
+            if len(vertFaces[0]) == 4:
+                vertFaces = [(vertFaces[0][0],vertFaces[0][1], vertFaces[0][2]),
+                             (vertFaces[0][2],vertFaces[0][3], vertFaces[0][0])]
+            elif len(vertFaces[0]) == 3:
+                pass # Nothing to do
+            else:
+                raise "Exception: Difficult poly, abord"
 
-                # Check if it's not a cube
-                vertFaces = [poly.vertices[:]]
-                if len(vertFaces[0]) == 4:
-                    vertFaces = [(vertFaces[0][0],vertFaces[0][1], vertFaces[0][2]),
-                                 (vertFaces[0][2],vertFaces[0][3], vertFaces[0][0])]
-                elif len(vertFaces[0]) == 3:
-                    pass # Nothing to do
-                else:
-                    raise "Exception: Difficult poly, abord"
+            for vert in vertFaces:
+                face = "f"
 
-                for vert in vertFaces:
-                    face = "f"
+                # Order checking
+                if(not exportNormal):
+                    ac = prevMesh.vertices[vert[2]].co - prevMesh.vertices[vert[0]].co
+                    ab = prevMesh.vertices[vert[1]].co - prevMesh.vertices[vert[0]].co
+                    norm = ab.cross(ac)
+                    norm.normalize()
 
-                    # Order checking
-                    if(not exportNormal):
-                        ac = prevMesh.vertices[vert[2]].co - prevMesh.vertices[vert[0]].co
-                        ab = prevMesh.vertices[vert[1]].co - prevMesh.vertices[vert[0]].co
-                        norm = ab.cross(ac)
-                        norm.normalize()
+                    # Need to inverse order
+                    if(norm.dot(poly.normal) < 0.0):
+                        print("Normal flip: "+str(poly.normal)+" != "+str(norm))
+                        vert = (vert[2],vert[1],vert[0])
 
-                        # Need to inverse order
-                        if(norm.dot(poly.normal) < 0.0):
-                            print("Normal flip: "+str(poly.normal)+" != "+str(norm))
-                            vert = (vert[2],vert[1],vert[0])
+                for idVert in vert:
+                    face += " "+str(idVert+1)
 
-                    for idVert in vert:
-                        face += " "+str(idVert+1)
+                    # Nothing to do for the export
+                    if((not exportUV) and (not exportNormal)):
+                        continue
 
-                        # Nothing to do for the export
-                        if((not exportUV) and (not exportNormal)):
-                            continue
+                    if(exportUV):
+                        face += "/"+str(idVert+1)
+                    else:
+                        face += "/"
 
-                        if(exportUV):
-                            face += "/"+str(idVert+1)
-                        else:
-                            face += "/"
+                    if(exportNormal):
+                        face += "/"+str(idVert+1)
 
-                        if(exportNormal):
-                            face += "/"+str(idVert+1)
-
-                    fileObj.write(face+"\n")
+                fileObj.write(face+"\n")
 
     def write_mesh_objs(self, mesh):
         # convert the shape by apply all modifier
