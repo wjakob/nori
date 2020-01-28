@@ -479,10 +479,10 @@ public:
         /* Set up a perspective camera matrix */
         Matrix4f view, proj, model;
         view = lookAt(Vector3f(0, 0, 2), Vector3f(0, 0, 0), Vector3f(0, 1, 0));
-        const float viewAngle = 30, near = 0.01, far = 100;
-        float fH = std::tan(viewAngle / 360.0f * M_PI) * near;
+        const float viewAngle = 30, near_clip = 0.01, far_clip = 100;
+        float fH = std::tan(viewAngle / 360.0f * M_PI) * near_clip;
         float fW = fH * (float) mSize.x() / (float) mSize.y();
-        proj = frustum(-fW, fW, -fH, fH, near, far);
+        proj = frustum(-fW, fW, -fH, fH, near_clip, far_clip);
 
         model.setIdentity();
         model = translate(Vector3f(-0.5f, -0.5f, 0.0f)) * model;
