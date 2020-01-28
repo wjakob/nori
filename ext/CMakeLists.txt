@@ -101,11 +101,6 @@ if (MSVC)
   foreach(CompilerFlag ${CompilerFlags})
     string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
   endforeach()
-elseif(APPLE)
-  # Try to auto-detect a suitable SDK
-  execute_process(COMMAND bash -c "xcodebuild -version -sdk | grep MacOSX | grep Path | head -n 1 | cut -f 2 -d ' '" OUTPUT_VARIABLE CMAKE_OSX_SYSROOT)
-  string(REGEX REPLACE "(\r?\n)+$" "" CMAKE_OSX_SYSROOT "${CMAKE_OSX_SYSROOT}")
-  string(REGEX REPLACE "^.*X([0-9.]*).sdk$" "\\1" CMAKE_OSX_DEPLOYMENT_TARGET "${CMAKE_OSX_SYSROOT}")
 endif()
 
 if (WIN32)
@@ -137,6 +132,10 @@ set(TBB_BUILD_TBBMALLOC_PROXY OFF  CACHE BOOL " " FORCE)
 set(TBB_BUILD_TESTS           OFF  CACHE BOOL " " FORCE)
 add_subdirectory(tbb)
 set_property(TARGET tbb_static tbb_def_files PROPERTY FOLDER "dependencies")
+
+if (APPLE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGL_SILENCE_DEPRECATION=1")
+endif()
 
 # Build NanoGUI
 set(NANOGUI_BUILD_EXAMPLE OFF CACHE BOOL " " FORCE)
