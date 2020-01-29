@@ -103,9 +103,13 @@ add_executable(warptest
   src/common.cpp
 )
 
-target_link_libraries(nori tbb_static pugixml IlmImf nanogui ${NANOGUI_EXTRA_LIBS})
-target_link_libraries(warptest tbb_static nanogui ${NANOGUI_EXTRA_LIBS})
+if (WIN32)
+  target_link_libraries(nori tbb_static pugixml IlmImf nanogui ${NANOGUI_EXTRA_LIBS} zlibstatic)
+else()
+  target_link_libraries(nori tbb_static pugixml IlmImf nanogui ${NANOGUI_EXTRA_LIBS})
+endif()
 
+target_link_libraries(warptest tbb_static nanogui ${NANOGUI_EXTRA_LIBS})
 
 # Force colored output for the ninja generator
 if (CMAKE_GENERATOR STREQUAL "Ninja")
