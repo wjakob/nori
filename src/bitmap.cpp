@@ -125,7 +125,7 @@ void Bitmap::savePNG(const std::string &filename) {
         }
     }
 
-    int ret = stbi_write_png(path.c_str(), cols(), rows(), 3, rgb8, 3 * cols());
+    int ret = stbi_write_png(path.c_str(), (int) cols(), (int) rows(), 3, rgb8, 3 * (int) cols());
     if (ret == 0) {
         cout << "Bitmap::savePNG(): Could not save PNG file \"" << path << "%s\"" << endl;
     }
