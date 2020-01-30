@@ -92,7 +92,7 @@ The remainder of this section describes the steps needed to clone and compile th
 <h3>Setting up a C++ compiler and building the base code</h3>
 <div class="row">
 	<div class="col-md-6">
-		<h3>Linux / Mac OS X</h3>
+		<h3>Linux / macOS</h3>
 		<p>
 		Begin by installing the
 		<a href="http://www.cmake.org/download/">CMake</a> build system on your
@@ -136,6 +136,14 @@ $ make -j 4</pre>
 				</div>
 			</div>
 		</div>
+
+		<p>
+		If you're working on Linux, you might have to install a few dependencies
+		separately via your system's package manager. On Kubuntu for example,
+		the following line is necessary:
+		</p>
+		<pre class="prettyprint lang-bash">
+		apt-get install zlib1g-dev xorg-dev libglu1-mesa-dev </pre>
 	</div>
 	<div class="col-md-6">
 		<h3>Windows / Visual Studio 2017</h3>
