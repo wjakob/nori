@@ -9,11 +9,11 @@ include_directories(
   # tinyformat string formatting library
   ${TFM_INCLUDE_DIR}
   # Eigen linear algebra library
-  ${EIGEN_INCLUDE_DIR}
+  SYSTEM ${EIGEN_INCLUDE_DIR}
   # OpenEXR high dynamic range bitmap library
-  ${OPENEXR_INCLUDE_DIRS}
+  SYSTEM ${OPENEXR_INCLUDE_DIRS}
   # Intel Thread Building Blocks
-  ${TBB_INCLUDE_DIR}
+  SYSTEM ${TBB_INCLUDE_DIR}
   # Pseudorandom number generator
   ${PCG32_INCLUDE_DIR}
   # PugiXML parser
@@ -21,18 +21,18 @@ include_directories(
   # Helper functions for statistical hypothesis tests
   ${HYPOTHESIS_INCLUDE_DIR}
   # GLFW library for OpenGL context creation
-  ${GLFW_INCLUDE_DIR}
+  SYSTEM ${GLFW_INCLUDE_DIR}
   # GLEW library for accessing OpenGL functions
-  ${GLEW_INCLUDE_DIR}
+  SYSTEM ${GLEW_INCLUDE_DIR}
   # NanoVG drawing library
-  ${NANOVG_INCLUDE_DIR}
+  SYSTEM ${NANOVG_INCLUDE_DIR}
   # NanoGUI user interface library
-  ${NANOGUI_INCLUDE_DIR}
-  ${NANOGUI_EXTRA_INCS}
+  SYSTEM ${NANOGUI_INCLUDE_DIR}
+  SYSTEM ${NANOGUI_EXTRA_INCS}
   # Portable filesystem API
-  ${FILESYSTEM_INCLUDE_DIR}
+  SYSTEM ${FILESYSTEM_INCLUDE_DIR}
   # STB Image Write
-  ${STB_IMAGE_WRITE_INCLUDE_DIR}
+  SYSTEM ${STB_IMAGE_WRITE_INCLUDE_DIR}
 )
 
 # The following lines build the main executable. If you add a source
