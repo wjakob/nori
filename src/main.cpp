@@ -27,10 +27,13 @@
 #include <nori/gui.h>
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
+#include <tbb/task_scheduler_init.h>
 #include <filesystem/resolver.h>
 #include <thread>
 
 using namespace nori;
+
+static int threadCount = -1;
 
 static void renderBlock(const Scene *scene, Sampler *sampler, ImageBlock &block) {
     const Camera *camera = scene->getCamera();
@@ -81,6 +84,8 @@ static void render(Scene *scene, const std::string &filename) {
 
     /* Do the following in parallel and asynchronously */
     std::thread render_thread([&] {
+        tbb::task_scheduler_init init(threadCount);
+
         cout << "Rendering .. ";
         cout.flush();
         Timer timer;
@@ -112,11 +117,11 @@ static void render(Scene *scene, const std::string &filename) {
             }
         };
 
-        /// Uncomment the following line for single threaded rendering
-        // map(range);
-
         /// Default: parallel rendering
         tbb::parallel_for(range, map);
+
+        /// (equivalent to the following single-threaded call)
+        // map(range);
 
         cout << "done. (took " << timer.elapsedString() << ")" << endl;
     });
@@ -148,42 +153,70 @@ static void render(Scene *scene, const std::string &filename) {
 }
 
 int main(int argc, char **argv) {
-    if (argc != 2) {
+    if (argc < 2) {
         cerr << "Syntax: " << argv[0] << " <scene.xml>" << endl;
         return -1;
     }
 
-    filesystem::path path(argv[1]);
+    std::string sceneName = "";
 
-    try {
-        if (path.extension() == "xml") {
-            /* Add the parent directory of the scene file to the
-               file resolver. That way, the XML file can reference
-               resources (OBJ files, textures) using relative paths */
-            getFileResolver()->prepend(path.parent_path());
+    for (int i = 1; i < argc; ++i) {
+        std::string token(argv[i]);
+        if (token == "-t" || token == "--threads") {
+            if (i+1 >= argc) {
+                cerr << "\"--threads\" argument expects a positive integer following it." << endl;
+                return -1;
+            }
+            threadCount = atoi(argv[i+1]);
+            i++;
+            if (threadCount <= 0) {
+                cerr << "\"--threads\" argument expects a positive integer following it." << endl;
+                return -1;
+            }
 
+            continue;
+        }
+
+        filesystem::path path(argv[i]);
+
+        try {
+            if (path.extension() == "xml") {
+                sceneName = argv[i];
+
+                /* Add the parent directory of the scene file to the
+                   file resolver. That way, the XML file can reference
+                   resources (OBJ files, textures) using relative paths */
+                getFileResolver()->prepend(path.parent_path());
+            } else if (path.extension() == "exr") {
+                /* Alternatively, provide a basic OpenEXR image viewer */
+                Bitmap bitmap(argv[1]);
+                ImageBlock block(Vector2i((int) bitmap.cols(), (int) bitmap.rows()), nullptr);
+                block.fromBitmap(bitmap);
+                nanogui::init();
+                NoriScreen *screen = new NoriScreen(block);
+                nanogui::mainloop();
+                delete screen;
+                nanogui::shutdown();
+            } else {
+                cerr << "Fatal error: unknown file \"" << argv[1]
+                     << "\", expected an extension of type .xml or .exr" << endl;
+            }
+        } catch (const std::exception &e) {
+            cerr << "Fatal error: " << e.what() << endl;
+            return -1;
+        }
+    }
+
+    if (threadCount < 0) {
+        threadCount = tbb::task_scheduler_init::automatic;
+    }
+
+    if (sceneName != "") {
             std::unique_ptr<NoriObject> root(loadFromXML(argv[1]));
-
             /* When the XML root object is a scene, start rendering it .. */
             if (root->getClassType() == NoriObject::EScene)
                 render(static_cast<Scene *>(root.get()), argv[1]);
-        } else if (path.extension() == "exr") {
-            /* Alternatively, provide a basic OpenEXR image viewer */
-            Bitmap bitmap(argv[1]);
-            ImageBlock block(Vector2i((int) bitmap.cols(), (int) bitmap.rows()), nullptr);
-            block.fromBitmap(bitmap);
-            nanogui::init();
-            NoriScreen *screen = new NoriScreen(block);
-            nanogui::mainloop();
-            delete screen;
-            nanogui::shutdown();
-        } else {
-            cerr << "Fatal error: unknown file \"" << argv[1]
-                 << "\", expected an extension of type .xml or .exr" << endl;
-        }
-    } catch (const std::exception &e) {
-        cerr << "Fatal error: " << e.what() << endl;
-        return -1;
     }
+
     return 0;
 }
