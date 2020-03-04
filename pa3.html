@@ -349,11 +349,11 @@ will receive less light than others since they are occluded, hence they will loo
 Formally, the quantity computed by ambient occlusion is defined as
     </p>
 \[
-L(\mathbf{x})=\int_{H^2(\mathbf{x})}V(\mathbf{x}, \mathbf{x}+\alpha\omega)\,\frac{\cos\theta}{\pi}\,\mathrm{d}\omega
+L(\mathbf{x})=\int_{H^2(\mathbf{x})}V(\mathbf{x}, \mathbf{x}+\alpha\omega_i)\,\frac{\cos\theta}{\pi}\,\mathrm{d}\omega_i
 \]
 <p>
 which is an integral over the upper hemisphere centered at the point
-\(\mathbf{x}\). The variable \(\theta\) refers to the angle between the direction \(\omega\)
+\(\mathbf{x}\). The variable \(\theta\) refers to the angle between the direction \(\omega_i\)
 and the shading normal at \(\mathbf{x}\). The ad-hoc variable \(\alpha\) adjusts
 how far-reaching the effects of occlusion are.
 </p>
@@ -373,7 +373,7 @@ One potential gotcha is that the samples produced by <code>squareToCosineHemisph
 
     <h2> Hacker Points: Hierarchical Sample Warping <em>(20 points)</em></h2>
 
-<div class="alert alert-info" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points
+<div class="alert alert-danger" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points
 for the daring few. Sometimes you might be required to implement something that was not taught in class and
 you might have to do some research and creative thinking. Hacker Points are awarded only to students who
 implemented all of the remaining assignment, and they are added to the final score.
