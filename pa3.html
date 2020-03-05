@@ -34,14 +34,14 @@ $ git pull upstream master
 
     <h2>Part 1: Monte Carlo Sampling (60 pts)</h2>
 
-	<p>
+    <p>
         In this exercise you will generate sample points on various domains:
         the plane, disks, spheres, and hemispheres. The base code has been
         extended with an interactive visualization and testing tool to make
         working with point sets as intuitive as possible.
-	</p>
+    </p>
 
-	<p>
+    <p>
         After pulling the latest updates and recompiling,
         you should see an executable named <tt>warptest</tt>. Run this
         executable to launch the interactive warping tool, which allows you to
@@ -50,8 +50,8 @@ $ git pull upstream master
         only discussed uniform random variables which correspond to the
         "independent" type, and you need not concern yourself with the others
         for now.
-	</p>
-	<p>
+    </p>
+    <p>
         Part 1 is split into several subsections; in each case, you are asked
         to implement a distribution function and a matching sample warping
         scheme It is crucial that both are <em>consistent</em> with respect to
@@ -60,15 +60,15 @@ $ git pull upstream master
         inconsistent warpings are used for Monte Carlo integration. The
         <tt>warptest</tt> tool provided by us implements a \(\chi^2\) test to
         ensure that this consistency requirement is indeed satisfied.
-	</p>
+    </p>
 
-	<div class="alert alert-danger" role="alert">
+    <div class="alert alert-danger" role="alert">
         Note that passing the test does not generally imply that your
         implementation is correct—for instance, the test may not have enough
         "evidence" to generate a failure, or potentially the warping function
         and the density function are both incorrect in the same manner. Use
         your judgment and don't rely on this test alone.
-	</div>
+    </div>
 
     <div class="alert alert-info" role="alert">
         <b>Note</b>: the continuous integration will now automatically run
@@ -79,43 +79,43 @@ $ git pull upstream master
         script.
     </div>
 
-	<div class="row" style="margin: 30px">
-		<div class="col-md-3">
-			<div class="thumbnail" style="margin: 10px">
-				<a class="fancybox" href="images/warp-square-points.png"><img src="images/warp-square-points.png"/></a>
-				<div class="caption">
-					The input point set (stratified samples passed through a "no-op" warp function)
-				</div>
-			</div>
-		</div>
-		<div class="col-md-3">
-			<div class="thumbnail" style="margin: 10px">
-				<a class="fancybox" href="images/warp-square-chi2.png"><img src="images/warp-square-chi2.png"/></a>
-				<div class="caption">
-					This point set passed the test for uniformity.
-				</div>
-			</div>
-		</div>
-		<div class="col-md-3">
-			<div class="thumbnail" style="margin: 10px">
-				<a class="fancybox" href="images/warp-disk-points.png"><img src="images/warp-disk-points.png"/></a>
-				<div class="caption">
-					A more interesting case that you will implement
-					(with a grid visualization of the mapping)
-				</div>
-			</div>
-		</div>
-		<div class="col-md-3">
-			<div class="thumbnail" style="margin: 10px">
-				<a class="fancybox" href="images/warp-disk-chi2.png"><img src="images/warp-disk-chi2.png"/></a>
-				<div class="caption">
-					This warping passed the tests as well.
-				</div>
-			</div>
-		</div>
-	</div>
+    <div class="row" style="margin: 30px">
+        <div class="col-md-3">
+            <div class="thumbnail" style="margin: 10px">
+                <a class="fancybox" href="images/warp-square-points.png"><img src="images/warp-square-points.png"/></a>
+                <div class="caption">
+                    The input point set (stratified samples passed through a "no-op" warp function)
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="thumbnail" style="margin: 10px">
+                <a class="fancybox" href="images/warp-square-chi2.png"><img src="images/warp-square-chi2.png"/></a>
+                <div class="caption">
+                    This point set passed the test for uniformity.
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="thumbnail" style="margin: 10px">
+                <a class="fancybox" href="images/warp-disk-points.png"><img src="images/warp-disk-points.png"/></a>
+                <div class="caption">
+                    A more interesting case that you will implement
+                    (with a grid visualization of the mapping)
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="thumbnail" style="margin: 10px">
+                <a class="fancybox" href="images/warp-disk-chi2.png"><img src="images/warp-disk-chi2.png"/></a>
+                <div class="caption">
+                    This warping passed the tests as well.
+                </div>
+            </div>
+        </div>
+    </div>
 
-	<p>
+    <p>
         Implement the missing functions in <code>class Warp</code> found in
         <tt>src/warp.cpp</tt>. This class consists of various warp methods that
         take as input a 2D point \((s, t) \in [0, 1) \times [0, 1) \) and
@@ -127,26 +127,26 @@ $ git pull upstream master
         provide a number of useful recipes for warping samples and computing
         the densities, and the PBRT textbook also contains considerable
         information on this topic that you should feel free to use.
-	</p>
+    </p>
     <p>
         Pass the \(\chi^2\) test for each one of the following sampling techniques <b>and include corresponding screen shots in your report</b>:
     </p>
 
-	<ul>
-		<li>
-			<h4><code>Warp::squareToTent</code> and <code>Warp::squareToTentPdf</code> <em> (15 Points)</em></h4>
-			<p>
+    <ul>
+        <li>
+            <h4><code>Warp::squareToTent</code> and <code>Warp::squareToTentPdf</code> <em> (15 Points)</em></h4>
+            <p>
                 Implement a method that transforms uniformly distributed 2D
                 points on the unit square into the 2D "tent" distribution,
                 which has the following form:
-				\[
+                \[
                 p(x, y)=p_1(x)\,p_1(y)\quad\text{and}\quad
                 p_1(t) = \begin{cases}
                 1-|t|, & -1\le t\le 1\\
                 0,&\text{otherwise}\\
                 \end{cases}
-				\]
-			</p>
+                \]
+            </p>
             Note that this distribution is composed of two independent 1D
             distributions, which makes this task considerably easier. Follow
             the "recipe" discussed in class:
@@ -157,48 +157,48 @@ $ git pull upstream master
             </ol>
             Show the details of these steps in your report (either using TeX, or by taking
             a photograph of the derivation and embedding the image)
-		</li>
-		<li>
-			<h4><code>Warp::squareToUniformDisk</code> and <code>Warp::squareToUniformDiskPdf</code> <em> (5 Points)</em></h4>
-			<p>
-				Implement a method that transforms uniformly distributed 2D
-				points on the unit square into uniformly distributed points on
-				a planar <em>disk</em> with radius 1 centered at the origin. Next,
-				implement a probability density function that matches your
-				warping scheme.
-			</p>
-		</li>
-		<li>
-			<h4><code>Warp::squareToUniformSphere</code> and <code>Warp::squareToUniformSpherePdf</code> <em> (5 Points)</em></h4>
-			<p>
-				Implement a method that transforms uniformly distributed 2D
-				points on the unit square into uniformly distributed points on
-				the <em>unit sphere</em> centered at the origin. Implement a matching
-				probability density function.
-			</p>
-		</li>
-		<li>
-			<h4><code>Warp::squareToUniformHemisphere</code> and <code>Warp::squareToUniformHemispherePdf</code> <em> (5 Points)</em></h4>
-			<p>
-				Implement a method that transforms uniformly distributed 2D
-				points on the unit square into uniformly distributed points on
-				the <em>unit hemisphere</em> centered at the origin and oriented in
-				direction \((0, 0, 1)\). Add a matching probability density
-				function.
-			</p>
-		</li>
-		<li>
-			<h4><code>Warp::squareToCosineHemisphere</code> and <code>Warp::squareToCosineHemispherePdf</code> <em> (5 Points)</em></h4>
-			<p>
-				Transform your 2D point to a point distributed on the unit
-				hemisphere with a cosine density function
-				\[
-				p(\theta)=\frac{\cos\theta}{\pi},
-				\]
-				where \(\theta\) is the
-				angle between a point on the hemisphere and the north pole.
-			</p>
-		</li>
+        </li>
+        <li>
+            <h4><code>Warp::squareToUniformDisk</code> and <code>Warp::squareToUniformDiskPdf</code> <em> (5 Points)</em></h4>
+            <p>
+                Implement a method that transforms uniformly distributed 2D
+                points on the unit square into uniformly distributed points on
+                a planar <em>disk</em> with radius 1 centered at the origin. Next,
+                implement a probability density function that matches your
+                warping scheme.
+            </p>
+        </li>
+        <li>
+            <h4><code>Warp::squareToUniformSphere</code> and <code>Warp::squareToUniformSpherePdf</code> <em> (5 Points)</em></h4>
+            <p>
+                Implement a method that transforms uniformly distributed 2D
+                points on the unit square into uniformly distributed points on
+                the <em>unit sphere</em> centered at the origin. Implement a matching
+                probability density function.
+            </p>
+        </li>
+        <li>
+            <h4><code>Warp::squareToUniformHemisphere</code> and <code>Warp::squareToUniformHemispherePdf</code> <em> (5 Points)</em></h4>
+            <p>
+                Implement a method that transforms uniformly distributed 2D
+                points on the unit square into uniformly distributed points on
+                the <em>unit hemisphere</em> centered at the origin and oriented in
+                direction \((0, 0, 1)\). Add a matching probability density
+                function.
+            </p>
+        </li>
+        <li>
+            <h4><code>Warp::squareToCosineHemisphere</code> and <code>Warp::squareToCosineHemispherePdf</code> <em> (5 Points)</em></h4>
+            <p>
+                Transform your 2D point to a point distributed on the unit
+                hemisphere with a cosine density function
+                \[
+                p(\theta)=\frac{\cos\theta}{\pi},
+                \]
+                where \(\theta\) is the
+                angle between a point on the hemisphere and the north pole.
+            </p>
+        </li>
         <li>
             <h4><code>Warp::squareToBeckmann</code> and <code>Warp::squareToBeckmannPdf</code> <em> (25 Points)</em></h4>
             <div class="row" style="margin: 30px">
@@ -259,9 +259,9 @@ $ git pull upstream master
                 </div>
             </p>
         </li>
-	</ul>
+    </ul>
 
-	<h2>Part 2: Two simple rendering algorithms <em>(40 points)</em></h2>
+    <h2>Part 2: Two simple rendering algorithms <em>(40 points)</em></h2>
     <p>
         In this part of the homework, you'll implement two basic rendering
         algorithms that set the stage for fancier methods investigated later
@@ -269,26 +269,26 @@ $ git pull upstream master
         composed of a simple white diffuse material that reflects light
         uniformly into all directions.
     </p>
-	<div class="row" style="margin: 30px">
-		<div class="col-md-3">
-			<div class="thumbnail" style="margin: 10px">
-				<a class="fancybox" href="images/ajax-simple.png"><img src="images/ajax-simple.png"/></a>
-				<div class="caption">
-					The Ajax bust illuminated by a point light source.
-				</div>
-			</div>
-		</div>
-		<div class="col-md-3">
-			<div class="thumbnail" style="margin: 10px">
-				<a class="fancybox" href="images/ajax-ao.png"><img src="images/ajax-ao.png"/></a>
-				<div class="caption">
-					The Ajax bust rendered using Ambient Occlusion.
-				</div>
-			</div>
-		</div>
-	</div>
-	<h3>Part 2.1: Point lights <em>(20 points)</em></h3>
-	<p>
+    <div class="row" style="margin: 30px">
+        <div class="col-md-3">
+            <div class="thumbnail" style="margin: 10px">
+                <a class="fancybox" href="images/ajax-simple.png"><img src="images/ajax-simple.png"/></a>
+                <div class="caption">
+                    The Ajax bust illuminated by a point light source.
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="thumbnail" style="margin: 10px">
+                <a class="fancybox" href="images/ajax-ao.png"><img src="images/ajax-ao.png"/></a>
+                <div class="caption">
+                    The Ajax bust rendered using Ambient Occlusion.
+                </div>
+            </div>
+        </div>
+    </div>
+    <h3>Part 2.1: Point lights <em>(20 points)</em></h3>
+    <p>
         The updated base code includes a new scene <code>scenes/pa3/ajax-simple.xml</code> that instantiates a (currently nonexistent) integrator/rendering algorithm named <code>simple</code>, which simulates a single point
         light source located at a 3D position <tt>position</tt>, and which emits an amount of
         energy given by the parameter <tt>energy</tt>.
@@ -336,9 +336,9 @@ L(\mathbf{x})=\frac{\Phi}{4\pi^2} \frac{\mathrm{max}(0, \cos\theta)}{\|\mathbf{x
     Implement the <code>simple</code> integrator according to this specification and
     render the scene <code>scenes/pa3/ajax-simple.xml</code>.
     Include a comparison against our <a href="https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/03/13/ajax-simple.exr">reference image</a> in your report.
-	</p>
+    </p>
 
-	<h3>Part 2.2: Ambient occlusion <em>(20 points)</em></h3>
+    <h3>Part 2.2: Ambient occlusion <em>(20 points)</em></h3>
     <p>
         Ambient occlusion is rendering technique which assumes that a (diffuse)
         surface receives uniform illumination from all directions (similar to
@@ -379,84 +379,83 @@ you might have to do some research and creative thinking. Hacker Points are awar
 implemented all of the remaining assignment, and they are added to the final score.
 </div>
 
-	<div class="row" style="margin: 30px">
-		<div class="row-centered">
-		<div class="col-md-3 col-centered">
-			<div class="thumbnail" style="margin: 10px">
-				<a class="fancybox" href="images/envmap-1.jpg"><img src="images/envmap-1.jpg"/></a>
-				<div class="caption">
-					A lightprobe by <a href="http://dativ.at/lightprobes/">Bernhard Vogl</a>.
-				</div>
-			</div>
-		</div>
-		<div class="col-md-3 col-centered">
-			<div class="thumbnail" style="margin: 10px">
-				<a class="fancybox" href="images/envmap-2.jpg"><img src="images/envmap-2.jpg"/></a>
-				<div class="caption">
-					A simple scene rendered with this lightprobe.
-				</div>
-			</div>
-		</div>
-		</div>
-	</div>
+    <div class="row" style="margin: 30px">
+        <div class="row-centered">
+        <div class="col-md-3 col-centered">
+            <div class="thumbnail" style="margin: 10px">
+                <a class="fancybox" href="images/envmap-1.jpg"><img src="images/envmap-1.jpg"/></a>
+                <div class="caption">
+                    A lightprobe by <a href="http://dativ.at/lightprobes/">Bernhard Vogl</a>.
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-centered">
+            <div class="thumbnail" style="margin: 10px">
+                <a class="fancybox" href="images/envmap-2.jpg"><img src="images/envmap-2.jpg"/></a>
+                <div class="caption">
+                    A simple scene rendered with this lightprobe.
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
 
-	<p>
-		The goal of this exercise is to implement hierarchical sample warping,
-		which will come in very handy if you decide you'll want to later add
-		<a href="http://ict.usc.edu/pubs/Image-Based%20Lighting.pdf">Image Based Lighting</a> (IBL)
-		to your renderer for the final project. Lighting with captured
-		real-world lighting conditions ("<em>lightprobes</em>") is a
-		relatively cheap and simple way to add considerable realism to a
-		rendering. Note that we don't expect you to add the rendering-related
-		parts yet; this exercise is just about the warping scheme.
-	</p>
-	<p>
-		You can assume that a non-negative grayscale image is given as an
-		input (this image records the per-pixel luminance values of an IBL
-		light probe). The image is interpreted as a probability density of
-		samples distributed on a 2D rectangular domain, hence the goal is to
-		generate samples proportionally to these luminance values.
-		Strictly speaking, the image is not really a density function because
-		it does not integrate to one—we simply apply a normalization factor
-		to circumvent this problem.
-	</p>
+    <p>
+        The goal of this exercise is to implement hierarchical sample warping,
+        which will come in very handy if you decide you'll want to later add
+        <a href="http://ict.usc.edu/pubs/Image-Based%20Lighting.pdf">Image Based Lighting</a> (IBL)
+        to your renderer for the final project. Lighting with captured
+        real-world lighting conditions ("<em>lightprobes</em>") is a
+        relatively cheap and simple way to add considerable realism to a
+        rendering. Note that we don't expect you to add the rendering-related
+        parts yet; this exercise is just about the warping scheme.
+    </p>
+    <p>
+        You can assume that a non-negative grayscale image is given as an
+        input (this image records the per-pixel luminance values of an IBL
+        light probe). The image is interpreted as a probability density of
+        samples distributed on a 2D rectangular domain, hence the goal is to
+        generate samples proportionally to these luminance values.
+        Strictly speaking, the image is not really a density function because
+        it does not integrate to one—we simply apply a normalization factor
+        to circumvent this problem.
+    </p>
 
-	<div>
-		<p>
-			Your implementation of Hierarchical Sample Warping with the help of mip mapping should work as follows:
-			<ul>
-				<li> <em>Input</em>: an EXR image with \(2^M \times 2^M \) pixels and a 2D sample uniformly distributed on the unit square.</li>
-				<li> Compute the luminance of that image and normalize it. </li>
-				<li> Build and store the Mipmap for that image. </li>
-				<li> Starting at the top level's children (\(2 \times 2\) px) compute the sum of the luminance values for the two top quadrants and the two bottom quadrants \((80\%,20\%\) in the example figure below).</li>
-				<li> Warp the input domain of the sample vertically such that the area of the domains agrees with the ratio of the luminance values. </li>
-				<li> Repeat the above two steps independently for the top and bottom row. </li>
-				<li> Repeat this process for the quadrant where your sample fell in, until the bottom level of your mipmap is reached (full resolution).</li>
-				<li> <em>Output</em>: a sample distributed according to the density function defined by the image (in \(O(M)\)).</li>
-			</ul>
+    <div>
+        <p>
+            Your implementation of Hierarchical Sample Warping with the help of mip mapping should work as follows:
+            <ul>
+                <li> <em>Input</em>: an EXR image with \(2^M \times 2^M \) pixels and a 2D sample uniformly distributed on the unit square.</li>
+                <li> Compute the luminance of that image and normalize it. </li>
+                <li> Build and store the Mipmap for that image. </li>
+                <li> Starting at the top level's children (\(2 \times 2\) px) compute the sum of the luminance values for the two top quadrants and the two bottom quadrants \((80\%,20\%\) in the example figure below).</li>
+                <li> Warp the input domain of the sample vertically such that the area of the domains agrees with the ratio of the luminance values. </li>
+                <li> Repeat the above two steps independently for the top and bottom row. </li>
+                <li> Repeat this process for the quadrant where your sample fell in, until the bottom level of your mipmap is reached (full resolution).</li>
+                <li> <em>Output</em>: a sample distributed according to the density function defined by the image (in \(O(M)\)).</li>
+            </ul>
 
-		</p>
-	</div>
-	<div class="row-centered">
-		<div class="thumbnail col-md-5 col-centered">
-			<a class="fancybox" href="images/hsw.png"><img src="images/hsw.png"/></a>
-			<div class="caption">
-				Left: Uniformly distributed 2D input points. Middle: 2x2 image which defines the sampling density. Right: Hierarchical Sample Warping result applied on the uniformly distributed input points.
-			</div>
-		</div>
-	</div>
+        </p>
+    </div>
+    <div class="row-centered">
+        <div class="thumbnail col-md-5 col-centered">
+            <a class="fancybox" href="images/hsw.png"><img src="images/hsw.png"/></a>
+            <div class="caption">
+                Left: Uniformly distributed 2D input points. Middle: 2x2 image which defines the sampling density. Right: Hierarchical Sample Warping result applied on the uniformly distributed input points.
+            </div>
+        </div>
+    </div>
 
-	<h4> What to submit </h4>
-	<p>
-		<ul>
-			<li> A correct implementation of the hierarchical sample warping algorithm described above. </li>
-			<li> A modified version of the <tt>warptest</tt> user interface that visualizes your generated points sets.</li>
-			<li> Two screen shots of the \(\chi^2\)-test (with many input points), which verifies that your warping function and density function are mutually consistent.
-				The first should be with a simple \(2 \times 2\) pixel image as shown above, and for the second, you can choose any
-				light probe you like (<a href="http://gl.ict.usc.edu/Data/HighResProbes/">Paul Debevec</a> and
-				<a href="http://dativ.at/lightprobes/">Bernhard Vogl</a> provide many light probes free of charge).
-				Feel free to change the resolution of your input image to a power of 2 (at least \(512 \times 512\)) using a tool of your choice.
-			</li>
-		</ul>
-	</p>
+    <h4> What to submit </h4>
+    <p>
+        <ul>
+            <li> A correct implementation of the hierarchical sample warping algorithm described above. </li>
+            <li> A modified version of the <tt>warptest</tt> user interface that visualizes your generated points sets.</li>
+            <li> Two screen shots of the \(\chi^2\)-test (with many input points), which verifies that your warping function and density function are mutually consistent.
+                The first should be with a simple \(2 \times 2\) pixel image as shown above, and the second should be a more interesting image, e.g. a light probe. (<a href="http://gl.ict.usc.edu/Data/HighResProbes/">Paul Debevec</a> and
+                <a href="http://dativ.at/lightprobes/">Bernhard Vogl</a> provide many light probes free of charge).
+                Feel free to change the resolution of your input image to a power of 2 (at least \(512 \times 512\)) using a tool of your choice. <b>Note:</b> The <tt>warptest</tt> might not work well for very "spiky" / high-frequency images.
+            </li>
+        </ul>
+    </p>
 </div>
