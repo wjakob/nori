@@ -189,7 +189,7 @@ int main(int argc, char **argv) {
                 getFileResolver()->prepend(path.parent_path());
             } else if (path.extension() == "exr") {
                 /* Alternatively, provide a basic OpenEXR image viewer */
-                Bitmap bitmap(argv[1]);
+                Bitmap bitmap(argv[i]);
                 ImageBlock block(Vector2i((int) bitmap.cols(), (int) bitmap.rows()), nullptr);
                 block.fromBitmap(bitmap);
                 nanogui::init();
@@ -198,7 +198,7 @@ int main(int argc, char **argv) {
                 delete screen;
                 nanogui::shutdown();
             } else {
-                cerr << "Fatal error: unknown file \"" << argv[1]
+                cerr << "Fatal error: unknown file \"" << argv[i]
                      << "\", expected an extension of type .xml or .exr" << endl;
             }
         } catch (const std::exception &e) {
@@ -212,10 +212,10 @@ int main(int argc, char **argv) {
     }
 
     if (sceneName != "") {
-            std::unique_ptr<NoriObject> root(loadFromXML(argv[1]));
+            std::unique_ptr<NoriObject> root(loadFromXML(sceneName));
             /* When the XML root object is a scene, start rendering it .. */
             if (root->getClassType() == NoriObject::EScene)
-                render(static_cast<Scene *>(root.get()), argv[1]);
+                render(static_cast<Scene *>(root.get()), sceneName);
     }
 
     return 0;
