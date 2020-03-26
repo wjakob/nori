@@ -183,7 +183,7 @@ $ git pull upstream master
 
     <p>
         Create a new "material sampling" (mats) path tracer named <code>src/path_mats.cpp</code> that does exactly this. Note that you should use <code>BSDF::sample()</code> to generate new outoing directions at each scattering event. This outgoing direction
-        is used to estimate the indirect illumination component, which could be implemented using recursion, or more efficiently using a loop.
+        is used to estimate the indirect illumination component. <b>We recommend that you implement all integrators in this homework using an "iterative" approach with a for-loop compared to the recursive implementation that you might have used for Whitted-style integrator. This is more efficient but will also be considerably easier to debug.</b>
     </p>
 
     <p>
@@ -246,6 +246,10 @@ continuation probability = min(maximum component of the throughput * eta^2, 0.99
         sampling strategies to reduce variance.<br/>
         Starting from <tt>path_mats</tt>, simply add back emitter sampling while taking care of the
         "double counting" problem discussed in the lecture.
+    </p>
+
+    <p>
+        <strong>Note</strong>: Different (correct) implementations of emitter sampling will lead to potentially very different noise patterns in the test scenes. If you want to match the reference renders exactly, you will need to (in each iteration) <b>1)</b> Pick one light source uniformly at random, and <b>2)</b> Sample one point on the associated mesh uniformly over its surface area.<br/>
     </p>
 
     <h4>Validation</h4>
