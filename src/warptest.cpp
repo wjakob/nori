@@ -868,7 +868,8 @@ std::tuple<WarpType, float, float> parse_arguments(int argc, char **argv) {
     if (argc > 3)
         value2 = std::stof(argv[3]);
 
-    return { tp, value, value2 };
+    //return { tp, value, value2 };
+    return std::make_tuple(tp,value,value2);
 }
 
 
