@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+ 
+<scene>
+    <integrator type="normals">
+        <string name="myProperty" value="Hello!"/>
+    </integrator>
+ 
+    <camera type="perspective"/>
+</scene>
