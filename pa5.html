@@ -191,6 +191,7 @@ $ git pull upstream master
         <pre class="prettyprint">
 continuation probability = min(maximum component of the throughput * eta^2, 0.99)</pre>
         where <tt>eta</tt> is the product of all \(\eta\) terms encountered along the path, starting with <tt>eta = 1.f</tt>.
+        Additionally, we recommend to only start doing Russian Roulette after at least three bounces in order to avoid terminating very short paths which would lead to a lot of variance usually.
     </p>
 
 
