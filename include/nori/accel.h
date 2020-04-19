@@ -19,6 +19,10 @@
 #pragma once
 
 #include <nori/mesh.h>
+#include <nori/bvhprimitiveinfo.h>
+#include <nori/bvhnode.h>
+
+#include <algorithm>
 
 NORI_NAMESPACE_BEGIN
 
@@ -30,6 +34,29 @@ NORI_NAMESPACE_BEGIN
  */
 class Accel {
 public:
+
+    Accel(uint32_t primPerNode = 4,
+          SplitMethod split = SplitMethod::SPLIT_MIDDLE)
+        : m_splitMethod(split),
+          m_primitivesPerNode(primPerNode)
+    {}
+
+    ~Accel()
+    {
+        for_each(m_primitives.begin(),m_primitives.end(),[](auto p)
+        {
+            delete p;
+        });
+
+        m_primitives.clear();
+
+        for_each(m_nodes.begin(),m_nodes.end(),[](auto p)
+        {
+            delete p;
+        });
+
+        m_nodes.clear();
+    }
     /**
      * \brief Register a triangle mesh for inclusion in the acceleration
      * data structure
@@ -40,6 +67,10 @@ public:
 
     /// Build the acceleration data structure (currently a no-op)
     void build();
+
+    uint32_t buildRecursive(uint32_t left_index,
+                            uint32_t right_index,
+                            uint32_t depth);
 
     /// Return an axis-aligned box that bounds the scene
     const BoundingBox3f &getBoundingBox() const { return m_bbox; }
@@ -68,6 +99,14 @@ public:
 private:
     Mesh         *m_mesh = nullptr; ///< Mesh (only a single one for now)
     BoundingBox3f m_bbox;           ///< Bounding box of the entire scene
+
+    SplitMethod m_splitMethod;
+
+    uint32_t m_primitivesPerNode;
+    std::vector<BvhPrimitiveInfo*> m_primitives;
+    std::vector<BvhNode*> m_nodes;
+
+
 };
 
 NORI_NAMESPACE_END

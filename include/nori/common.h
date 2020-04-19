@@ -194,6 +194,14 @@ enum EMeasure {
     EDiscrete
 };
 
+/// Define the splitting method for BVH interior nodes
+enum SplitMethod
+{
+    SPLIT_MIDDLE,
+    SPLIT_EQUAL_POINTS,
+    SPLIT_SAH
+};
+
 //// Convert radians to degrees
 inline float radToDeg(float value) { return value * (180.0f / M_PI); }
 

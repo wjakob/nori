@@ -64,6 +64,8 @@ add_executable(nori
   include/nori/transform.h
   include/nori/vector.h
   include/nori/warp.h
+  include/nori/bvhprimitiveinfo.h
+  include/nori/bvhnode.h
 
   # Source code files
   src/bitmap.cpp
