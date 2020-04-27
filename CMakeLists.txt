@@ -66,6 +66,7 @@ add_executable(nori
   include/nori/warp.h
   include/nori/bvhprimitiveinfo.h
   include/nori/bvhnode.h
+  include/nori/bvh.h
 
   # Source code files
   src/bitmap.cpp
@@ -91,6 +92,7 @@ add_executable(nori
   src/mirror.cpp
   src/dielectric.cpp
   src/normals.cpp
+  src/bvh.cpp
 )
 
 add_definitions(${NANOGUI_EXTRA_DEFS})

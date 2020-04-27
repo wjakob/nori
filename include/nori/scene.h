@@ -20,6 +20,8 @@
 
 #include <nori/accel.h>
 
+#include <nori/bvh.h>
+
 NORI_NAMESPACE_BEGIN
 
 /**
@@ -73,7 +75,7 @@ public:
      * \return \c true if an intersection was found
      */
     bool rayIntersect(const Ray3f &ray, Intersection &its) const {
-        return m_accel->rayIntersect(ray, its, false);
+        return m_accel->rayIntersect(ray, its, false);        
     }
 
     /**
@@ -93,12 +95,12 @@ public:
      */
     bool rayIntersect(const Ray3f &ray) const {
         Intersection its; /* Unused */
-        return m_accel->rayIntersect(ray, its, true);
+        return m_accel->rayIntersect(ray, its, true);        
     }
 
     /// \brief Return an axis-aligned box that bounds the scene
     const BoundingBox3f &getBoundingBox() const {
-        return m_accel->getBoundingBox();
+        return m_accel->getBoundingBox();        
     }
 
     /**

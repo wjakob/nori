@@ -9,15 +9,15 @@ NORI_NAMESPACE_BEGIN
 struct BvhPrimitiveInfo {
     BvhPrimitiveInfo(const BoundingBox3f &bbox,
                      const Point3f &centroid,
-                     uint32_t &faceIndex):
+                     const uint32_t &faceIndex):
         m_bbox(bbox),
         m_centroid(centroid),
         m_faceIndex(faceIndex)
     {}
 
-    BoundingBox3f m_bbox;
-    Point3f m_centroid;
-    uint32_t m_faceIndex;
+    BoundingBox3f m_bbox; /// bounding box of the triangular face
+    Point3f m_centroid;   /// centroid value of the triangular face
+    uint32_t m_faceIndex; /// index of the triangular face in the mesh
 };
 
 

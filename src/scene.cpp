@@ -26,18 +26,18 @@
 NORI_NAMESPACE_BEGIN
 
 Scene::Scene(const PropertyList &) {
-    m_accel = new Accel();
+    m_accel = new Accel();    
 }
 
 Scene::~Scene() {
-    delete m_accel;
+    delete m_accel;    
     delete m_sampler;
     delete m_camera;
     delete m_integrator;
 }
 
 void Scene::activate() {
-    m_accel->build();
+    m_accel->build();    
 
     if (!m_integrator)
         throw NoriException("No integrator was specified!");
@@ -59,7 +59,7 @@ void Scene::addChild(NoriObject *obj) {
     switch (obj->getClassType()) {
         case EMesh: {
                 Mesh *mesh = static_cast<Mesh *>(obj);
-                m_accel->addMesh(mesh);
+                m_accel->addMesh(mesh);                
                 m_meshes.push_back(mesh);
             }
             break;

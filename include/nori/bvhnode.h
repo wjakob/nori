@@ -8,12 +8,13 @@ NORI_NAMESPACE_BEGIN
 
 struct BvhNode
 {
-    BoundingBox3f m_bbox;
-    bool m_leaf;
-    uint32_t m_numPrimPerNode;
+    BoundingBox3f m_bbox; /// bounding box of the node
+    bool m_leaf;          /// boolean flag to mark it as leaf node or not
+    uint32_t m_numPrimPerNode;  /// number of primitives allocated for the node
 
     /// Leaf node - if leaf node, m_index points to the traingle in the primitive list
     /// Interior node - if interior node, m_index points to the right child in the node list
+    ///                 as the left child is by default placed right after the parent node in the node list
     uint32_t m_index;
     uint32_t m_splitAxis;
 

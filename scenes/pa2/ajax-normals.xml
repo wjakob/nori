@@ -1,7 +1,7 @@
 <scene>
 	<!-- Independent sample generator, 32 samples per pixel -->
 	<sampler type="independent">
-		<integer name="sampleCount" value="32"/>
+		<integer name="sampleCount" value="35"/>
 	</sampler>
 
     <!-- Render the visible surface normals -->

@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <fstream>
 #include <nori/mesh.h>
 #include <nori/bvhprimitiveinfo.h>
 #include <nori/bvhnode.h>
@@ -35,10 +36,10 @@ NORI_NAMESPACE_BEGIN
 class Accel {
 public:
 
-    Accel(uint32_t primPerNode = 4,
+    Accel(uint32_t primPerNode = 8,
           SplitMethod split = SplitMethod::SPLIT_MIDDLE)
         : m_splitMethod(split),
-          m_primitivesPerNode(primPerNode)
+          m_maxPrimitivesPerNode(primPerNode)
     {}
 
     ~Accel()
@@ -96,15 +97,21 @@ public:
      */
     bool rayIntersect(const Ray3f &ray, Intersection &its, bool shadowRay) const;
 
+
+
+
 private:
     Mesh         *m_mesh = nullptr; ///< Mesh (only a single one for now)
     BoundingBox3f m_bbox;           ///< Bounding box of the entire scene
 
     SplitMethod m_splitMethod;
 
-    uint32_t m_primitivesPerNode;
+    uint32_t m_maxPrimitivesPerNode;
     std::vector<BvhPrimitiveInfo*> m_primitives;
     std::vector<BvhNode*> m_nodes;
+
+
+
 
 
 };
