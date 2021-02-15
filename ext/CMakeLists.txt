@@ -126,7 +126,7 @@ set(OPENEXR_BUILD_SHARED_LIBS OFF CACHE BOOL " " FORCE)
 set(ILMBASE_NAMESPACE_VERSIONING OFF CACHE BOOL " " FORCE)
 set(OPENEXR_NAMESPACE_VERSIONING OFF CACHE BOOL " " FORCE)
 add_subdirectory(openexr)
-set_property(TARGET IexMath eLut toFloat b44ExpLogTable dwaLookups CopyIlmBaseLibs IlmThread Half Iex Imath IlmImf PROPERTY FOLDER "dependencies")
+set_property(TARGET IexMath eLut toFloat b44ExpLogTable dwaLookups IlmThread Half Iex Imath IlmImf PROPERTY FOLDER "dependencies")
 
 # Build Thread Building Blocks (main shared libraries only)
 set(TBB_BUILD_SHARED          OFF  CACHE BOOL " " FORCE)
