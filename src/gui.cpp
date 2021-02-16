@@ -1,117 +1,135 @@
 #include <nori/gui.h>
 #include <nori/block.h>
-#include <nanogui/glutil.h>
+#include <nanogui/shader.h>
 #include <nanogui/label.h>
 #include <nanogui/slider.h>
 #include <nanogui/layout.h>
+#include <nanogui/renderpass.h>
+#include <nanogui/texture.h>
 
 NORI_NAMESPACE_BEGIN
 
 NoriScreen::NoriScreen(const ImageBlock &block)
- : nanogui::Screen(block.getSize() + Vector2i(0, 36), "Nori", false), m_block(block) {
+ : nanogui::Screen(nanogui::Vector2i(block.getSize().x(), block.getSize().y() + 36),
+                   "Nori", false),
+   m_block(block) {
     using namespace nanogui;
+    inc_ref();
 
     /* Add some UI elements to adjust the exposure value */
     Widget *panel = new Widget(this);
-    panel->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 10, 10));
+    panel->set_layout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 10, 10));
     new Label(panel, "Exposure value: ", "sans-bold");
-    m_slider = new Slider(panel);
-    m_slider->setValue(0.5f);
-    m_slider->setFixedWidth(150);
-    m_slider->setCallback(
+    Slider *slider = new Slider(panel);
+    slider->set_value(0.5f);
+    slider->set_fixed_width(150);
+    slider->set_callback(
         [&](float value) {
             m_scale = std::pow(2.f, (value - 0.5f) * 20);
         }
     );
 
-    panel->setSize(block.getSize());
-    performLayout(mNVGContext);
+    panel->set_size(nanogui::Vector2i(block.getSize().x(), block.getSize().y()));
+    perform_layout();
 
-    panel->setPosition(
-        Vector2i((mSize.x() - panel->size().x()) / 2, block.getSize().y()));
+    panel->set_position(
+        nanogui::Vector2i((m_size.x() - panel->size().x()) / 2, block.getSize().y()));
 
     /* Simple gamma tonemapper as a GLSL shader */
-    m_shader = new GLShader();
-    m_shader->init(
+
+    m_renderPass = new RenderPass({ this });
+    m_renderPass->set_clear_color(0, Color(0.3f, 0.3f, 0.3f, 1.f));
+
+    m_shader = new Shader(
+        m_renderPass,
+        /* An identifying name */
         "Tonemapper",
-
         /* Vertex shader */
-        "#version 330\n"
-        "in vec2 position;\n"
-        "out vec2 uv;\n"
-        "void main() {\n"
-        "    gl_Position = vec4(position.x*2-1, position.y*2-1, 0.0, 1.0);\n"
-        "    uv = vec2(position.x, 1-position.y);\n"
-        "}",
+        R"(#version 330
+        uniform ivec2 size;
+        uniform int borderSize;
 
+        in vec2 position;
+        out vec2 uv;
+        void main() {
+            gl_Position = vec4(position.x * 2 - 1, position.y * 2 - 1, 0.0, 1.0);
+
+            // Crop away image border (due to pixel filter)
+            vec2 total_size = size + 2 * borderSize;
+            vec2 scale = size / total_size;
+            uv = vec2(position.x * scale.x + borderSize / total_size.x,
+                      1 - (position.y * scale.y + borderSize / total_size.y));
+        })",
         /* Fragment shader */
-        "#version 330\n"
-        "uniform sampler2D source;\n"
-        "uniform float scale;\n"
-        "in vec2 uv;\n"
-        "out vec4 out_color;\n"
-        "float toSRGB(float value) {\n"
-        "    if (value < 0.0031308)\n"
-        "        return 12.92 * value;\n"
-        "    return 1.055 * pow(value, 0.41666) - 0.055;\n"
-        "}\n"
-        "void main() {\n"
-        "    vec4 color = texture(source, uv);\n"
-        "    color *= scale / color.w;\n"
-        "    out_color = vec4(toSRGB(color.r), toSRGB(color.g), toSRGB(color.b), 1);\n"
-        "}"
+        R"(#version 330
+        uniform sampler2D source;
+        uniform float scale;
+        in vec2 uv;
+        out vec4 out_color;
+        float toSRGB(float value) {
+            if (value < 0.0031308)
+                return 12.92 * value;
+            return 1.055 * pow(value, 0.41666) - 0.055;
+        }
+        void main() {
+            vec4 color = texture(source, uv);
+            color *= scale / color.w;
+            out_color = vec4(toSRGB(color.r), toSRGB(color.g), toSRGB(color.b), 1);
+        })"
     );
 
-    MatrixXu indices(3, 2); /* Draw 2 triangles */
-    indices.col(0) << 0, 1, 2;
-    indices.col(1) << 2, 3, 0;
+    // Draw 2 triangles
+    uint32_t indices[3 * 2] = {
+        0, 1, 2,
+        2, 3, 0
+    };
+    float positions[2 * 4] = {
+        0.f, 0.f,
+        1.f, 0.f,
+        1.f, 1.f,
+        0.f, 1.f
+    };
 
-    MatrixXf positions(2, 4);
-    positions.col(0) << 0, 0;
-    positions.col(1) << 1, 0;
-    positions.col(2) << 1, 1;
-    positions.col(3) << 0, 1;
+    m_shader->set_buffer("indices", VariableType::UInt32, {3*2}, indices);
+    m_shader->set_buffer("position", VariableType::Float32, {4, 2}, positions);
 
-    m_shader->bind();
-    m_shader->uploadIndices(indices);
-    m_shader->uploadAttrib("position", positions);
+    const Vector2i &size = m_block.getSize();
+    m_shader->set_uniform("size", nanogui::Vector2i(size.x(), size.y()));
+    m_shader->set_uniform("borderSize", m_block.getBorderSize());
 
-    /* Allocate texture memory for the rendered image */
-    glGenTextures(1, &m_texture);
-    glBindTexture(GL_TEXTURE_2D, m_texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    // Allocate texture memory for the rendered image
+    m_texture = new Texture(
+        Texture::PixelFormat::RGBA,
+        Texture::ComponentFormat::Float32,
+        nanogui::Vector2i(size.x() + 2 * m_block.getBorderSize(),
+                          size.y() + 2 * m_block.getBorderSize()),
+        Texture::InterpolationMode::Nearest,
+        Texture::InterpolationMode::Nearest);
 
-    drawAll();
-    setVisible(true);
+    draw_all();
+    set_visible(true);
 }
 
-NoriScreen::~NoriScreen() {
-    glDeleteTextures(1, &m_texture);
-    delete m_shader;
-}
 
-void NoriScreen::drawContents() {
-    /* Reload the partially rendered image onto the GPU */
+void NoriScreen::draw_contents() {
+    // Reload the partially rendered image onto the GPU
     m_block.lock();
     int borderSize = m_block.getBorderSize();
     const Vector2i &size = m_block.getSize();
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_texture);
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, (GLint) m_block.cols());
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, size.x(), size.y(),
-            0, GL_RGBA, GL_FLOAT, (uint8_t *) m_block.data() +
-            (borderSize * m_block.cols() + borderSize) * sizeof(Color4f));
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    m_shader->set_uniform("scale", m_scale);
+    m_renderPass->resize(framebuffer_size());
+    m_renderPass->begin();
+    m_renderPass->set_viewport(nanogui::Vector2i(0, 0),
+                               nanogui::Vector2i(m_pixel_ratio * size[0],
+                                                 m_pixel_ratio * size[1]));
+    m_texture->upload((uint8_t *) m_block.data());
+    m_shader->set_texture("source", m_texture);
+    m_shader->begin();
+    m_shader->draw_array(nanogui::Shader::PrimitiveType::Triangle, 0, 6, true);
+    m_shader->end();
+    m_renderPass->set_viewport(nanogui::Vector2i(0, 0), framebuffer_size());
+    m_renderPass->end();
     m_block.unlock();
-
-    glViewport(0, GLsizei(36 * mPixelRatio), GLsizei(mPixelRatio*size[0]),
-         GLsizei(mPixelRatio*size[1]));
-    m_shader->bind();
-    m_shader->setUniform("scale", m_scale);
-    m_shader->setUniform("source", 0);
-    m_shader->drawIndexed(GL_TRIANGLES, 0, 2);
-    glViewport(0, 0, mFBSize[0], mFBSize[1]);
 }
 
 NORI_NAMESPACE_END

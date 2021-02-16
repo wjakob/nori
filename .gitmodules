@@ -25,3 +25,6 @@
 [submodule "ext/openexr"]
 	path = ext/openexr
 	url = https://github.com/mitsuba-renderer/openexr/
+[submodule "ext/eigen"]
+	path = ext/eigen
+	url = https://gitlab.com/libeigen/eigen.git
