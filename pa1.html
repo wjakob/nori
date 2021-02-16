@@ -119,11 +119,10 @@ $ cmake-gui ..</pre>
 		After the Makefiles are generated, simply run
 		<tt>make</tt> to compile all dependencies and Nori itself.
 		<pre class="prettyprint lang-bash">
-$ make -j 4</pre>
-		This can take quite a while; the above command compiles with four
-		processors at the same time. Note that you will probably see many
-		warning messages while the dependencies are compiled—you can ignore
-		them.
+$ make -j </pre>
+		This can take quite a while; the above command compiles with as many processors as available.
+		Note that you will probably see many warning messages while the dependencies are compiled—you 
+		can ignore them.
 
 		<div class="row-centered">
 			<div class="thumbnail col-md-7 col-centered">
@@ -146,9 +145,9 @@ $ make -j 4</pre>
 $ apt-get install zlib1g-dev xorg-dev libglu1-mesa-dev </pre>
 	</div>
 	<div class="col-md-6">
-		<h3>Windows / Visual Studio 2017</h3>
+		<h3>Windows / Visual Studio 2019</h3>
 		<p>
-		Begin by installing Visual Studio 2017 and a
+		Begin by installing Visual Studio 2019 and a
 		reasonably recent (≥ 3.x) version of <a href="http://www.cmake.org/download/">CMake</a>. Start CMake and navigate to the location where
 		you cloned the Nori repository.
 		</p>
@@ -156,7 +155,7 @@ $ apt-get install zlib1g-dev xorg-dev libglu1-mesa-dev </pre>
 			<div class="thumbnail col-md-7 col-centered">
 				<a class="fancybox" href="images/cmake-windows.png"><img src="images/cmake-windows.png"/></a>
 				<div class="caption">
-					Be sure to select the Visual Studio 2017 <b>64</b> bit compiler.
+					Be sure to select the Visual Studio 2019 <b>64</b> bit compiler.
 					It is also generally a good idea to choose a build directory
 					that is <em>different</em> from the source directory.
 				</div>
@@ -172,7 +171,7 @@ $ apt-get install zlib1g-dev xorg-dev libglu1-mesa-dev </pre>
 			<div class="thumbnail col-md-7 col-centered">
 				<a class="fancybox" href="images/vs2013.png"><img src="images/vs2013.png"/></a>
 				<div class="caption">
-					The opened Visual Studio 2017 project. It's a good idea to
+					The opened Visual Studio 2019 project. It's a good idea to
 					set the build mode to <em>Release</em> (see the red marker)
 					unless you are tracking down a particular bug. The debug
 					version runs <em>much slower</em> (by a factor of 50 or
@@ -628,10 +627,11 @@ The rendered scene is saved as an OpenEXR file named <tt>test.exr</tt> as well a
 		<h4>Visualizing OpenEXR files</h4>
 		<p>
 		A word of caution: various tools for visualizing OpenEXR images exist,
-		but not all really do what one would expect. Adobe Photoshop and the <a
-	  href="https://bitbucket.org/edgarv/hdritools/downloads">HDRITools</a> by
-  Edgar Velázquez-Armendáriz work correctly, but <tt>Preview.app</tt> on Mac OS
-  for instance tonemaps these files in an awkward and unclear way.
+		but not all really do what one would expect. Adobe Photoshop
+  		works correctly, but <tt>Preview.app</tt> on Mac OS
+  		for instance tonemaps these files in an awkward and unclear way.
+		<a href="https://github.com/Tom94/tev">TEV</a> by Thomas Müller is a good choice,
+		it features useful tools such as false colors or image differences.
 	  </p>
 
 	  <p>
