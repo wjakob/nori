@@ -114,7 +114,6 @@ NoriScreen::NoriScreen(const ImageBlock &block)
 void NoriScreen::draw_contents() {
     // Reload the partially rendered image onto the GPU
     m_block.lock();
-    int borderSize = m_block.getBorderSize();
     const Vector2i &size = m_block.getSize();
     m_shader->set_uniform("scale", m_scale);
     m_renderPass->resize(framebuffer_size());
