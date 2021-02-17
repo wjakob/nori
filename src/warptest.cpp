@@ -87,11 +87,11 @@ enum WarpType : int {
     MicrofacetBRDF,
     WarpTypeCount
 };
+
 static const std::string kWarpTypeNames[WarpTypeCount] = {
     "square", "tent", "disk", "uniform_sphere", "uniform_hemisphere",
     "cosine_hemisphere", "beckmann", "microfacet_brdf"
 };
-
 
 
 struct WarpTest {
@@ -313,40 +313,40 @@ struct WarpTest {
     }
 };
 
-using Quaternionf = Eigen::Quaternion<float, Eigen::DontAlign>;
 
 struct Arcball {
+    using Quaternionf = Eigen::Quaternion<float, Eigen::DontAlign>;
 
     Arcball(float speedFactor = 2.0f)
-        : mActive(false), mLastPos(nori::Vector2i::Zero()), mSize(nori::Vector2i::Zero()),
-          mQuat(Quaternionf::Identity()),
-          mIncr(Quaternionf::Identity()),
-          mSpeedFactor(speedFactor) { }
+        : m_active(false), m_lastPos(nori::Vector2i::Zero()), m_size(nori::Vector2i::Zero()),
+          m_quat(Quaternionf::Identity()),
+          m_incr(Quaternionf::Identity()),
+          m_speedFactor(speedFactor) { }
 
-    void setSize(nori::Vector2i size) { mSize = size; }
+    void setSize(nori::Vector2i size) { m_size = size; }
 
-    const nori::Vector2i &size() const { return mSize; }
+    const nori::Vector2i &size() const { return m_size; }
 
     void button(nori::Vector2i pos, bool pressed) {
-        mActive = pressed;
-        mLastPos = pos;
-        if (!mActive)
-            mQuat = (mIncr * mQuat).normalized();
-        mIncr = Quaternionf::Identity();
+        m_active = pressed;
+        m_lastPos = pos;
+        if (!m_active)
+            m_quat = (m_incr * m_quat).normalized();
+        m_incr = Quaternionf::Identity();
     }
 
     bool motion(nori::Vector2i pos) {
-        if (!mActive)
+        if (!m_active)
             return false;
 
         /* Based on the rotation controller from AntTweakBar */
-        float invMinDim = 1.0f / mSize.minCoeff();
-        float w = (float) mSize.x(), h = (float) mSize.y();
+        float invMinDim = 1.0f / m_size.minCoeff();
+        float w = (float) m_size.x(), h = (float) m_size.y();
 
-        float ox = (mSpeedFactor * (2*mLastPos.x() - w) + w) - w - 1.0f;
-        float tx = (mSpeedFactor * (2*pos.x()      - w) + w) - w - 1.0f;
-        float oy = (mSpeedFactor * (h - 2*mLastPos.y()) + h) - h - 1.0f;
-        float ty = (mSpeedFactor * (h - 2*pos.y())      + h) - h - 1.0f;
+        float ox = (m_speedFactor * (2*m_lastPos.x() - w) + w) - w - 1.0f;
+        float tx = (m_speedFactor * (2*pos.x()      - w) + w) - w - 1.0f;
+        float oy = (m_speedFactor * (h - 2*m_lastPos.y()) + h) - h - 1.0f;
+        float ty = (m_speedFactor * (h - 2*pos.y())      + h) - h - 1.0f;
 
         ox *= invMinDim; oy *= invMinDim;
         tx *= invMinDim; ty *= invMinDim;
@@ -360,45 +360,45 @@ struct Arcball {
                   angle = std::atan2(sa, ca);
             if (tx*tx + ty*ty > 1.0f)
                 angle *= 1.0f + 0.2f * (std::sqrt(tx*tx + ty*ty) - 1.0f);
-            mIncr = Eigen::AngleAxisf(angle, axis.normalized());
-            if (!std::isfinite(mIncr.norm()))
-                mIncr = Quaternionf::Identity();
+            m_incr = Eigen::AngleAxisf(angle, axis.normalized());
+            if (!std::isfinite(m_incr.norm()))
+                m_incr = Quaternionf::Identity();
         }
         return true;
     }
 
     Eigen::Matrix4f matrix() const {
         Eigen::Matrix4f result2 = Eigen::Matrix4f::Identity();
-        result2.block<3,3>(0, 0) = (mIncr * mQuat).toRotationMatrix();
+        result2.block<3,3>(0, 0) = (m_incr * m_quat).toRotationMatrix();
         return result2;
     }
 
 
 private:
     /// Whether or not this Arcball is currently active.
-    bool mActive;
+    bool m_active;
 
     /// The last click position (which triggered the Arcball to be active / non-active).
-    nori::Vector2i mLastPos;
+    nori::Vector2i m_lastPos;
 
     /// The size of this Arcball.
-    nori::Vector2i mSize;
+    nori::Vector2i m_size;
 
     /**
      * The current stable state.  When this Arcball is active, represents the
      * state of this Arcball when \ref Arcball::button was called with
      * ``down = true``.
      */
-    Quaternionf mQuat;
+    Quaternionf m_quat;
 
     /// When active, tracks the overall update to the state.  Identity when non-active.
-    Quaternionf mIncr;
+    Quaternionf m_incr;
 
     /**
      * The speed at which this Arcball rotates.  Smaller values mean it rotates
      * more slowly, higher values mean it rotates more quickly.
      */
-    float mSpeedFactor;
+    float m_speedFactor;
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -575,8 +575,6 @@ public:
                                     (float) m_size.x() / (float) m_size.y());
         model = Matrix4f::translate(Vector3f(-0.5f, -0.5f, 0.0f)) * model;
 
-        // TODO: Re-introduce arcball control
-        // model = Matrix4f::translate(Vector3f(0.f, 0.f,-2.0f)) * model;
         Matrix4f arcball_ng(1.f);
         memcpy(arcball_ng.m, m_arcball.matrix().data(), sizeof(float) * 16);
         model = arcball_ng * model;
@@ -790,28 +788,28 @@ public:
             "Point shader",
 
             /* Vertex shader */
-            "#version 330\n"
-            "uniform mat4 mvp;\n"
-            "in vec3 position;\n"
-            "in vec3 color;\n"
-            "out vec3 frag_color;\n"
-            "void main() {\n"
-            "    gl_Position = mvp * vec4(position, 1.0);\n"
-            "    if (isnan(position.r)) /* nan (missing value) */\n"
-            "        frag_color = vec3(0.0);\n"
-            "    else\n"
-            "        frag_color = color;\n"
-            "}",
+            R"(#version 330
+            uniform mat4 mvp;
+            in vec3 position;
+            in vec3 color;
+            out vec3 frag_color;
+            void main() {
+                gl_Position = mvp * vec4(position, 1.0);
+                if (isnan(position.r)) /* nan (missing value) */
+                    frag_color = vec3(0.0);
+                else
+                    frag_color = color;
+            })",
 
             /* Fragment shader */
-            "#version 330\n"
-            "in vec3 frag_color;\n"
-            "out vec4 out_color;\n"
-            "void main() {\n"
-            "    if (frag_color == vec3(0.0))\n"
-            "        discard;\n"
-            "    out_color = vec4(frag_color, 1.0);\n"
-            "}"
+            R"(#version 330
+            in vec3 frag_color;
+            out vec4 out_color;
+            void main() {
+                if (frag_color == vec3(0.0))
+                    discard;
+                out_color = vec4(frag_color, 1.0);
+            })"
         );
 
         m_gridShader = new Shader(
@@ -819,19 +817,19 @@ public:
             "Grid shader",
 
             /* Vertex shader */
-            "#version 330\n"
-            "uniform mat4 mvp;\n"
-            "in vec3 position;\n"
-            "void main() {\n"
-            "    gl_Position = mvp * vec4(position, 1.0);\n"
-            "}",
+            R"(#version 330
+            uniform mat4 mvp;
+            in vec3 position;
+            void main() {
+                gl_Position = mvp * vec4(position, 1.0);
+            })",
 
             /* Fragment shader */
-            "#version 330\n"
-            "out vec4 out_color;\n"
-            "void main() {\n"
-            "    out_color = vec4(vec3(1.0), 0.4);\n"
-            "}", Shader::BlendMode::AlphaBlend
+            R"(#version 330
+            out vec4 out_color;
+            void main() {
+                out_color = vec4(vec3(1.0), 0.4);
+            })", Shader::BlendMode::AlphaBlend
         );
 
         m_arrowShader = new Shader(
@@ -839,19 +837,19 @@ public:
             "Arrow shader",
 
             /* Vertex shader */
-            "#version 330\n"
-            "uniform mat4 mvp;\n"
-            "in vec3 position;\n"
-            "void main() {\n"
-            "    gl_Position = mvp * vec4(position, 1.0);\n"
-            "}",
+            R"(#version 330
+            uniform mat4 mvp;
+            in vec3 position;
+            void main() {
+                gl_Position = mvp * vec4(position, 1.0);
+            })",
 
             /* Fragment shader */
-            "#version 330\n"
-            "out vec4 out_color;\n"
-            "void main() {\n"
-            "    out_color = vec4(vec3(1.0), 0.4);\n"
-            "}"
+            R"(#version 330
+            out vec4 out_color;
+            void main() {
+                out_color = vec4(vec3(1.0), 0.4);
+            })"
         );
 
         m_histogramShader = new Shader(
@@ -914,7 +912,7 @@ public:
             1.f, 1.f,
             0.f, 1.f
         };
-        m_histogramShader->set_buffer("indices", VariableType::UInt32, {3*2}, indices);
+        m_histogramShader->set_buffer("indices", VariableType::UInt32, {3 * 2}, indices);
         m_histogramShader->set_buffer("position", VariableType::Float32, {4, 2}, positions);
 
         /* Set default and register slider callback */
