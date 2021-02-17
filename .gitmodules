@@ -18,7 +18,7 @@
 	url = https://github.com/wjakob/pcg32
 [submodule "ext/nanogui"]
 	path = ext/nanogui
-	url = https://github.com/wjakob/nanogui
+	url = https://github.com/mitsuba-renderer/nanogui
 [submodule "ext/zlib"]
 	path = ext/zlib
 	url = https://github.com/mitsuba-renderer/zlib
