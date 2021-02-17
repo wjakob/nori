@@ -346,6 +346,16 @@ and several dependency libraries (right table) that are briefly explained below.
 </div>
 <div class="row">
 	<div class="col-md-12 text-justify">
+		<h3>Running Nori</h3>
+		Nori can be run in the command line by specifying the path to an XML scene file:
+		<pre class="prettyprint lang-bash">$ ./nori path/to/scene.xml</pre>
+		Nori also takes an optional argument <tt>--threads</tt> (or <tt>-t</tt>) that specifies
+		the number of threads to use to render the scene:
+		<pre class="prettyprint lang-bash">$ ./nori path/to/scene.xml --threads 4</pre>
+		If the argument is not specified, TBB automatically chooses the number of threads.
+	
+	</div>
+	<div class="col-md-12 text-justify">
 		<h3>Scene file format and parsing</h3>
 		<p>
 			Take a moment to browse through the header files in
