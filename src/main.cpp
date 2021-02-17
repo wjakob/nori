@@ -127,7 +127,7 @@ static void render(Scene *scene, const std::string &filename) {
     });
 
     /* Enter the application main loop */
-    nanogui::mainloop();
+    nanogui::mainloop(50.f);
 
     /* Shut down the user interface */
     render_thread.join();

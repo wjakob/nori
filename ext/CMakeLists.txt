@@ -142,11 +142,13 @@ if (APPLE)
 endif()
 
 # Build NanoGUI
-set(NANOGUI_BUILD_EXAMPLE OFF CACHE BOOL " " FORCE)
+# Use OpenGL backend for UI. In the future, this can be removed to use Metal on MacOS
+set(NANOGUI_BACKEND "OpenGL" CACHE BOOL " " FORCE)
+set(NANOGUI_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
 set(NANOGUI_BUILD_SHARED  OFF CACHE BOOL " " FORCE)
 set(NANOGUI_BUILD_PYTHON  OFF CACHE BOOL " " FORCE)
 add_subdirectory(nanogui)
-set_property(TARGET glfw glfw_objects nanogui nanogui-obj PROPERTY FOLDER "dependencies")
+set_property(TARGET glfw glfw_objects nanogui PROPERTY FOLDER "dependencies")
 
 # Build the pugixml parser
 add_library(pugixml STATIC pugixml/src/pugixml.cpp)
@@ -178,7 +180,7 @@ set(STB_IMAGE_WRITE_INCLUDE_DIR
 set(NANOGUI_INCLUDE_DIR
   ${CMAKE_CURRENT_SOURCE_DIR}/nanogui/include)
 set(EIGEN_INCLUDE_DIR
-  ${CMAKE_CURRENT_SOURCE_DIR}/nanogui/ext/eigen)
+  ${CMAKE_CURRENT_SOURCE_DIR}/eigen)
 set(TBB_INCLUDE_DIR
   ${CMAKE_CURRENT_SOURCE_DIR}/tbb/include)
 set(FILESYSTEM_INCLUDE_DIR

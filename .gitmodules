@@ -18,10 +18,13 @@
 	url = https://github.com/wjakob/pcg32
 [submodule "ext/nanogui"]
 	path = ext/nanogui
-	url = https://github.com/wjakob/nanogui
+	url = https://github.com/mitsuba-renderer/nanogui
 [submodule "ext/zlib"]
 	path = ext/zlib
 	url = https://github.com/mitsuba-renderer/zlib
 [submodule "ext/openexr"]
 	path = ext/openexr
 	url = https://github.com/mitsuba-renderer/openexr/
+[submodule "ext/eigen"]
+	path = ext/eigen
+	url = https://gitlab.com/libeigen/eigen.git

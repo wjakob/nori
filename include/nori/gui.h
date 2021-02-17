@@ -26,14 +26,12 @@ NORI_NAMESPACE_BEGIN
 class NoriScreen : public nanogui::Screen {
 public:
     NoriScreen(const ImageBlock &block);
-    virtual ~NoriScreen();
-
-    void drawContents();
+    void draw_contents() override;
 private:
     const ImageBlock &m_block;
-    nanogui::GLShader *m_shader = nullptr;
-    nanogui::Slider *m_slider = nullptr;
-    uint32_t m_texture = 0;
+    nanogui::ref<nanogui::Shader> m_shader;
+    nanogui::ref<nanogui::Texture> m_texture;
+    nanogui::ref<nanogui::RenderPass> m_renderPass;
     float m_scale = 1.f;
 };
 
