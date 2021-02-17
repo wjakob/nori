@@ -142,7 +142,9 @@ if (APPLE)
 endif()
 
 # Build NanoGUI
-set(NANOGUI_BUILD_EXAMPLE OFF CACHE BOOL " " FORCE)
+# Use OpenGL backend for UI. In the future, this can be removed to use Metal on MacOS
+set(NANOGUI_BACKEND "OpenGL" CACHE BOOL " " FORCE)
+set(NANOGUI_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
 set(NANOGUI_BUILD_SHARED  OFF CACHE BOOL " " FORCE)
 set(NANOGUI_BUILD_PYTHON  OFF CACHE BOOL " " FORCE)
 add_subdirectory(nanogui)
