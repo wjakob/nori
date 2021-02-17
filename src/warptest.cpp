@@ -779,7 +779,7 @@ public:
         });
 
         m_renderPass = new RenderPass({ this });
-        m_renderPass->set_clear_color(0, Color(0.1f, 0.1f, 0.1f, 1.f));
+        m_renderPass->set_clear_color(0, Color(0.f, 0.f, 0.f, 1.f));
 
         perform_layout();
 
