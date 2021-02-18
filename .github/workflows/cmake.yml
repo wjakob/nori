@@ -1,0 +1,67 @@
+name: Build
+
+on: [push]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}    
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+              name: "Windows Latest - MSVC",
+              os: windows-latest,
+              cc: "cl",
+              cxx: "cl",
+            }
+          - {
+              name: "Ubuntu Latest - GCC",
+              os: ubuntu-latest,
+              cc: "gcc",
+              cxx: "g++",
+            }
+          - {
+              name: "MacOS Latest - Clang",
+              os: macos-latest,
+              cc: "clang",
+              cxx: "clang++",
+            }
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    # Setup caching on of build artifacts to reduce total build time (only Linux and MacOS)
+    - name: ccache
+      if: runner.os != 'Windows'
+      uses: hendrikmuhs/ccache-action@v1
+
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{github.workspace}}/build
+
+    - name: Install dependencies (Linux)
+      if: runner.os == 'Linux'
+      run: sudo apt-get update && sudo apt-get install -yq libglu1-mesa-dev libxxf86vm-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libx11-dev
+
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{github.workspace}}/build
+      if: runner.os != 'Windows'
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+    - name: Configure CMake (Windows)
+      shell: bash
+      working-directory: ${{github.workspace}}/build
+      if: runner.os == 'Windows'
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      shell: bash
+      run: cmake --build . --config $BUILD_TYPE --parallel
