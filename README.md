@@ -1,6 +1,7 @@
 [![CS440 Banner](https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/02/16/cs440-logo_web.jpg)](https://rgl.s3.eu-central-1.amazonaws.com/media/uploads/wjakob/2017/02/20/cs440-rgl.jpg)
 
 ## Nori Version 2
+![Build status](https://github.com/wjakob/nori/workflows/Build/badge.svg)
 
 Nori is a simple ray tracer written in C++. It runs on Windows, Linux, and
 Mac OS and provides basic functionality that is required to complete the
