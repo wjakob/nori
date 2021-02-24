@@ -182,7 +182,7 @@ int main(int argc, char **argv) {
                 block.fromBitmap(bitmap);
                 nanogui::init();
                 NoriScreen *screen = new NoriScreen(block);
-                nanogui::mainloop();
+                nanogui::mainloop(50.f);
                 delete screen;
                 nanogui::shutdown();
             } else {
