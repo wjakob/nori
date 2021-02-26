@@ -15,3 +15,10 @@ For access to course information including slides and reading material, visit th
 
 Last year's version of Nori including a full set of assignment descriptions can
 be found in the following [archive](https://github.com/wjakob/nori-old).
+
+
+### Known Issues
+There is a known issue with the NanoGUI version that Nori uses: on Linux systems with an integrated Intel GPU, a bug in the Mesa graphics drivers causes the GUI to freeze on startup. A workaround is to temporarily switch to an older Mesa driver to run Nori. This can be done by running
+```
+export MESA_LOADER_DRIVER_OVERRIDE=i965
+```
