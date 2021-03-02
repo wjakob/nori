@@ -213,24 +213,33 @@ int main(int argc, char **argv) {
             cerr << "Flag --no-gui was set. Please remove it to display the EXR file." << endl;
             return -1;
         }
-        Bitmap bitmap(exrName);
-        ImageBlock block(Vector2i((int) bitmap.cols(), (int) bitmap.rows()), nullptr);
-        block.fromBitmap(bitmap);
-        nanogui::init();
-        NoriScreen *screen = new NoriScreen(block);
-        nanogui::mainloop(50.f);
-        delete screen;
-        nanogui::shutdown();
+        try {
+            Bitmap bitmap(exrName);
+            ImageBlock block(Vector2i((int) bitmap.cols(), (int) bitmap.rows()), nullptr);
+            block.fromBitmap(bitmap);
+            nanogui::init();
+            NoriScreen *screen = new NoriScreen(block);
+            nanogui::mainloop(50.f);
+            delete screen;
+            nanogui::shutdown();
+        } catch (const std::exception &e) {
+            cerr << e.what() << endl;
+            return -1;
+        }
     }
     else { // sceneName != ""
         if (threadCount < 0) {
             threadCount = tbb::task_scheduler_init::automatic;
         }
-
-        std::unique_ptr<NoriObject> root(loadFromXML(sceneName));
-        /* When the XML root object is a scene, start rendering it .. */
-        if (root->getClassType() == NoriObject::EScene)
-            render(static_cast<Scene *>(root.get()), sceneName);
+        try {
+            std::unique_ptr<NoriObject> root(loadFromXML(sceneName));
+            /* When the XML root object is a scene, start rendering it .. */
+            if (root->getClassType() == NoriObject::EScene)
+                render(static_cast<Scene *>(root.get()), sceneName);
+        } catch (const std::exception &e) {
+            cerr << e.what() << endl;
+            return -1;
+        }
     }
 
     return 0;
