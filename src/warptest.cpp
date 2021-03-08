@@ -398,8 +398,8 @@ public:
 
     WarpTestScreen(): Screen(Vector2i(800, 600), "warptest: Sampling and Warping"), m_bRec(nori::Vector3f()) {
         inc_ref();
-        initializeGUI();
         m_drawHistogram = false;
+        initializeGUI();
     }
 
     static float mapParameter(WarpType warpType, float parameterValue) {
