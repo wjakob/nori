@@ -74,7 +74,7 @@ $ git pull upstream master
         <b>Note</b>: the continuous integration will now automatically run
         the <tt>warptest</tt> tool as well as compile your code. This means that
         until all features have been implemented, you will likely see a
-        "failed build" on Travis CI.
+        "failed build" on Github Actions.
         We ask you to <strong>not</strong> modify the <tt>run_tests.py</tt>
         script.
     </div>
@@ -403,7 +403,7 @@ implemented all of the remaining assignment, and they are added to the final sco
     <p>
         The goal of this exercise is to implement hierarchical sample warping,
         which will come in very handy if you decide you'll want to later add
-        <a href="http://ict.usc.edu/pubs/Image-Based%20Lighting.pdf">Image Based Lighting</a> (IBL)
+        <a href="https://ict.usc.edu/pubs/Image-Based%20Lighting.pdf">Image Based Lighting</a> (IBL)
         to your renderer for the final project. Lighting with captured
         real-world lighting conditions ("<em>lightprobes</em>") is a
         relatively cheap and simple way to add considerable realism to a
@@ -452,7 +452,7 @@ implemented all of the remaining assignment, and they are added to the final sco
             <li> A correct implementation of the hierarchical sample warping algorithm described above. </li>
             <li> A modified version of the <tt>warptest</tt> user interface that visualizes your generated points sets.</li>
             <li> Two screen shots of the \(\chi^2\)-test (with many input points), which verifies that your warping function and density function are mutually consistent.
-                The first should be with a simple \(2 \times 2\) pixel image as shown above, and the second should be a more interesting image, e.g. a light probe. (<a href="http://gl.ict.usc.edu/Data/HighResProbes/">Paul Debevec</a> and
+                The first should be with a simple \(2 \times 2\) pixel image as shown above, and the second should be a more interesting image, e.g. a light probe. (<a href="https://vgl.ict.usc.edu/Data/HighResProbes/">Paul Debevec</a> and
                 <a href="http://dativ.at/lightprobes/">Bernhard Vogl</a> provide many light probes free of charge).
                 Feel free to change the resolution of your input image to a power of 2 (at least \(512 \times 512\)) using a tool of your choice. <b>Note:</b> The <tt>warptest</tt> might not work well for very "spiky" / high-frequency images.
             </li>
