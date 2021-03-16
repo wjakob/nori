@@ -213,7 +213,7 @@ $ git pull upstream master
                 </div>
             </div>
             <p>
-                Transform your 2D point to the <em>Beckmann</em> distribution discussed in, which will be used to model the probability density of normals on a random rough surface in a later assignment:
+                Transform your 2D point to the <em>Beckmann</em> distribution, which will be used to model the probability density of normals on a random rough surface in a later assignment:
                 \[
                 D(\theta, \phi) = \underbrace{\frac{1}{2\pi}}_{\text{azimuthal part}}\ \cdot\ \underbrace{\frac{2 e^{\frac{-\tan^2{\theta}}{\alpha^2}}}{\alpha^2 \cos^3 \theta}}_{\text{longitudinal part}}\!\!\!.
                 \]
@@ -340,13 +340,14 @@ L(\mathbf{x})=\frac{\Phi}{4\pi^2} \frac{\mathrm{max}(0, \cos\theta)}{\|\mathbf{x
 
     <h3>Part 2.2: Ambient occlusion <em>(20 points)</em></h3>
     <p>
-        Ambient occlusion is rendering technique which assumes that a (diffuse)
-        surface receives uniform illumination from all directions (similar to
-        the conditions inside a <a
+        Ambient occlusion is a rendering technique that assumes that a
+        (diffuse) surface receives uniform illumination from all directions
+        (similar to the conditions inside a <a
         href="https://en.wikipedia.org/wiki/Lightbox#/media/File:DIY_Lightbox.jpg">light
-    box</a>), and that visibility is the only effect that matters. Some surface positions
-will receive less light than others since they are occluded, hence they will look darker.
-Formally, the quantity computed by ambient occlusion is defined as
+        box</a>), and that visibility is the only effect that matters. Some
+        surface positions will receive less light than others since they are
+        occluded, hence they will look darker. Formally, the quantity computed
+        by ambient occlusion is defined as
     </p>
 \[
 L(\mathbf{x})=\int_{H^2(\mathbf{x})}V(\mathbf{x}, \mathbf{x}+\alpha\omega_i)\,\frac{\cos\theta}{\pi}\,\mathrm{d}\omega_i
