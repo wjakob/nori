@@ -79,16 +79,16 @@ class NoriWriter:
             print("WARN: No camera to export")
         else:
             if(len(cameras) > 1):
-                print("WARN: Does not handle multiple camera, only export the first one")
-            self.scene.appendChild(self.write_camera(cameras[0]))  # export the first one
+                print("WARN: Does not handle multiple camera, only export the active one")
+            self.scene.appendChild(self.write_camera(self.context.scene.camera))  # export the active one
 
         # 4) export all meshes
         if not os.path.exists(self.working_dir + "/meshes"):
             os.makedirs(self.working_dir + "/meshes")
 
         meshes = [obj for obj in self.context.scene.objects
-                  if obj.type in {'MESH', 'EMPTY'}
-                  and obj.parent is None]
+                  if obj.type in {'MESH', 'FONT', 'SURFACE', 'META'}]
+        print(meshes)
         for mesh in meshes:
             self.write_mesh(mesh)
 
@@ -126,30 +126,26 @@ class NoriWriter:
         return camera
 
     def write_mesh(self, mesh):
-        children_mesh = [obj for obj in mesh.children
-                         if obj.type in {'MESH', 'EMPTY'}]
-
-        for child in children_mesh:
-            self.write_mesh(child)
         viewport_selection = self.context.selected_objects
         bpy.ops.object.select_all(action='DESELECT')
-        if mesh.type == 'MESH':
-            obj_name = mesh.name + ".obj"
-            obj_path = os.path.join(self.working_dir, 'meshes', obj_name)
-            mesh.select_set(True)
-            bpy.ops.export_scene.obj(filepath=obj_path, check_existing=False,
-                                     use_selection=True, use_edges=False, use_smooth_groups=False,
-                                     use_materials=False, use_triangles=True)
-            mesh.select_set(False)
 
-            # Add the corresponding entry to the xml
-            mesh_element = self.create_xml_mesh_entry(obj_name)
-            # We currently just export a default material, a more complex material conversion
-            # could be implemented following: http://tinyurl.com/nnhxwuh
-            bsdf_element = self.create_xml_element("bsdf", {"type": "diffuse"})
-            bsdf_element.appendChild(self.create_xml_entry("color", "albedo", "0.75,0.75,0.75"))
-            mesh_element.appendChild(bsdf_element)
-            self.scene.appendChild(mesh_element)
+        obj_name = mesh.name + ".obj"
+        obj_path = os.path.join(self.working_dir, 'meshes', obj_name)
+        mesh.select_set(True)
+        bpy.ops.export_scene.obj(filepath=obj_path, check_existing=False,
+                                    use_selection=True, use_edges=False, use_smooth_groups=False,
+                                    use_materials=False, use_triangles=True, use_mesh_modifiers=True)
+        mesh.select_set(False)
+
+        # Add the corresponding entry to the xml
+        mesh_element = self.create_xml_mesh_entry(obj_name)
+        # We currently just export a default material, a more complex material conversion
+        # could be implemented following: http://tinyurl.com/nnhxwuh
+        bsdf_element = self.create_xml_element("bsdf", {"type": "diffuse"})
+        bsdf_element.appendChild(self.create_xml_entry("color", "albedo", "0.75,0.75,0.75"))
+        mesh_element.appendChild(bsdf_element)
+        self.scene.appendChild(mesh_element)
+
         for ob in viewport_selection:
             ob.select_set(True)
 
@@ -158,22 +154,16 @@ class NoriExporter(bpy.types.Operator, ExportHelper):
     """Export a blender scene into Nori scene format"""
 
     # add to menu
-    bl_idname = "export.nori"
+    bl_idname = "export_scene.nori"
     bl_label = "Export Nori scene"
 
     filename_ext = ".xml"
-    filter_glob = StringProperty(default="*.xml", options={'HIDDEN'})
+    filter_glob: StringProperty(default="*.xml", options={'HIDDEN'})
 
     def execute(self, context):
         nori = NoriWriter(context, self.filepath)
         nori.write()
         return {'FINISHED'}
-
-    def invoke(self, context, event):
-        wm = context.window_manager
-        wm.fileselect_add(self)
-        return {'RUNNING_MODAL'}
-
 
 def menu_func_export(self, context):
     self.layout.operator(NoriExporter.bl_idname, text="Export Nori scene...")
