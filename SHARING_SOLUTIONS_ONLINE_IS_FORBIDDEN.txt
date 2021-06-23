@@ -1,4 +1,4 @@
-This base code is exclusively provided to complete the assignments in CS440.
+This base code is exlusively provided for classroom use.
 Sharing modifications of this repository online, especially including solutions
 code, is expressively forbidden. For example, you may not post your final
 implementation in a publicly accessible GitHub/GitLab/.. repository. Since it
