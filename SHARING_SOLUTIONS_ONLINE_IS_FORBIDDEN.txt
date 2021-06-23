@@ -1,0 +1,6 @@
+This base code is exclusively provided to complete the assignments in CS440.
+Sharing modifications of this repository online, especially including solutions
+code, is expressively forbidden. For example, you may not post your final
+implementation in a publicly accessible GitHub/GitLab/.. repository. Since it
+can lead to problematic cases of cheating, we are strict about this rule and
+regularly search for leaked solutions online.
