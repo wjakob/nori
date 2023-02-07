@@ -137,7 +137,7 @@ Node *build(bounding box, triangles) {
 </pre>
 <p>
 The specifics of the implementation (naming conventions, memory allocation,
-choice of auxiliary data structures) are completely up to you.
+choice of auxiliary data structures) are your design choices.
 We'll define "few triangles" as less than 10. For simplicity, you can assume that
 a triangle overlaps with an octree cell if the bounding box of the triangle's
 vertices overlap with the cell.
@@ -150,7 +150,7 @@ find that it provides a number of functions that might come quite handy.
 
 <p>
 You may need to limit the depth of the tree to avoid pathological situations
-where a triangle list can never be split into less than 10 elements.
+where a triangle list can never be split into fewer than 10 elements.
 </p>
 
 <p>
@@ -163,17 +163,18 @@ what information is redundant and can be recomputed on the fly if needed later o
 </p>
 
 <p>
-Include a section in your report where you discuss the design choices
-you've taken. Be sure to also report the following information:
+Answer the following questions in your report:
 <ol>
-<li>What information do you store per octree node?</li>
-<li>How many bytes of memory does one of your octree nodes occupy?</li>
-<li>Statistics for the Ajax scene:
+<li>What is a reasonable max depth of the tree? (2 pts)</li>
+<li>What information do you store per octree node? (2 pts)</li>
+<li>How many bytes of memory does one of your octree nodes occupy? (3 pts)</li>
+<li>Compute statistics during the tree construction. For the Ajax scene, report:
     <ul>
-        <li>Construction time</li>
-        <li>Number of interior nodes</li>
-        <li>Number of leaf nodes</li>
-        <li>Average number of triangles per leaf node</li>
+        <li>Construction time with your local machine (not graded)</li>
+        <li>Number of interior nodes (2 pts)</li>
+        <li>Number of leaf nodes (2pts)</li>
+        <li>Average number of triangles per leaf node (a triangle can exist in
+        multiple nodes) (2 pts)</li>
     </ul>
 </li>
 </ol>
@@ -196,17 +197,19 @@ a good look at functionality that is already provided in
 <code>include/nori/bbox.h</code>.
 </p>
 <p>
-Include a section in your report where you discuss the design choices
-you've taken. Be sure to also report the following information:
+Include the following in your report:
 </p>
 <ol>
-<li>How long did it take to render the scene on your machine?</li>
-<li>How much of a speed-up did you achieve over what was there before?
-    You may need to reduce both resolution and number of samples per pixel of
-    the scene and extrapolate to obtain an estimate of the time required by
-    the brute force algorithm (this is based on the reasonable assumption that
-    the rendering time is proportional to the product of the number of pixels
-    and samples per pixel.)
+<li>Explain the logic of your traversal function and justify its correctness.
+(4 pts)</li>
+<li>Measure the render time of the Ajax scene on your machine. How much of a
+speed-up did you achieve over what was there before? You may need to slightly
+reduce both the resolution and number of samples per pixel to obtain an estimate
+of the time required by the brute force algorithm (this is based on the
+reasonable assumption that the rendering time is proportional to the product of
+the number of pixels and samples per pixel. But for a fair comparison, the
+resolution should not be too low.) Elaborate the configuration details you use
+for comparison. (5 pts)
 </li>
 </ol>
 </div>
@@ -224,13 +227,15 @@ unnecessary to traverse a child cell with distance \(t_2>t_1\). This can be
 used to prune away additional parts of the tree.
 </p>
 <p>
-Include a section in your report where you discuss the design choices
-you've taken. Be sure to also report the following information:
+Report the following information:
 </p>
 <ol>
-<li>Include the surface normal visualization of the Ajax bust rendered by both your basic and improved implementations. They should match perfectly.</li>
-<li>How long did it take to render the scene on your machine with this improved version?</li>
-<li>How much of a speedup is this relative to Part 2?</li>
+<li>Include the surface normal visualization of the Ajax bust rendered by both
+your basic and improved implementations. They should match perfectly.</li>
+<li>How dit you implement the sorting? Explain your design choices. (2 pts)</li>
+<li>Measure the render time with this improved version. How much of a speedup is
+this relative to Part 2? Elaborate the configuration details you use for
+comparison. (5 pts)</li>
 </ol>
 
 <div class="alert alert-info" role="alert"><b>Disclaimer</b>: An efficient ray tracing implementation is essential in modern rendering systems, and considerable care is taken to ensure that this operation runs as quickly as possible. A general rule of thumb is that certain expensive C++ constructs should never be used while tracing a ray (i.e. during octree traversal in your case). This includes operations that perform dynamic memory allocation (<code>malloc</code>, the <code>new</code> operator, or STL data structures that internally perform dynamic memory allocation, such as <code>std::vector</code>). Note that this doesn’t mean that you can’t use <code>std::vector</code>s in your code--in fact, you will find many of them in existing Nori code. However, a <code>std::vector</code> should never be created *per ray* inside performance-critical ray traversal code.
@@ -244,9 +249,13 @@ you've taken. Be sure to also report the following information:
     </ol>
 Once an image is open in <code>tev</code>, you can hit <code>ctrl/cmd + r</code> to refresh it (e.g. when rendering the same scene repeatedly while making changes to the code).
 </div>
+
+<div class="alert alert-info" role="alert"><b>Grading</b>: Assignments will usually be graded based on (1) your text answers in the report and (2) the correctness of your code implementation. For this assignment, we additionally test the efficiency of your implementation.
+Your submission will be tested on our server to recompute a consistent speedup number, which should approximately match the speedup you computed locally. A correct but inefficient implementation will not receive full marks.
+</div>
 </div>
 
-<h3>Bonus: Hacker Points <em>(10 points)</em></h3>
+<h3>Bonus: Hacker Points <em>(5 points)</em></h3>
 
 <div class="alert alert-danger" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points
 for the daring few. Sometimes you might be required to implement something that was not taught in class and
