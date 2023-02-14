@@ -37,16 +37,6 @@ if (APPLE)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-  CHECK_CXX_COMPILER_FLAG("-std=c++14" HAS_CPP14_FLAG)
-  CHECK_CXX_COMPILER_FLAG("-std=c++11" HAS_CPP11_FLAG)
-
-  if (HAS_CPP14_FLAG)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-  elseif (HAS_CPP11_FLAG)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-  else()
-    message(FATAL_ERROR "Unsupported compiler -- Nori requires C++11 support!")
-  endif()
 
   # Prefer libc++ in conjunction with Clang
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
