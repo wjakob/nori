@@ -100,8 +100,11 @@ In the above snippet, <tt>u</tt> and <tt>v</tt> denote the barycentric coordinat
 of the intersection (if it exists), and <tt>t</tt> is the distance traveled along the ray.
 </p>
 </div>
-
-<h3>Part 1: Octree construction <em>(50 points)</em></h3>
+<div class="alert alert-info" role="alert"><b>Grading</b>: Assignments will be graded based on (1) your text answers in the report and (2) the correctness of your code implementation. In this assignment, we additionally test the efficiency of your implementation (see part 4).
+Your submission will be tested on our server to recompute a consistent speedup number, which should approximately match the speedup you computed locally. A correct but inefficient implementation will not receive full marks.
+</div>
+<!-- ------------------------------------------------------------------------ -->
+<h3>Part 1: Octree construction <em>(30 points)</em></h3>
 <div class="text-justify">
 <p>
 Clearly, traversing 500K triangles for every ray in an image is not going to work, so we'll
@@ -159,7 +162,7 @@ octree nodes, which will in turn occupy a considerable amount of memory. A more
 compact representation that uses less memory per node will be more efficient
 when tracing rays at render time, since more of the tree will fit into the
 processor's cache. Think about what information truly needs to be stored, and
-what information is redundant and can be recomputed on the fly if needed later on.
+what information is redundant and can be recomputed on the fly.
 </p>
 
 <p>
@@ -172,7 +175,7 @@ Answer the following questions in your report:
     <ul>
         <li>Construction time with your local machine (not graded)</li>
         <li>Number of interior nodes (2 pts)</li>
-        <li>Number of leaf nodes (2pts)</li>
+        <li>Number of leaf nodes (2 pts)</li>
         <li>Average number of triangles per leaf node (a triangle can exist in
         multiple nodes) (2 pts)</li>
     </ul>
@@ -180,8 +183,8 @@ Answer the following questions in your report:
 </ol>
 </p>
 </div>
-
-<h3>Part 2: Ray traversal <em>(25 points)</em></h3>
+<!-- ------------------------------------------------------------------------ -->
+<h3>Part 2: Ray traversal <em>(15 points)</em></h3>
 <div class="text-justify">
 <p>
 Having completed the acceleration data structure, the next step is to actually
@@ -205,15 +208,24 @@ Include the following in your report:
 <li>Measure the render time of the Ajax scene on your machine. How much of a
 speed-up did you achieve over what was there before? You may need to slightly
 reduce both the resolution and number of samples per pixel to obtain an estimate
-of the time required by the brute force algorithm (this is based on the
+of the time required by the brute force algorithm. This is based on the
 reasonable assumption that the rendering time is proportional to the product of
 the number of pixels and samples per pixel. But for a fair comparison, the
-resolution should not be too low.) Elaborate the configuration details you use
+resolution should not be too low. Elaborate the configuration details you use
 for comparison. (5 pts)
 </li>
 </ol>
 </div>
-<h3>Part 3: Improved ray traversal <em>(25 points)</em></h3>
+<div class="alert alert-info" role="alert"><b>Hint</b>: You can use the the excellent <a href="https://github.com/Tom94/tev">tev</a> image viewer to view EXR image files. It is particularly useful to compare two images:
+    <ol>
+        <li>Open the two images in <code>tev</code> (e.g. from the command line or with drag-and-drop).</li>
+        <li>With the first image selected, use <code>shift+click</code> to start comparing with the second image.</li>
+        <li>You can select different metrics (absolute error, squared error, etc) and color-coding at the top of the sidebar.</li>
+    </ol>
+Once an image is open in <code>tev</code>, you can turn on the `watch` mode which automatically reloads the image when you render again with the same output filename.
+</div>
+<!-- ------------------------------------------------------------------------ -->
+<h3>Part 3: Improved ray traversal <em>(15 points)</em></h3>
 <div class="text-justify">
 <p>
 Modify your original implementation so that it performs an ordered traversal of
@@ -224,7 +236,7 @@ between the ray and the bounding box of a child node. The function
 
 Note: when an intersection was previously found at a distance \(t_1\), it is
 unnecessary to traverse a child cell with distance \(t_2>t_1\). This can be
-used to prune away additional parts of the tree.
+used to prune away some parts of the tree.
 </p>
 <p>
 Report the following information:
@@ -237,29 +249,19 @@ your basic and improved implementations. They should match perfectly.</li>
 this relative to Part 2? Elaborate the configuration details you use for
 comparison. (5 pts)</li>
 </ol>
-
-<div class="alert alert-info" role="alert"><b>Disclaimer</b>: An efficient ray tracing implementation is essential in modern rendering systems, and considerable care is taken to ensure that this operation runs as quickly as possible. A general rule of thumb is that certain expensive C++ constructs should never be used while tracing a ray (i.e. during octree traversal in your case). This includes operations that perform dynamic memory allocation (<code>malloc</code>, the <code>new</code> operator, or STL data structures that internally perform dynamic memory allocation, such as <code>std::vector</code>). Note that this doesn’t mean that you can’t use <code>std::vector</code>s in your code--in fact, you will find many of them in existing Nori code. However, a <code>std::vector</code> should never be created *per ray* inside performance-critical ray traversal code.
-</div>
-
-<div class="alert alert-info" role="alert"><b>Hint</b>: You can use the the excellent <a href="https://github.com/Tom94/tev">tev</a> image viewer to view EXR image files. It is particularly useful to compare two images:
-    <ol>
-        <li>Open the two images in <code>tev</code> (e.g. from the command line or with drag-and-drop).</li>
-        <li>With the first image selected, use <code>shift+click</code> to start comparing with the second image.</li>
-        <li>You can select different metrics (absolute error, squared error, etc) and color-coding at the top of the sidebar.</li>
-    </ol>
-Once an image is open in <code>tev</code>, you can hit <code>ctrl/cmd + r</code> to refresh it (e.g. when rendering the same scene repeatedly while making changes to the code).
-</div>
-
-<div class="alert alert-info" role="alert"><b>Grading</b>: Assignments will usually be graded based on (1) your text answers in the report and (2) the correctness of your code implementation. For this assignment, we additionally test the efficiency of your implementation.
-Your submission will be tested on our server to recompute a consistent speedup number, which should approximately match the speedup you computed locally. A correct but inefficient implementation will not receive full marks.
-</div>
+<!-- ------------------------------------------------------------------------ -->
+<h3>Part 4: Efficiency <em>(40 points)</em></h3>
+<div class="text-justify">
+<p>
+An efficient ray tracing implementation is essential in modern rendering systems, and considerable care is taken to ensure that this operation runs as quickly as possible. A general rule of thumb is that certain expensive C++ constructs should never be used while tracing a ray (i.e. during octree traversal in your case). This includes operations that perform dynamic memory allocation (<code>malloc</code>, the <code>new</code> operator, or STL data structures that internally perform dynamic memory allocation, such as <code>std::vector</code>). Note that this doesn't mean that you can't use <code>std::vector</code>s in your code--in fact, you will find many of them in existing Nori code. However, a <code>std::vector</code> should never be created *per ray* inside performance-critical ray traversal code.
+</p>
 </div>
 
 <h3>Bonus: Hacker Points <em>(5 points)</em></h3>
 
 <div class="alert alert-danger" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points
 for the daring few. Sometimes you might be required to implement something that was not taught in class and
-you might have to do some research and creative thinking. Hacker Points are awarded only to students who
+you might have to do some research and creative thinking. Hacker points are awarded only to students who
 implemented all of the remaining assignment, and they are added to the final score.
 </div>
 <div class="text-justify">
