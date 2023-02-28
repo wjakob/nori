@@ -255,6 +255,11 @@ comparison. (5 pts)</li>
 <p>
 An efficient ray tracing implementation is essential in modern rendering systems, and considerable care is taken to ensure that this operation runs as quickly as possible. A general rule of thumb is that certain expensive C++ constructs should never be used while tracing a ray (i.e. during octree traversal in your case). This includes operations that perform dynamic memory allocation (<code>malloc</code>, the <code>new</code> operator, or STL data structures that internally perform dynamic memory allocation, such as <code>std::vector</code>). Note that this doesn't mean that you can't use <code>std::vector</code>s in your code--in fact, you will find many of them in existing Nori code. However, a <code>std::vector</code> should never be created *per ray* inside performance-critical ray traversal code.
 </p>
+<p>
+In this part, you will be asked to optimize your octree code to achieve the best possible performance.
+A speedup of 10k is not absurd, but the exact number depends on your hardware. This part of the grading will take into account the relative performance with others.
+A correct implementation with average performance will get 50% of the efficiency points.
+</p>
 </div>
 
 <h3>Bonus: Hacker Points <em>(5 points)</em></h3>
