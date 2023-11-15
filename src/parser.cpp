@@ -267,7 +267,7 @@ NoriObject *loadFromXML(const std::string &filename) {
                     case ERotate: {
                             check_attributes(node, { "angle", "axis" });
                             float angle = degToRad(toFloat(node.attribute("angle").value()));
-                            Eigen::Vector3f axis = toVector3f(node.attribute("axis").value());
+                            Eigen::Vector3f axis = toVector3f(node.attribute("axis").value()).normalized();
                             transform = Eigen::AngleAxis<float>(angle, axis) * transform;
                         }
                         break;
