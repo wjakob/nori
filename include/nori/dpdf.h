@@ -140,6 +140,7 @@ public:
         size_t index = sample(sampleValue);
         sampleValue = (sampleValue - m_cdf[index])
             / (m_cdf[index + 1] - m_cdf[index]);
+        sampleValue = std::clamp(sampleValue, 0.0f, 1.0f);
         return index;
     }
 
@@ -159,6 +160,7 @@ public:
         size_t index = sample(sampleValue, pdf);
         sampleValue = (sampleValue - m_cdf[index])
             / (m_cdf[index + 1] - m_cdf[index]);
+        sampleValue = std::clamp(sampleValue, 0.0f, 1.0f);
         return index;
     }
 
