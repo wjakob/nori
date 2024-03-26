@@ -182,16 +182,28 @@ $ git pull upstream master
     </p>
 
     <p>
-        Create a new "material sampling" (mats) path tracer named <code>src/path_mats.cpp</code> that does exactly this. Note that you should use <code>BSDF::sample()</code> to generate new outoing directions at each scattering event. This outgoing direction
-        is used to estimate the indirect illumination component. <b>We recommend that you implement all integrators in this homework using an "iterative" approach with a for-loop compared to the recursive implementation that you might have used for Whitted-style integrator. This is more efficient but will also be considerably easier to debug.</b>
+        Create a new "material sampling" (mats) path tracer named
+        <code>src/path_mats.cpp</code> that does exactly this. Note that you
+        should use <code>BSDF::sample()</code> to generate new outoing
+        directions at each scattering event. This outgoing direction is used to
+        estimate the indirect illumination component. <b>We recommend that you
+        implement all integrators in this homework using an "iterative" approach
+        with a for-loop instead of recursion that you might have used for the
+        Whitted-style integrator. This is more efficient and will also be
+        considerably easier to debug.</b>
     </p>
 
     <p>
-        <strong>Note</strong>: to match the reference renders exactly, you will need to use the following Russian Roulette heuristic for path termination:<br/>
+        <strong>Note</strong>: to match the reference renders exactly, you will
+        need to use the following Russian Roulette heuristic for path
+        termination:<br/>
         <pre class="prettyprint">
 continuation probability = min(maximum component of the throughput * eta^2, 0.99)</pre>
-        where <tt>eta</tt> is the product of all \(\eta\) terms encountered along the path, starting with <tt>eta = 1.f</tt>.
-        Additionally, we recommend to only start doing Russian Roulette after at least three bounces in order to avoid terminating very short paths which would lead to a lot of variance usually.
+        where <tt>eta</tt> is the product of all \(\eta\) terms encountered
+        along the path, starting with <tt>eta = 1.f</tt>. Additionally, we
+        recommend to only start doing Russian Roulette after at least three
+        bounces in order to avoid terminating very short paths which would lead
+        to a lot of variance.
     </p>
 
 
@@ -213,7 +225,8 @@ continuation probability = min(maximum component of the throughput * eta^2, 0.99
             The tests are also part of the continous integration environment, so note that your build will "fail" as long as not all tests pass.
             </p>
     </ol>
-    <b>Make sure to discuss the design choices and relevant technical information about your implementation in the report and include comparisons against our reference renderings.</b>
+    <b>Make sure that you include comparisons against our reference renderings
+    and screenshots of statistical tests in the report. This will be graded.</b>
     </p>
 
     <h3>Part 3: <tt>path_ems</tt> Path tracer with next event estimation <em>(25 points)</em></h3>
@@ -356,7 +369,12 @@ continuation probability = min(maximum component of the throughput * eta^2, 0.99
     <div class="alert alert-info" role="alert"><b>Disclaimer</b>: Artist points are bonus tasks where you get the opportunity to showcase your own renderings created with your implemented algorithms. They are added to the final score.
     </div>
     <p>
-        Build your own artistically appealing scene and include a rendering of it in your report. Use any of the implemented integrators so far - or build something entirely new! Be creative, your renderings may be posted in a gallery on the course website, with your permission. This is a good exercise to get some practice putting together a scene by yourself. <b>This skill will be very useful for creating your scene for the final project.</b>
+        Build your own artistically appealing scene and include a rendering of
+        it in your report. Use any of the implemented integrators so far - or
+        build something entirely new! Be creative, your renderings may be posted
+        in a gallery on the course website, with your permission. This is a good
+        exercise to get some practice putting together a scene by yourself. This
+        skill will be very useful for creating your scene for the final project.
     </p>
     <p>
         We recommend to use the 3D modeling tool <a href="https://www.blender.org/">Blender</a>. It can be used to arrange models or to create your own. Feel free to use existing models from websites such as <a href="https://www.blendswap.com/">Blendswap</a>. We provide a (rudimentary) Blender plugin (<code>ext/plugin</code>) that can help with some of the steps involved with exporting a scene to the Nori description language.
@@ -409,7 +427,7 @@ implemented all of the remaining assignment, and they are added to the final sco
 	<h4> What to include in your report </h4>
 	<p>
 		<ul>
-            <li> A discussion of how you chose to implement the Walter et al. paper in Nori. </li>
+            <li> A discussion of how you choose to implement the Walter et al. paper in Nori. </li>
             <li> At least two refractive renderings of the Ajax scene with different roughness values.</li>
             <li> Results of Chi^2 tests, which demonstrate that your sampling technique works correctly.</li>
 		</ul>
