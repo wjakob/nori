@@ -145,17 +145,17 @@ $ make -j </pre>
 $ apt-get install zlib1g-dev xorg-dev libglu1-mesa-dev </pre>
 	</div>
 	<div class="col-md-6">
-		<h3>Windows / Visual Studio 2019</h3>
+		<h3>Windows / Visual Studio 2026</h3>
 		<p>
-		Begin by installing Visual Studio 2019 and a
-		reasonably recent (≥ 3.x) version of <a href="http://www.cmake.org/download/">CMake</a>. Start CMake and navigate to the location where
+		Begin by installing Visual Studio 2026 and a
+		reasonably recent (≥ 4.2) version of <a href="http://www.cmake.org/download/">CMake</a>. Start CMake and navigate to the location where
 		you cloned the Nori repository.
 		</p>
 		<div class="row-centered">
 			<div class="thumbnail col-md-7 col-centered">
 				<a class="fancybox" href="images/cmake-windows.png"><img src="images/cmake-windows.png"/></a>
 				<div class="caption">
-					Be sure to select the Visual Studio 2019 <b>64</b> bit compiler.
+					Be sure to select the Visual Studio 2026 <b>64</b> bit compiler.
 					It is also generally a good idea to choose a build directory
 					that is <em>different</em> from the source directory.
 				</div>
@@ -164,14 +164,14 @@ $ apt-get install zlib1g-dev xorg-dev libglu1-mesa-dev </pre>
 		<p>
 		After setting up the project, click the <em>Configure</em> and
 		<em>Generate</em> button. This will create a file called
-		<tt>nori.sln</tt>—double-click it to open Visual Studio.
+		<tt>nori.slnx</tt>—double-click it to open Visual Studio.
 		</p>
 
 		<div class="row-centered">
 			<div class="thumbnail col-md-7 col-centered">
-				<a class="fancybox" href="images/vs2013.png"><img src="images/vs2013.png"/></a>
+				<a class="fancybox" href="images/vs2026.png"><img src="images/vs2026.png"/></a>
 				<div class="caption">
-					The opened Visual Studio 2019 project. It's a good idea to
+					The opened Visual Studio 2026 project. It's a good idea to
 					set the build mode to <em>Release</em> (see the red marker)
 					unless you are tracking down a particular bug. The debug
 					version runs <em>much slower</em> (by a factor of 50 or
