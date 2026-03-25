@@ -18,7 +18,7 @@
         repository by running
     </p>
 <pre class="prettyprint lang-bash">
-$ git pull upstream master
+$ git pull upstream main
 </pre>
     <p>
         If there were any concurrent changes to the same file, you
@@ -121,7 +121,7 @@ $ git pull upstream master
     <p>To obtain the full set of points for the previous exercises, you will
         need to validate the correctness of your code.</p>
     <ol>
-        <li>Pass the following statistical tests in <code>scenes/pa5/tests</code>:</li>
+        <li>Pass the following statistical tests in <code>scenes/pa4/tests</code>:</li>
             <ul>
                 <li><tt>chi2test-microfacet.xml</tt></li>
                 <li><tt>ttest-microfacet.xml</tt></li>
@@ -137,7 +137,7 @@ $ git pull upstream master
             </p>
 
         <br>
-        <li>Use your <tt>whitted</tt> integrator from the previous assignment to render a microfacet Ajax bust and ensure that you can match our references for the following scenes in <code>scenes/pa5</code>:</li>
+        <li>Use your <tt>whitted</tt> integrator from the previous assignment to render a microfacet Ajax bust and ensure that you can match our references for the following scenes in <code>scenes/pa4</code>:</li>
             <ul>
                 <li><tt>ajax/ajax-smooth.xml</tt> (<a href="references/ajax-smooth.exr">Reference</a>)</li>
                 <li><tt>ajax/ajax-rough.xml</tt> (<a href="references/ajax-rough.exr">Reference</a>)</li>
@@ -171,7 +171,7 @@ $ git pull upstream master
     </div>
 
     <p>
-        In the lecture you saw that there are multiple ways to solve the rendering equation and the emitter sampling strategy implemented in Assignment 4 was just one possibility. A much simpler (but also more naive) version of path tracing relies on hitting light sources in the scene by pure chance instead of explicitly sampling points on them during integration.
+        In the lecture you saw that there are multiple ways to solve the rendering equation and the emitter sampling strategy implemented in Assignment 3 was just one possibility. A much simpler (but also more naive) version of path tracing relies on hitting light sources in the scene by pure chance instead of explicitly sampling points on them during integration.
         In other words, you exchange emitter sampling with sampling outgoing directions according to the BSDF.
         <br/>
         Furthermore, we will extend the Whitted-style algorithm into a full path tracer that accounts for indirect illumination as well.
@@ -210,14 +210,14 @@ continuation probability = min(maximum component of the throughput * eta^2, 0.99
 
     <h4>Validation</h4>
     <ol>
-        <li>Render the following scenes in <code>scenes/pa5</code>:</li>
+        <li>Render the following scenes in <code>scenes/pa4</code>:</li>
             <ul>
                 <li><tt>cbox/cbox_mats.xml</tt> (<a href="references/cbox_mats.exr">Reference</a>)</li>
                 <li><tt>veach_mi/veach_mats.xml</tt> (<a href="references/veach_mats.exr">Reference</a>)</li>
                 <li><tt>table/table_mats.xml</tt> (<a href="references/table_mats.exr">Reference</a>)</li>
             </ul>
         <br>
-        <li>Pass the following statistical tests in <code>scenes/pa5/tests</code>:</li>
+        <li>Pass the following statistical tests in <code>scenes/pa4/tests</code>:</li>
             <ul>
                 <li><tt>test-direct.xml</tt> (Tests 6-10)</li>
                 <li><tt>test-furnace.xml</tt> (Tests 3-4)</li>
@@ -270,7 +270,7 @@ continuation probability = min(maximum component of the throughput * eta^2, 0.99
 
     <h4>Validation</h4>
     <ol>
-        <li>Render the following scenes in <code>scenes/pa5</code>:</li>
+        <li>Render the following scenes in <code>scenes/pa4</code>:</li>
             <ul>
                 <li><tt>cbox/cbox_ems.xml</tt> (<a href="references/cbox_ems.exr">Reference</a>)</li>
                 <li><tt>veach_mi/veach_ems.xml</tt> (<a href="references/veach_ems.exr">Reference</a>)</li>
@@ -283,7 +283,7 @@ continuation probability = min(maximum component of the throughput * eta^2, 0.99
             yet. The latter two assume that the microfacet model BRDF is ready.
             </p>
         <br>
-        <li>Pass the following statistical tests in <code>scenes/pa5/tests</code>:</li>
+        <li>Pass the following statistical tests in <code>scenes/pa4/tests</code>:</li>
             <ul>
                 <li><tt>test-direct.xml</tt> (Tests 1-5)</li>
                 <li><tt>test-furnace.xml</tt> (Tests 1-2)</li>
@@ -347,14 +347,14 @@ continuation probability = min(maximum component of the throughput * eta^2, 0.99
 
     <h4>Validation</h4>
     <ol>
-        <li>Render the following scenes in <code>scenes/pa5</code>:</li>
+        <li>Render the following scenes in <code>scenes/pa4</code>:</li>
             <ul>
                 <li><tt>cbox/cbox_mis.xml</tt> (<a href="references/cbox_mis.exr">Reference</a>)</li>
                 <li><tt>veach_mi/veach_mis.xml</tt> (<a href="references/veach_mis.exr">Reference</a>)</li>
                 <li><tt>table/table_mis.xml</tt> (<a href="references/table_mis.exr">Reference</a>)</li>
             </ul>
         <br>
-        <li>Pass the following statistical tests in <code>scenes/pa5/tests</code>:</li>
+        <li>Pass the following statistical tests in <code>scenes/pa4/tests</code>:</li>
             <ul>
                 <li><tt>test-direct.xml</tt> (Tests 11-15)</li>
                 <li><tt>test-furnace.xml</tt> (Tests 5-6)</li>
@@ -367,7 +367,7 @@ continuation probability = min(maximum component of the throughput * eta^2, 0.99
     </p>
 
 
-    <h3>Artist Points: Interesting scene (5 points)</h3>
+    <!-- <h3>Artist Points: Interesting scene (5 points)</h3>
     <div class="alert alert-info" role="alert"><b>Disclaimer</b>: Artist points are bonus tasks where you get the opportunity to showcase your own renderings created with your implemented algorithms. They are added to the final score.
     </div>
     <p>
@@ -383,9 +383,9 @@ continuation probability = min(maximum component of the throughput * eta^2, 0.99
     </p>
     <p>
         Please include a short section in the report with your render and credits to any 3D models you used. The artistic characteristics will be graded very leniently :)
-    </p>
+    </p> -->
 
-	<h3> Hacker Points: refraction through rough dielectrics<em> (20 points)</em></h3>
+	<!-- <h3> Hacker Points: refraction through rough dielectrics<em> (20 points)</em></h3>
 <div class="alert alert-info" role="alert"><b>Disclaimer</b>: Hacker points are “underpriced” bonus points
 for the daring few. Sometimes you might be required to implement something that was not taught in class and
 you might have to do some research and creative thinking. Hacker Points are awarded only to students who
@@ -433,5 +433,5 @@ implemented all of the remaining assignment, and they are added to the final sco
             <li> At least two refractive renderings of the Ajax scene with different roughness values.</li>
             <li> Results of Chi^2 tests, which demonstrate that your sampling technique works correctly.</li>
 		</ul>
-	</p>
+	</p> -->
 </div>
