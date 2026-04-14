@@ -1,0 +1,853 @@
+<div>
+    <h2>Overview</h2>
+    <p>
+        In this assignment you will implement the core rendering and
+        optimisation components of <em>Triangle Splatting</em>
+        (Held&nbsp;et&nbsp;al.,&nbsp;2025), a differentiable inverse-rendering
+        method that represents a scene as a "soup" of semi-transparent,
+        emissive triangles. Unlike classical mesh-based renderers where
+        triangles are opaque surface elements, triangle splatting treats each
+        triangle as a soft, coloured light source whose contribution fades
+        smoothly from centre to edges according to a learnable window
+        function.
+    </p>
+    <p>
+        You will work inside the <tt>trianglesoup</tt> Python package,
+        which is built on top of
+        <a href="https://mitsuba.readthedocs.io/en/stable/">Mitsuba&nbsp;3</a>
+        and <a href="https://drjit.readthedocs.io/en/stable/">Dr.Jit</a>.
+        <b>Mitsuba&nbsp;3</b> is a research-oriented rendering system that
+        provides scene representation, ray tracing, and a differentiable
+        rendering API
+        (<a href="https://mitsuba.readthedocs.io/en/stable/">docs</a>).
+        It is built on top of <b>Dr.Jit</b>, a just-in-time compiler for
+        array programming that provides automatic differentiation and GPU
+        acceleration
+        (<a href="https://drjit.readthedocs.io/en/stable/index.html">docs</a>,
+        <a href="https://drjit.readthedocs.io/en/stable/basics.html">basics</a>).
+        The training loop, dataset loading, variable management, and
+        optimiser are provided for you.  Your job is to fill in the
+        rendering and differentiation core.
+    </p>
+
+    <h3>Getting started</h3>
+    <p>
+        As usual, begin by importing the latest base code updates into your
+        repository by running
+    </p>
+<pre class="prettyprint lang-bash">
+$ git pull upstream main
+</pre>
+    <p>
+        If there were any concurrent changes to the same file, you
+        may have to perform a <em>merge</em> (see the git tutorials under
+        "Preliminaries" for more information).
+    </p>
+    <p>
+        This assignment lives in the <code>trianglesoup/</code> subfolder
+        of your repository.  It uses a separate Python environment managed
+        by <a href="https://pixi.sh/">pixi</a>.  If you do not have pixi
+        installed yet, follow the
+        <a href="https://pixi.prefix.dev/latest/installation/">pixi
+        installation instructions</a>.  Then navigate into the folder
+        and install the environment:
+    </p>
+<pre class="prettyprint lang-bash">
+$ cd trianglesoup
+$ pixi install
+</pre>
+    <p>
+        All <code>pixi run</code> commands below should be executed from
+        the <code>trianglesoup/</code> directory.  The base code uses
+        <code>mi.set_variant("cuda_ad_rgb", "llvm_ad_rgb")</code>: if
+        you have an NVIDIA GPU, computations will run on CUDA, otherwise
+        they fall back to LLVM (CPU).
+    </p>
+
+    <div class="alert alert-info" role="alert">
+        <b>Paper reference:</b> J.&nbsp;Held, A.&nbsp;Memari,
+        M.&nbsp;Ovsjanikov, "Triangle Splatting", 2025
+        (<a href="https://arxiv.org/abs/2505.19175">arXiv:2505.19175</a>).
+        We recommend reading &sect;3 before starting this assignment.
+    </div>
+
+    <div class="alert alert-danger" role="alert">
+        <b>Do not modify</b> the training loop, variable management,
+        dataset loading, or loss functions; these are provided and
+        tested.  Your changes should be limited to
+        <code>triangle_model.py</code> and <code>integrator.py</code>.
+    </div>
+
+    <!-- ================================================================ -->
+    <h2>Part 1: Triangle Window Function <em>(25 points)</em></h2>
+    <!-- ================================================================ -->
+
+    <p>
+        In classical rendering, a ray either hits a triangle or it does
+        not; the contribution is binary.  Triangle splatting replaces
+        this hard boundary with a smooth <em>window function</em> that
+        makes each triangle's contribution fade from full strength at the
+        centre to zero at the edges.  This is critical: without it, the
+        scene would consist of fully opaque triangles that cannot be
+        "softened" by optimisation.
+    </p>
+
+    <h4>1.1 &mdash; The window function (Eq.&nbsp;1 of the paper)</h4>
+    <p>
+        The paper defines the window function as
+        \[
+            I(\mathbf{p}) = \operatorname{ReLU}\!\left(\frac{\varphi(\mathbf{p})}{\varphi(\mathbf{s})}\right)^{\!\sigma}
+        \]
+        where \(\varphi(\mathbf{p})\) is the signed distance from
+        \(\mathbf{p}\) to the nearest edge, \(\mathbf{s}\) is the
+        <em>Steiner point</em> (the point of maximum inscribed distance),
+        and \(\sigma\) is a per-triangle learnable sharpness parameter.
+    </p>
+    <p>
+        In barycentric coordinates \((b_0, b_1, b_2)\) with
+        \(b_0 + b_1 + b_2 = 1\), the signed distance from a point to edge
+        \(i\) is proportional to the barycentric coordinate of the
+        <em>opposite</em> vertex, scaled by the edge length.  The ratio
+        \(\varphi(\mathbf{p}) / \varphi(\mathbf{s})\) then simplifies to:
+        \[
+            \frac{\varphi(\mathbf{p})}{\varphi(\mathbf{s})}
+            \;=\; \min\!\big(b_0\,w_0,\; b_1\,w_1,\; b_2\,w_2\big),
+            \qquad
+            w_i = \frac{P}{a_i},
+        \]
+        where \(P = a_0 + a_1 + a_2\) is the perimeter and \(a_i\) is the
+        length of the edge <em>opposite</em> vertex \(i\).
+    </p>
+    <p>
+        The full window function is therefore:
+        \[
+            I(\mathbf{p})
+            \;=\;
+            \operatorname{clip}\!\Big(
+            \min\!\big(b_0\,w_0,\; b_1\,w_1,\; b_2\,w_2\big),\;
+            0,\; 1
+            \Big)^{\!\sigma}
+        \]
+    </p>
+
+    <h4>1.2 &mdash; What to implement</h4>
+    <p>
+        Your task is to implement the window function \(I(\mathbf{p})\)
+        defined above in the
+        <code>_window_function(si, active)</code> method of
+        <code>TriangleModel</code>, located in
+        <code>trianglesoup/rendering/triangle_model.py</code>.
+        The skeleton already provides the per-triangle \(\sigma\), the
+        three vertex positions, and the barycentric coordinates at the
+        hit point.
+    </p>
+    <div class="alert alert-info" role="alert">
+        <b>Useful Dr.Jit functions:</b>
+        <code>dr.squared_norm</code>,
+        <code>dr.sqrt</code>,
+        <code>dr.minimum</code>,
+        <code>dr.clip</code>, and
+        <code>dr.power</code>.
+        See the
+        <a href="https://drjit.readthedocs.io/en/stable/basics.html">Dr.Jit
+        basics page</a> and the
+        <a href="https://drjit.readthedocs.io/en/stable/reference.html">API
+        reference</a> for details.
+    </div>
+
+    <h4>1.3 &mdash; Validation</h4>
+    <p>
+        Run the automated validation:
+    </p>
+<pre class="prettyprint lang-bash">
+$ pixi run validate-part1
+</pre>
+    <p>
+        This renders single-triangle scenes with various \(\sigma\) and
+        occupancy settings and compares against the following
+        pre-generated references:
+    </p>
+    <div class="row" style="margin: 15px 0">
+        <div class="col-md-2 col-md-offset-1">
+            <div class="thumbnail" style="margin: 5px">
+                <a class="fancybox" href="images/pa5_part1_sigma_1_occ_1.png"><img src="images/pa5_part1_sigma_1_occ_1.png" style="width: 100%"/></a>
+                <div class="caption" style="font-size: 11px">\(\sigma = 1\), occ&nbsp;=&nbsp;1</div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="thumbnail" style="margin: 5px">
+                <a class="fancybox" href="images/pa5_part1_sigma_5_occ_1.png"><img src="images/pa5_part1_sigma_5_occ_1.png" style="width: 100%"/></a>
+                <div class="caption" style="font-size: 11px">\(\sigma = 5\), occ&nbsp;=&nbsp;1</div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="thumbnail" style="margin: 5px">
+                <a class="fancybox" href="images/pa5_part1_sigma_10_occ_1.png"><img src="images/pa5_part1_sigma_10_occ_1.png" style="width: 100%"/></a>
+                <div class="caption" style="font-size: 11px">\(\sigma = 10\), occ&nbsp;=&nbsp;1</div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="thumbnail" style="margin: 5px">
+                <a class="fancybox" href="images/pa5_part1_sigma_5_occ_05.png"><img src="images/pa5_part1_sigma_5_occ_05.png" style="width: 100%"/></a>
+                <div class="caption" style="font-size: 11px">\(\sigma = 5\), occ&nbsp;=&nbsp;0.5</div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="thumbnail" style="margin: 5px">
+                <a class="fancybox" href="images/pa5_part1_sigma_5_occ_02.png"><img src="images/pa5_part1_sigma_5_occ_02.png" style="width: 100%"/></a>
+                <div class="caption" style="font-size: 11px">\(\sigma = 5\), occ&nbsp;=&nbsp;0.2</div>
+            </div>
+        </div>
+    </div>
+    <p>
+        <b>Include in your report:</b> a side-by-side comparison of renders
+        with \(\sigma = 1\), \(\sigma = 5\), and \(\sigma = 10\), and a
+        brief explanation of why the window function is necessary for
+        gradient-based optimisation.
+    </p>
+
+    <!-- ================================================================ -->
+    <h2>Part 2: Forward Integrator &mdash; Alpha Compositing <em>(30 points)</em></h2>
+    <!-- ================================================================ -->
+
+    <p>
+        The skeleton integrator only handles the first triangle hit along
+        each ray.  In triangle splatting, every triangle is
+        <em>semi-transparent</em>: a ray passes through many triangles,
+        accumulating colour along the way, much like volume rendering in
+        Neural Radiance Fields (NeRF).
+    </p>
+
+    <h4>2.1 &mdash; Alpha compositing formulation</h4>
+    <p>
+        Given a ray that intersects triangles
+        \(k = 0, 1, 2, \ldots\) in depth order, each with occupancy
+        (opacity) \(\alpha_k\) and emission colour \(\mathbf{c}_k\),
+        the accumulated radiance is:
+        \[
+            L = \sum_{k=0}^{K} T_k \cdot \alpha_k \cdot \mathbf{c}_k
+            + T_{K+1} \cdot L_{\mathrm{env}},
+        \]
+        where
+        \[
+            T_k = \prod_{j=0}^{k-1} (1 - \alpha_j)
+        \]
+        is the <em>transmittance</em> (the fraction of light that has
+        not yet been absorbed), and \(L_{\mathrm{env}}\) is the
+        environment radiance for rays that escape the scene.
+    </p>
+
+    <h4>2.2 &mdash; What to implement</h4>
+    <p>
+        Implement the alpha-compositing loop body in the
+        <code>sample()</code> method of
+        <code>TriangleSoupEmissive</code>
+        (<code>trianglesoup/rendering/integrator.py</code>).  The
+        skeleton opens the rendering loop, intersects the ray, and
+        handles rays that escape to the background.  Replace the
+        placeholder block with code that accumulates the per-hit
+        emission, advances the ray past the current hit, and updates
+        the throughput.  For Part 2 you only need the <em>primal</em>
+        pass: plain forward rendering of the image with no gradient
+        bookkeeping.  The backward branch (which propagates
+        derivatives) is covered in Part 3.
+    </p>
+
+    <div class="alert alert-danger" role="alert">
+        <b>Important:</b> Do <strong>not</strong> use Mitsuba's
+        <code>si.spawn_ray()</code> to advance the ray origin.
+        <code>spawn_ray</code> offsets along the <em>surface normal</em>,
+        which can skip past nearby thin triangles and cause visible line
+        artefacts.  Instead, offset by a small step along the ray
+        direction; a good choice is <code>mi.math.RayEpsilon</code>.
+    </div>
+
+    <h4>2.3 &mdash; Validation</h4>
+    <p>
+        Run the automated validation:
+    </p>
+<pre class="prettyprint lang-bash">
+$ pixi run validate-part2
+</pre>
+    <p>
+        This renders the reference cube from a corner viewpoint and
+        compares your output against the pre-generated reference shown
+        below.  The cube should appear with <b>soft, semi-transparent
+        faces</b> where back faces are visible through front faces, and
+        the per-pixel difference against the reference should be
+        negligible.
+    </p>
+    <div class="row" style="margin: 15px 0">
+        <div class="col-md-4 col-md-offset-4">
+            <div class="thumbnail" style="margin: 5px">
+                <a class="fancybox" href="images/pa5_part2_corner.png"><img src="images/pa5_part2_corner.png" style="width: 100%; image-rendering: auto"/></a>
+                <div class="caption">Part 2 reference: alpha-composited cube from the corner viewpoint</div>
+            </div>
+        </div>
+    </div>
+    <p>
+        <b>Include in your report:</b> your rendered cube image and a
+        brief explanation of why alpha compositing (rather than
+        first-hit opaque rendering) is well-suited to gradient-based
+        reconstruction from images in this triangle splatting setting.
+    </p>
+
+    <!-- ================================================================ -->
+    <h2>Part 3: Backward Pass &mdash; Path Replay Backpropagation <em>(30 points)</em></h2>
+    <!-- ================================================================ -->
+
+    <p>
+        With the forward integrator in place, you can render images.
+        Now we turn to the actual goal of the assignment: <em>optimising</em>
+        the triangle parameters so that rendered images match target
+        images.
+    </p>
+
+    <h4>3.1 &mdash; The optimisation problem</h4>
+    <p>
+        Let \(\theta\) denote the differentiable scene parameters we want
+        to optimise: per-triangle colours, occupancies, sharpness
+        \(\sigma\), and vertex positions.  Write \(I(\theta)\) for the
+        image rendered by your integrator at the current parameter
+        values, and \(I^\star\) for the target image.  We define the
+        photometric loss
+        \[
+            L(\theta) = \sum_{\text{pixels}\ p}
+            \big\| I(\theta)_p - I^\star_p \big\|^2,
+        \]
+        and we want to find the parameters that minimise it:
+        \(\theta^\star = \arg\min_\theta L(\theta)\).
+    </p>
+    <p>
+        The standard tool for this kind of non-linear optimisation is
+        gradient descent (or a variant such as Adam).  At each step we
+        update the parameters along the negative gradient of the loss:
+        \[
+            \theta \;\leftarrow\; \theta - \eta \, \nabla_\theta L(\theta).
+        \]
+        So the core problem of this part is to compute the gradient
+        \(\nabla_\theta L\).  Because \(L\) depends on \(\theta\) through
+        an entire ray-tracing loop, this is not something we can write
+        down in closed form; we need a mechanical way to
+        differentiate the rendering code.
+    </p>
+
+    <h4>3.2 &mdash; Automatic differentiation in Dr.Jit</h4>
+    <p>
+        Dr.Jit supports <em>automatic differentiation</em> (AD): you mark
+        variables as differentiable, do some computation on them, and
+        ask Dr.Jit to propagate gradients backwards.  A minimal example:
+    </p>
+<pre class="prettyprint lang-python">
+import drjit as dr
+import mitsuba as mi
+mi.set_variant("cuda_ad_rgb", "llvm_ad_rgb")
+
+x = mi.Float(2.0)
+dr.enable_grad(x)           # treat x as a leaf in the AD graph
+y = x * x + 1               # Dr.Jit records the operations on x
+dr.backward(y)              # propagate &part;y/&part;x back to x
+print(dr.grad(x))           # &rarr; 4.0</pre>
+    <p>
+        When AD is active on a variable, Dr.Jit stores the computation
+        graph of every downstream operation so that it can walk the graph
+        backwards later.  For more details, see the
+        <a href="https://drjit.readthedocs.io/en/stable/autodiff.html">Dr.Jit
+        AD docs</a>.
+    </p>
+
+    <h4>3.3 &mdash; Why we can&rsquo;t just call <code>dr.backward(loss)</code> at the end of the loop</h4>
+    <p>
+        The obvious approach would be: enable gradients on all scene
+        parameters, run the full forward rendering, compute a photometric
+        loss against the target, and call <code>dr.backward(loss)</code>.
+        Conceptually this is correct, but in practice it is essentially
+        a worst-case scenario for reverse-mode automatic differentiation,
+        and we need a smarter strategy.
+    </p>
+    <p>
+        Reverse-mode AD works by recording every intermediate value of
+        the forward computation on a &ldquo;tape&rdquo;, then walking
+        the tape backwards to accumulate gradients.  Our forward
+        computation, however, is a <em>loop</em> whose number of
+        iterations is not known in advance: each ray keeps stepping
+        through semi-transparent triangles until its throughput drops
+        below threshold or it leaves the scene.  Worse, the loop runs
+        on the GPU with hundreds of thousands of rays in flight at the
+        same time.  Recording everything would mean conservatively
+        provisioning enough memory for every intermediate of every
+        iteration of every ray, which is an enormous tape for what is
+        otherwise a fairly small computation.
+    </p>
+    <p>
+        The general lesson: when an algorithm to be differentiated
+        contains a loop whose iteration count is data-dependent and
+        cannot be unrolled, blindly applying AD is almost never the
+        right thing to do.  Compilers currently aren&rsquo;t smart
+        enough to derive an efficient backward pass on their own, so it
+        is up to us to think about what the loop actually computes and
+        implement its derivative directly.
+    </p>
+    <p>
+        For our integrator we use <em>Path Replay Backpropagation</em>
+        (PRB), the standard differentiable-rendering pattern in
+        Mitsuba&nbsp;3.  PRB&rsquo;s idea is simple: the forward pass
+        records only the final primal radiance; the backward pass then
+        <em>replays</em> the same paths a second time, propagating
+        gradients <em>one iteration at a time</em>.  Memory stays
+        bounded regardless of how long any individual path turns out to
+        be.
+    </p>
+
+    <h4>3.4 &mdash; How PRB works for the triangle soup</h4>
+    <p>
+        PRB computes \(\nabla_\theta L\) in two passes that the training
+        loop orchestrates:
+    </p>
+    <ol>
+        <li>
+            <b>Forward pass</b> <code>(mode == dr.ADMode.Primal)</code>.
+            Your integrator renders the image exactly as in Part&nbsp;2
+            and returns the primal radiance per pixel,
+            \(I(\theta)\).
+        </li>
+        <li>
+            <b>Image-space backprop.</b> The training loop computes the
+            photometric loss \(L\) and its derivative with respect to
+            the image pixels,
+            \[
+                \delta L = \frac{\partial L}{\partial I}.
+            \]
+            This is just one 3-channel value per pixel: the upstream
+            gradient that must flow <em>into</em> the rendered image.
+            For our quadratic loss,
+            \(\delta L_p = 2\big(I(\theta)_p - I^\star_p\big)\).
+        </li>
+        <li>
+            <b>Backward pass</b>
+            <code>(mode == dr.ADMode.Backward)</code>. The integrator is
+            called a second time, now with \(\delta L\) as an input.
+            It replays the same paths and, at every hit, backpropagates
+            the <em>local</em> contribution of that hit into the scene
+            parameters \(\theta\) before moving on.
+        </li>
+    </ol>
+    <p>
+        What does "the local contribution of a hit" look like?  Recall
+        from Part&nbsp;2 that at hit \(k\) a ray contributes the
+        <em>emission</em> at this hit,
+        \(E_k = T_k \alpha_k \mathbf{c}_k\), plus all <em>subsequent</em>
+        radiance scaled by the transparency \(\tau_k = 1 - \alpha_k\) of
+        the current triangle.  Differentiating with respect to
+        \(\theta\) therefore yields two contributions per hit:
+    </p>
+    <ul>
+        <li>
+            <b>Emission gradient:</b> how changing triangle
+            \(k\)&rsquo;s colour or occupancy affects the radiance emitted
+            <em>at this hit</em>.
+        </li>
+        <li>
+            <b>Transport gradient:</b> how changing triangle
+            \(k\)&rsquo;s transparency affects <em>all subsequent</em>
+            radiance along the ray.
+        </li>
+    </ul>
+    <p>
+        Summing these over all hits, the PRB formula is
+        \[
+            \nabla_\theta L
+            = \sum_k \delta L \cdot
+            \Big(
+            \nabla_\theta E_k
+            + R_k \cdot \frac{\nabla_\theta \tau_k}{\tau_k}
+            \Big),
+        \]
+        where \(R_k\) is the radiance remaining from hit \(k\) onward
+        along this ray.
+    </p>
+    <p>
+        In practice, the backward pass does the following inside the
+        rendering loop, per iteration:
+    </p>
+    <ol>
+        <li>
+            Initialise the accumulator <code>radiance</code> from the
+            primal radiance returned by the forward pass (the framework
+            passes it in via <code>state_in[0]</code>).
+        </li>
+        <li>
+            At each hit \(k\), <em>subtract</em> \(E_k\) from
+            <code>radiance</code>.  After this subtraction,
+            <code>radiance</code> holds the remaining radiance
+            \(R_{k+1}\).
+        </li>
+        <li>
+            Build a small AD graph for just this hit that expresses the
+            per-hit term
+            \(\nabla_\theta E_k + R_k \cdot \nabla_\theta \tau_k / \tau_k\),
+            and call <code>dr.backward</code> to push gradients into the
+            parameters \(\theta\).  The graph is discarded before the
+            next iteration, so memory stays bounded.
+        </li>
+    </ol>
+
+    <h4>3.5 &mdash; <code>dr.resume_grad</code>: recording only what we need</h4>
+    <p>
+        AD tracking inside the rendering loop is <em>off</em> by default,
+        so the primal-pass code you wrote for Part&nbsp;2 produces no AD
+        graph.  <code>dr.resume_grad</code> temporarily re-enables
+        tracking for the expressions inside its block.  A minimal
+        example:
+    </p>
+<pre class="prettyprint lang-python">
+import drjit as dr
+import mitsuba as mi
+mi.set_variant("cuda_ad_rgb", "llvm_ad_rgb")
+
+x = mi.Float(3.0)
+dr.enable_grad(x)
+
+with dr.suspend_grad():
+    a = x + 1                  # NOT tracked
+    with dr.resume_grad():
+        b = x * x              # TRACKED (AD re-enabled here)
+
+dr.backward(b)
+print(dr.grad(x))              # &rarr; 6.0  (&part;b/&part;x = 2x)</pre>
+    <p>
+        Gradients are suspended by default inside the
+        <code>sample()</code> method, so you only need
+        <code>dr.resume_grad</code> around the few expressions the
+        backward pass needs.  The <code>when=not primal</code> flag
+        additionally makes the block a no-op during the primal pass.
+    </p>
+
+<!--
+    <h4>3.6 &mdash; The transport term: <code>dr.relative_grad</code></h4>
+    <p>
+        The transport piece of the PRB formula needs us to propagate a
+        gradient through \(\tau\) weighted by \(1/\tau\).  Since AD is
+        suspended inside <code>sample()</code>, we can build exactly
+        this kind of local gradient by combining
+        <code>dr.resume_grad</code> with the trick
+        <code>x / dr.detach(x)</code>: the ratio evaluates to \(1\) in
+        the primal, but its gradient through \(x\) carries a factor of
+        \(1/x\).  Here is the pattern on a toy expression
+        \(a \cdot b \cdot c\) where \(a\) and \(c\) are detached
+        constants and \(b\) is differentiable:
+    </p>
+<pre class="prettyprint lang-python">
+with dr.suspend_grad():
+    a = ...                            # detached
+    c = ...                            # detached
+    with dr.resume_grad():
+        # re-attach b to the AD graph locally;
+        # b / dr.detach(b) has primal 1 but gradient 1/b through b.
+        Lo = a * (b / dr.detach(b)) * c
+    dr.backward(Lo)
+    # gradient flowing into b is a*c / b</pre>
+    <p>
+        The <code>b / dr.detach(b)</code> construct is what re-attaches
+        \(b\) to the AD graph inside the <code>resume_grad</code> block.
+        <code>dr.relative_grad(x)</code> is simply the standard
+        shorthand for this pattern, giving the same \(1/x\) weight on
+        \(x\)&rsquo;s gradient.  Use it in place of \(\tau\) when
+        building the per-hit PRB expression: the \(1/\tau\) factor in
+        the transport term
+        \(R_k \cdot \nabla_\theta \tau_k / \tau_k\) is then injected
+        into \(\tau\)&rsquo;s gradient automatically.
+    </p>
+-->
+
+
+    <h4>3.7 &mdash; What to implement</h4>
+    <p>
+        Extend the loop body in
+        <code>TriangleSoupEmissive.sample()</code> to handle the backward
+        mode:
+    </p>
+    <ul>
+        <li>
+            Record the AD graph for the emission, occupancy and
+            transparency expressions that depend on the scene
+            parameters.
+        </li>
+        <li>
+            Subtract the per-hit emission from the radiance accumulator
+            so that, at hit \(k\), it holds the remaining radiance
+            \(R_k\) from that hit onward.
+        </li>
+        <li>
+            Build the per-hit PRB expression from the emission term and
+            the transport term, and propagate the gradients scaled by
+            the upstream \(\delta L\).
+        </li>
+        <li>
+            Detach the occupancy when updating the throughput so that
+            the transparency derivative is not counted twice; the
+            PRB step above already accounts for it.
+        </li>
+    </ul>
+
+    <h4>3.8 &mdash; Validation</h4>
+    <p>
+        Run the automated validation:
+    </p>
+<pre class="prettyprint lang-bash">
+$ pixi run validate-part3
+</pre>
+    <p>
+        This perturbs each differentiable parameter (colours, occupancy,
+        \(\sigma\), and vertex positions), backpropagates through your
+        integrator, and compares the resulting gradients against
+        pre-generated references (within a 10% relative tolerance).  It
+        also renders per-parameter derivative images for a single
+        triangle of the cube scene and produces side-by-side
+        reference/student/difference figures under
+        <code>output/validation/part3/</code>.  An example (triangle&nbsp;11
+        of the cube) is shown below: each column shows how the rendered
+        image changes with respect to a different triangle parameter
+        (colour channels, occupancy, \(\sigma\), vertex positions), and
+        your computation of the derivative should match the reference.
+    </p>
+    <div class="row" style="margin: 15px 0">
+        <div class="col-md-12">
+            <div class="thumbnail" style="margin: 5px">
+                <a class="fancybox" href="images/pa5_part3_comparison_tri11.png"><img src="images/pa5_part3_comparison_tri11.png" style="width: 100%"/></a>
+                <div class="caption">Per-parameter forward-mode derivatives for triangle 11 of the cube. Rows: reference, student, difference. Columns: RGB colours, occupancy, \(\sigma\), vertex positions.</div>
+            </div>
+        </div>
+    </div>
+    <p>
+        <b>Include in your report:</b> the derivative comparison figure
+        produced by <code>validate-part3</code> for at least one
+        triangle of the cube (e.g. triangle&nbsp;11).
+    </p>
+
+    <!-- ================================================================ -->
+    <h2>Part 4: Triangle Statistics for Adaptive Topology <em>(15 points)</em></h2>
+    <!-- ================================================================ -->
+
+    <p>
+        The optimiser can adjust triangle positions, colours, and
+        opacities, but it cannot <em>add</em> or <em>remove</em>
+        triangles.  The Triangle Splatting paper addresses this with
+        periodic <b>pruning</b> (removing triangles that contribute
+        nothing) and <b>densification</b> (splitting or cloning
+        high-contribution triangles).  Both require per-triangle
+        statistics collected during rendering.
+    </p>
+
+    <h4>4.1 &mdash; Statistics to collect</h4>
+    <p>
+        For each triangle \(i\), we collect two quantities over all
+        rendered pixels:
+    </p>
+    <ol>
+        <li>
+            <b>Pixel hit count</b> \(n(i)\): how many pixels hit triangle
+            \(i\).  Triangles visible in too few pixels are unreliable and
+            can be pruned.
+        </li>
+        <li>
+            <b>Average contribution weight</b>
+            \(\bar{w}(i) = \frac{1}{n(i)} \sum_{\text{pixels}} T(p) \cdot \alpha_i(p)\):
+            the mean of the transmittance-times-occupancy products over
+            pixels that hit this triangle.  Triangles with
+            \(\bar{w} \approx 0\) are effectively invisible and can be
+            pruned; triangles with high \(\bar{w}\) are strong candidates
+            for densification.
+        </li>
+    </ol>
+    <p>
+        Because multiple pixels may hit the same triangle in parallel,
+        the statistics are accumulated using
+        <a href="https://drjit.readthedocs.io/en/latest/reference.html#drjit.scatter_add"><code>dr.scatter_add</code></a>.
+        See the
+        <a href="https://drjit.readthedocs.io/en/latest/basics.html#accessing-memory-gather-scatter">gather
+        / scatter section</a> of the Dr.Jit basics for a short primer
+        on how these memory-access primitives work.
+    </p>
+
+    <h4>4.2 &mdash; What to implement</h4>
+    <p>
+        Complete the Part&nbsp;4 TODO in the rendering loop.  At each
+        hit, accumulate two quantities into the corresponding
+        per-triangle buffer:
+    </p>
+    <ul>
+        <li>
+            the per-hit contribution weight
+            \(T \cdot \alpha_i\)
+            into <code>self.triangle_stats_weight_sum</code>;
+        </li>
+        <li>
+            the constant <code>1</code>
+            into <code>self.triangle_stats_pixel_count</code>.
+        </li>
+    </ul>
+    <p>
+        The buffers and the
+        <code>begin_triangle_statistics</code> /
+        <code>end_triangle_statistics</code> helpers (the latter
+        divides the sum by the count to return the average weight) are
+        already provided.
+    </p>
+
+    <h4>4.3 &mdash; Validation</h4>
+    <p>
+        Run the automated validation:
+    </p>
+<pre class="prettyprint lang-bash">
+$ pixi run validate-part4
+</pre>
+    <p>
+        This renders a random triangle soup, collects per-triangle
+        statistics through your integrator, and compares both the pixel
+        hit counts and the average contribution weights against
+        pre-generated references.
+    </p>
+
+    <!-- ================================================================ -->
+    <h2>Reconstruction scenes</h2>
+    <!-- ================================================================ -->
+
+    <p>
+        Once Parts&nbsp;1&ndash;4 are in place, you have a complete
+        differentiable triangle-soup renderer.  Three reconstruction
+        datasets are provided for end-to-end experiments: a
+        <b>fox</b>, a <b>macaw</b>, and a <b>Lego bulldozer</b> (most
+        challenging).
+    </p>
+    <div class="row" style="margin: 15px 0">
+        <div class="col-md-4">
+            <div class="thumbnail" style="margin: 5px">
+                <a class="fancybox" href="images/pa5_fox_target.png"><img src="images/pa5_fox_target.png" style="width: 100%"/></a>
+                <div class="caption">Fox</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="thumbnail" style="margin: 5px">
+                <a class="fancybox" href="images/pa5_macaw_target.png"><img src="images/pa5_macaw_target.png" style="width: 100%"/></a>
+                <div class="caption">Macaw</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="thumbnail" style="margin: 5px">
+                <a class="fancybox" href="images/pa5_lego_target.png"><img src="images/pa5_lego_target.png" style="width: 100%"/></a>
+                <div class="caption">Lego bulldozer (most challenging)</div>
+            </div>
+        </div>
+    </div>
+
+    <h4>Scenes and datasets</h4>
+    <p>
+        Source scenes live under <code>data/scenes/</code>.  Each
+        folder contains a Mitsuba <code>scene.xml</code>, the
+        associated <code>meshes/</code> and <code>textures/</code>, and
+        a preview image.  The source scenes are <em>not</em> shipped
+        with the repository. Download them here:
+        <a href="https://drive.google.com/file/d/12rk8TXMzl05S5jvseM0UfYaXXEacP3iJ">scenes.zip</a>,
+        and unpack into <code>data/scenes/</code>.
+    </p>
+    <p>
+        The training views are also not shipped with the repository.
+        You have two options:
+    </p>
+    <ul>
+        <li>
+            <b>Generate them yourself</b> from the source scenes by
+            orbit-rendering from a fixed set of camera poses, using the
+            provided pixi tasks:
+<pre class="prettyprint lang-bash">
+$ pixi run make-fox-dataset
+$ pixi run make-macaw-dataset
+$ pixi run make-lego-dataset
+# Or regenerate every dataset (cube + fox + macaw + lego) in one shot:
+$ pixi run make-datasets
+</pre>
+        </li>
+        <li>
+            <b>Download the pre-generated datasets</b> here:
+            <a href="https://drive.google.com/file/d/1R5mUZa1E_JlzEWpisgbRJlMhmpE1BHvQ/view?usp=drive_link">datasets.zip</a>,
+            and unpack into <code>data/datasets/</code>.
+        </li>
+    </ul>
+    <p>
+        Either way, the training and test views end up under
+        <code>data/datasets/{fox,macaw,lego}/{train_images,test_images}/</code>
+        as EXR files together with the corresponding camera poses in
+        <code>train.json</code>&nbsp;/ <code>test.json</code>.
+    </p>
+
+    <h4>Running reconstruction</h4>
+    <p>
+        Two reconstruction recipes are provided per scene.  Pick
+        whichever fits your machine; <b>either version is accepted</b>
+        for the report:
+    </p>
+    <ul>
+        <li>
+            <b>Full (CUDA)</b>: tuned for ~3000 iterations with a higher
+            triangle budget.  Best quality, requires an NVIDIA GPU to
+            run in reasonable time.
+<pre class="prettyprint lang-bash">
+$ pixi run train-fox
+$ pixi run train-macaw
+$ pixi run train-lego
+</pre>
+        </li>
+        <li>
+            <b>CPU</b>: a lightweight ~5-minute variant (on a modern
+            multi-core CPU) with a smaller triangle cap and shorter
+            schedule.  Slightly lower fidelity but the same pipeline.
+<pre class="prettyprint lang-bash">
+$ pixi run train-fox-cpu
+$ pixi run train-macaw-cpu
+$ pixi run train-lego-cpu
+</pre>
+        </li>
+    </ul>
+
+    <h4>Output structure</h4>
+    <p>
+        Each training run writes to
+        <code>output/&lt;experiment-name&gt;/</code>, containing:
+    </p>
+    <ul>
+        <li><code>initial_renders/{train,test}/</code>: renders
+            before optimisation starts.</li>
+        <li><code>final_renders/{train,test}/</code>: renders after
+            the final iteration.</li>
+        <li><code>metrics.json</code>: per-iteration loss and
+            triangle count.</li>
+        <li><code>progress_grid.png</code>: a grid of rendered
+            snapshots at several iteration checkpoints alongside the
+            target view, so you can see how reconstruction evolves.</li>
+    </ul>
+
+    <h4>What to include in your report</h4>
+    <p>
+        For each of the three scenes, include the
+        <code>progress_grid.png</code> produced by your reconstruction
+        run; this single image already captures target vs.
+        predicted views across the optimisation.  Example progress
+        grids for the fox and macaw scenes are shown below.
+    </p>
+    <div class="row" style="margin: 15px 0">
+        <div class="col-md-6">
+            <div class="thumbnail" style="margin: 5px">
+                <a class="fancybox" href="images/pa5_fox_progress.png"><img src="images/pa5_fox_progress.png" style="width: 100%"/></a>
+                <div class="caption">Fox progress grid: target vs. reconstruction at several iteration checkpoints.</div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="thumbnail" style="margin: 5px">
+                <a class="fancybox" href="images/pa5_macaw_progress.png"><img src="images/pa5_macaw_progress.png" style="width: 100%"/></a>
+                <div class="caption">Macaw progress grid (CPU variant), with checkpoints from the shorter CPU schedule.</div>
+            </div>
+        </div>
+    </div>
+
+</div>
